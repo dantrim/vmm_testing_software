@@ -81,14 +81,10 @@ class Client(QtWidgets.QDialog) :
                 "inner1" : "lolz"
             }
         }
-        data_string = json.dumps(json_data, ensure_ascii = True) #encoding="utf-8")
-        out.writeString(data_string)
-        idx_first = list(block).index(b"{")
-        idx_last = len(list(block)) - 1 - list(block)[::-1].index(b"}")
-        block = block[idx_first:idx_last+1]
-        self.tcpSocket.write(block)
-
-
+        data_string = json.dumps(json_data, ensure_ascii = True)
+        byte_str = bytearray(data_string, encoding = "utf-8")
+        block_arr = QtCore.QByteArray(byte_str)
+        self.tcpSocket.write(block_arr)
 
     def readFortune(self):
         instr = QtCore.QDataStream(self.tcpSocket)

@@ -15,7 +15,8 @@ using json = nlohmann::json;
 namespace vts
 {
 
-VTSServer::VTSServer(QWidget* parent)
+VTSServer::VTSServer(QWidget* parent) :
+    m_validate_json_string(false)
 {
     cout << "VTSServer::VTSServer()" << endl;
     m_server.listen(QHostAddress::LocalHost, 1234);
@@ -104,7 +105,15 @@ void VTSServer::onReadyRead()
     QTcpSocket* sender = static_cast<QTcpSocket*>(QObject::sender());
 
     QByteArray data = sender->readAll();
-    auto data_string = QByteArrayToValidString(data);
+    std::string data_string;
+    if(m_validate_json_string)
+    {
+        data_string = QByteArrayToValidString(data);
+    }
+    else
+    {
+        data_string = data.toStdString();
+    }
     try
     {
         auto json_input = json::parse(data_string);

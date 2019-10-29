@@ -28,6 +28,7 @@ namespace vts
 
             QTcpServer m_server;
             QList<QTcpSocket*> m_sockets;
+            bool m_validate_json_string;
 
         public slots :
             void onNewConnection();
