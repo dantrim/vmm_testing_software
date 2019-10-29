@@ -145,6 +145,8 @@ void VTSServer::onReadyRead()
         data_string = data.toStdString();
     }
 
+    log->critical("{0} - DATA RECEIVED : {1}", __VTFUNC__, data_string);
+
     if(data_string=="EXIT")
     {
         string msg = "received KILL command (->"+data_string+")";
