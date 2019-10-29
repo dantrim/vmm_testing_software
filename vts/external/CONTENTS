@@ -1,0 +1,2 @@
+this directory includes branch "v1.x" of spdlog repo (https://github.com/gabime/spdlog),
+and only the include/spdlog/ directory therein

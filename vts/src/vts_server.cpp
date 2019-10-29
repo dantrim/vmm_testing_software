@@ -1,4 +1,5 @@
 #include "vts_server.h"
+#include <QCoreApplication>
 #include <QHostAddress>
 #include <QAbstractSocket>
 #include <iostream>
@@ -12,26 +13,52 @@ using namespace std;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+//
+#include "spdlog/spdlog.h"
+
+// std
+#include <memory>
+
 namespace vts
 {
 
 VTSServer::VTSServer(QWidget* parent) :
+    m_is_running(false),
     m_validate_json_string(false)
 {
-    cout << "VTSServer::VTSServer()" << endl;
-    m_server.listen(QHostAddress::LocalHost, 1234);
+    log = spdlog::get("vts");
+    //cout << "VTSServer::VTSServer()" << endl;
+    //m_server.listen(QHostAddress::LocalHost, 1234);
+    //connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+}
+
+bool VTSServer::start()
+{
+    log->info("Starting VTS server...");
+    m_server.listen(QHostAddress::LocalHost,1234);
     connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+    m_is_running = true;
+    return true;
+}
+
+
+bool VTSServer::stop()
+{
+    log->info("Closing VTS server...");
+    m_server.close();
+    QCoreApplication::quit();
+    m_is_running = false;
+    return true;
 }
 
 VTSServer::~VTSServer()
 {
-    cout << "VTSServer::~VTSServer()" << endl;
 }
 
 void VTSServer::onNewConnection()
 {
 
-    cout << "VTSServer::onNewConnection" << endl;
+    log->debug("VTSServer::onNewConnection");
     QTcpSocket* clientSocket = m_server.nextPendingConnection();
     connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(clientSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
@@ -114,6 +141,14 @@ void VTSServer::onReadyRead()
     {
         data_string = data.toStdString();
     }
+
+    if(data_string=="EXIT")
+    {
+        cout << "RECEIVED KILL COMMAND->" << data_string << endl;
+        this->stop();
+        return;
+    }
+
     try
     {
         auto json_input = json::parse(data_string);

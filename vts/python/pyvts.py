@@ -43,7 +43,8 @@ class Client(QtWidgets.QDialog) :
         self.hostLineEdit.textChanged.connect(self.enableGetFortuneButton)
         self.portLineEdit.textChanged.connect(self.enableGetFortuneButton)
         self.getFortuneButton.clicked.connect(self.requestNewFortune)
-        quitButton.clicked.connect(self.close)
+        quitButton.clicked.connect(self.killServer)
+        #quitButton.clicked.connect(self.close)
         self.tcpSocket.readyRead.connect(self.readFortune)
         self.tcpSocket.error.connect(self.displayError)
 
@@ -58,6 +59,16 @@ class Client(QtWidgets.QDialog) :
 
         self.setWindowTitle("Fortune Client")
         self.portLineEdit.setFocus()
+
+    def killServer(self) :
+        print("Sending SERVER KILL command")
+        self.tcpSocket.abort()
+        self.tcpSocket.connectToHost(self.hostLineEdit.text(),
+                int(self.portLineEdit.text()))
+        data_string="EXIT"
+        byte_arr = bytearray(data_string, encoding = "utf-8")
+        block = QtCore.QByteArray(byte_arr)
+        self.tcpSocket.write(block)
 
     def requestNewFortune(self):
         #self.getFortuneButton.setEnabled(False)

@@ -17,6 +17,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 INCLUDEPATH += src/
 INCLUDEPATH += include/
+INCLUDEPATH += external/
+
+DEPENDPATH += external/
+DEPENDPATH += external/spdlog
 
 OBJECTS_DIR += ./objects/
 MOC_DIR += ./moc/
@@ -28,7 +32,9 @@ SOURCES += \
         src/vts_server.cpp
 HEADERS += \
         include/vts_server.h \
-        include/nlohmann/json.hpp
+        # external
+        external/nlohmann/json.hpp \
+        external/spdlog/spdlog.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
