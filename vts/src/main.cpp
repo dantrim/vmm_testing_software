@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     console_sink->set_level(spdlog::level::debug);
     console_sink->set_pattern(log_pattern);
 
-    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("run.log", true);
+    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("vts_server_run.log", true);
     file_sink->set_pattern(log_pattern);
     file_sink->set_level(spdlog::level::trace);
 

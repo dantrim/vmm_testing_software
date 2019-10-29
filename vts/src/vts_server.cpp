@@ -1,4 +1,5 @@
 #include "vts_server.h"
+#include "helpers.h"
 #include <QCoreApplication>
 #include <QHostAddress>
 #include <QAbstractSocket>
@@ -66,7 +67,8 @@ void VTSServer::onNewConnection()
     m_sockets.push_back(clientSocket);
     for(auto socket : m_sockets)
     {
-        cout << clientSocket->peerAddress().toString().toStdString() << " connected to server!" << endl;
+        string msg = clientSocket->peerAddress().toString().toStdString() + " connected to server!";
+        log->info("{0} - {1}", __VTFUNC__, msg);
         socket->write(QByteArray::fromStdString(clientSocket->peerAddress().toString().toStdString() + " connected to server!\n"));
     }
 }
@@ -74,7 +76,8 @@ void VTSServer::onNewConnection()
 void VTSServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
 {
 
-    cout << "removing socket" << endl;
+    string msg = "removing socket";
+    log->info("{0} - {1}", __VTFUNC__, msg);
     if(socketState == QAbstractSocket::UnconnectedState)
     {
         QTcpSocket* sender = static_cast<QTcpSocket*>(QObject::sender());
@@ -144,7 +147,8 @@ void VTSServer::onReadyRead()
 
     if(data_string=="EXIT")
     {
-        cout << "RECEIVED KILL COMMAND->" << data_string << endl;
+        string msg = "received KILL command (->"+data_string+")";
+        log->info("{0} - {1}", __VTFUNC__, msg);
         this->stop();
         return;
     }

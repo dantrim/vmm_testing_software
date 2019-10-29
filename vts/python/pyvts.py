@@ -6,6 +6,25 @@ from __future__ import print_function
 #
 from PySide2 import QtCore, QtGui, QtWidgets, QtNetwork
 import json
+import sys, os
+import subprocess
+
+import logging
+logging.basicConfig(filename = "vts_run.log",
+            filemode = "w",
+            format = "%(asctime)s  %(levelname)s  %(message)s",
+            datefmt = "%m/%d/%y %I:%M:%S %p",
+            level = logging.DEBUG
+)
+logger = logging.getLogger("pyvts")
+file_handler = logging.FileHandler("vts_run.log", mode = "w")
+console_handler = logging.StreamHandler()
+formatter = logging.Formatter("[%(asctime)s]  %(levelname)s  %(message)s",
+                                datefmt = "%m/%d/%y %I:%M:%S")
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 class Client(QtWidgets.QDialog) :
     def __init__(self, parent = None) :
@@ -33,10 +52,13 @@ class Client(QtWidgets.QDialog) :
 
         quitButton = QtWidgets.QPushButton("Quit")
 
+        startButton = QtWidgets.QPushButton("Start")
+
         buttonBox = QtWidgets.QDialogButtonBox()
         buttonBox.addButton(self.getFortuneButton,
                 QtWidgets.QDialogButtonBox.ActionRole)
         buttonBox.addButton(quitButton, QtWidgets.QDialogButtonBox.RejectRole)
+        buttonBox.addButton(startButton, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.tcpSocket = QtNetwork.QTcpSocket(self)
 
@@ -45,6 +67,7 @@ class Client(QtWidgets.QDialog) :
         self.getFortuneButton.clicked.connect(self.requestNewFortune)
         quitButton.clicked.connect(self.killServer)
         #quitButton.clicked.connect(self.close)
+        startButton.clicked.connect(self.startServer)
         self.tcpSocket.readyRead.connect(self.readFortune)
         self.tcpSocket.error.connect(self.displayError)
 
@@ -61,7 +84,7 @@ class Client(QtWidgets.QDialog) :
         self.portLineEdit.setFocus()
 
     def killServer(self) :
-        print("Sending SERVER KILL command")
+        logger.info("Sending server KILL command")
         self.tcpSocket.abort()
         self.tcpSocket.connectToHost(self.hostLineEdit.text(),
                 int(self.portLineEdit.text()))
@@ -69,6 +92,12 @@ class Client(QtWidgets.QDialog) :
         byte_arr = bytearray(data_string, encoding = "utf-8")
         block = QtCore.QByteArray(byte_arr)
         self.tcpSocket.write(block)
+
+    def startServer(self) :
+        logger.info("Sending server UP command")
+        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts"
+        cmd = "%s &" % vts
+        os.system(cmd)
 
     def requestNewFortune(self):
         #self.getFortuneButton.setEnabled(False)

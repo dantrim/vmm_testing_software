@@ -29,9 +29,11 @@ UI_DIR += ./ui/
 
 SOURCES += \
         src/main.cpp \
+        src/helpers.cpp \
         src/vts_server.cpp
 HEADERS += \
         include/vts_server.h \
+        include/helpers.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h
