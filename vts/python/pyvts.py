@@ -22,6 +22,7 @@ import psutil
 from PySide2 import QtCore, QtGui, QtWidgets, QtNetwork
 import json
 import sys, os
+#sys.stdout.flush()
 import subprocess
 
 import logging
@@ -50,7 +51,7 @@ def check_running_vts() :
     for proc in psutil.process_iter() :
         try :
             pinfo = proc.as_dict(attrs = ['pid', 'name'])
-            if 'vts' in pinfo['name'].strip().split('/')[-1] :
+            if 'vts_server' in pinfo['name'].strip().split('/')[-1] :
                 print("FOUND PROC %s  PID %d" % (pinfo['name'], pinfo['pid']))
                 procs.append(pinfo['name'])
                 pids.append(pinfo['pid'])
@@ -86,9 +87,10 @@ class VTSClient(QtCore.QObject) :
         return True
 
     def startServer(self) :
-        logger.info("VTSClient starting server")
+        for i in range(5) :
+            logger.info("VTSClient starting server")
         
-        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts"
+        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts_server"
         cmd = "%s" % vts
         server_pid = subprocess.Popen([vts, "&"])
         logger.info("server started in process %s" % server_pid.pid)
@@ -174,7 +176,7 @@ class Client(QtWidgets.QDialog) :
 
     def startServer(self) :
         logger.info("Sending server UP command")
-        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts"
+        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts_server"
         cmd = "%s &" % vts
         os.system(cmd)
 
@@ -281,7 +283,7 @@ def server(start, ping) :
         if server_pid is not None :
             logging.warning("SERVER ALREADY RUNNING")
         logger.info("Sending server UP command")
-        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts"
+        vts="/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build/vts_server"
         cmd = "%s" % vts
         server_pid = subprocess.Popen([vts, "&"])
         logger.info("server started in process %s" % server_pid.pid)
@@ -388,11 +390,6 @@ def main() :
 
     if args.comm == "START" :
         client.startServer()
-
-
-#    if args.gui :
-#        client.show()
-#    sys.exit(client.exec_())
 
     #vts()
 

@@ -38,6 +38,8 @@ HEADERS += \
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h
 
+TARGET = vts_server
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <QObject>
+#include <chrono>
 using namespace std;
 
 // logger
@@ -19,6 +20,7 @@ int main(int argc, char *argv[])
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::debug);
     console_sink->set_pattern(log_pattern);
+    spdlog::flush_every(std::chrono::seconds(1)); // experimental
 
     auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("vts_server_run.log", true);
     file_sink->set_pattern(log_pattern);
