@@ -1,0 +1,17 @@
+{
+    "vts_config" :
+    {
+        "vts_server" :
+        {
+            "binary_location" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build",
+            "binary_name" : "vts_server",
+            "server_ip" : "127.0.0.1",
+            "server_port" : "1234"
+        },
+        "logging" :
+        {
+            "log_location" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/python/logs",
+            "log_level" : "DEBUG"
+        }
+    }
+}
