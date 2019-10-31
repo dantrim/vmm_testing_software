@@ -12,6 +12,15 @@
         {
             "log_location" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/python/logs",
             "log_level" : "DEBUG"
+        },
+        "frontend" :
+        {
+            "board_ip" : "127.0.0.2"
+        },
+        "testing" :
+        {
+            "tests" : ["FEBPing"],
+            "results_dir" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/python/results"
         }
     }
 }
