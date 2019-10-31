@@ -1,5 +1,7 @@
 #include "vts_server.h"
 #include "helpers.h"
+#include "vts_message.h"
+
 #include <QCoreApplication>
 #include <QHostAddress>
 #include <QAbstractSocket>
@@ -24,11 +26,10 @@ using json = nlohmann::json;
 namespace vts
 {
 
-VTSServer::VTSServer(QWidget* parent) :
+VTSServer::VTSServer(QWidget* /*parent*/) :
     m_is_running(false),
     m_validate_json_string(false)
 {
-    log = spdlog::get("vts");
 }
 
 void VTSServer::load_config(json config_data)
@@ -38,7 +39,12 @@ void VTSServer::load_config(json config_data)
 
 bool VTSServer::start()
 {
-    log->info("Starting VTS server...");
+    log = spdlog::get("vts_logger");
+    if(!log.get())
+    {
+        cout << "VTSServer::start    ERROR Failed to get registered logger" << endl;
+        return false;
+    }
     auto server_config = m_server_config.at("vts_server");
     std::string ip = server_config.at("server_ip");
     std::string jport = server_config.at("server_port");
@@ -71,19 +77,11 @@ VTSServer::~VTSServer()
 
 void VTSServer::onNewConnection()
 {
-
-    //log->debug("VTSServer::onNewConnection");
     QTcpSocket* clientSocket = m_server.nextPendingConnection();
     connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(clientSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
     m_sockets.push_back(clientSocket);
-   // for(auto socket : m_sockets)
-   // {
-   //     string msg = clientSocket->peerAddress().toString().toStdString() + " connected to server!";
-   //     log->info("{0} - {1}", __VTFUNC__, msg);
-   //     socket->write(QByteArray::fromStdString(clientSocket->peerAddress().toString().toStdString() + " connected to server!\n"));
-   // }
 }
 
 void VTSServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
@@ -160,6 +158,7 @@ void VTSServer::onReadyRead()
 
     log->critical("{0} - DATA RECEIVED : {1}", __VTFUNC__, data_string);
 
+
     //if(data_string=="EXIT")
     //{
     //    string msg = "received KILL command (->"+data_string+")";
@@ -171,27 +170,23 @@ void VTSServer::onReadyRead()
     try
     {
         auto message = json::parse(data_string);
-        std::string message_string = message.dump();
-        cout << "=================================" << endl;
-        cout << "SERVER RECEIVED MESSAGE:" << endl;
-        cout << message_string << endl;
-        cout << "=================================" << endl;
+        vts::VTSMessage incoming(message);
 
-        int cmd_id = int(message["ID"]);
-        std::string message_type = message["TYPE"];
-        bool send_reply = bool(message["EXPECTS_REPLY"]);
-        auto message_data = message["DATA"];
-        std::string message_data_string = message_data.dump();
-        cout << "- - - - - - - - - - - - - - - - -" << endl;
-        cout << "CMD:" << endl;
-        cout << message_data_string << endl;
+        cout << "=================================" << endl;
+        cout << "Incoming Message: " << incoming.str() << endl;
+//        cout << "Incoming Message:" << endl;
+//        cout << "  - id             : " << incoming.id() << endl;
+//        cout << "  - type           : " << MessageTypeToStr(incoming.type()) << endl;
+//        cout << "  - expects reply? : " << incoming.expects_reply() << endl;
+//        cout << "  - message data   : " << incoming.message_data().dump() << endl;
         cout << "=================================" << endl;
 
         /// catch server messages
-        if(message_type == "SERVER")
+        if(incoming.type() == vts::VTSMessageType::SERVER)
         {
+            auto message_data = incoming.message_data();
             // server type messages are single strings
-            string server_cmd = message_data["CMD"];
+            string server_cmd = message_data.at("CMD");
             if(server_cmd == "EXIT")
             {
                 string msg = "received KILL command";
@@ -200,24 +195,24 @@ void VTSServer::onReadyRead()
                 return;
             }
         }
-        else if(message_type == "TEST")
+        else if(incoming.type() == vts::VTSMessageType::TEST)
         {
 
         }
 
 
         /// done
-        if(send_reply)
+        if(incoming.expects_reply())
         {
             cout << "SERVER SENDING REPLY" << endl;
             json response = {
-                {"CMD_ID", cmd_id},
+                {"CMD_ID", incoming.id()},
                 {"REPLY", true}
             };
-            std::string response_str = response.dump();
-            cout << "---> " << response_str << endl;
+            vts::VTSReply reply(incoming.id(), response);
+            cout << "---> " << reply.str() << endl;
             QByteArray response_data;
-            response_data.append(response_str.c_str());
+            response_data.append(reply.message().dump().c_str());
             sender->write(response_data);
         }
 

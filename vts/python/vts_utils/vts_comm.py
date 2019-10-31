@@ -36,13 +36,15 @@ class VTSCommunicator :
             _ = socket.readAll()
             return reply
 
-        if socket.waitForReadyRead() : #5000) :
+        if socket.waitForReadyRead(2) : #5000) :
             reply = str(socket.readAll(), "utf-8")
             reply = json.loads(reply)
 
-            cmd_id_recvd = reply["CMD_ID"]
+            cmd_id_rcvd = reply["ID"]
             cmd_id_sent = cmd_id
-            if cmd_id_recvd != cmd_id_sent :
-                print("WARNING Received reply for command id not in sync with sent command (CMD_ID_RECVD={}, CMD_ID_SENT={})".format(cmd_id_recvd, cmd_id_sent))
+            if cmd_id_rcvd != cmd_id_sent :
+                print("WARNING Received reply for command id not in sync with sent command (CMD_ID_RECVD={}, CMD_ID_SENT={})".format(cmd_id_rcvd, cmd_id_sent))
+            reply_message = reply["DATA"]
+            print("RECEIVED DATA: {}".format(reply_message))
         self.cmd_id = cmd_id
         return reply

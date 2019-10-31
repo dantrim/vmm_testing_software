@@ -34,6 +34,7 @@ SOURCES += \
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
+        include/vts_message.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h
