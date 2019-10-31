@@ -20,6 +20,10 @@ namespace spdlog {
 //
 #include <memory>
 
+// json
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
+
 namespace vts
 {
 
@@ -30,6 +34,7 @@ namespace vts
         public :
             explicit VTSServer(QWidget* parent = 0);
             ~VTSServer();
+            void load_config(json config_data);
             bool start();
             bool stop();
             bool up() { return m_is_running; }
@@ -46,6 +51,7 @@ namespace vts
             bool m_is_running;
             bool m_validate_json_string;
             std::shared_ptr<spdlog::logger> log;
+            json m_server_config;
 
         public slots :
             void onNewConnection();

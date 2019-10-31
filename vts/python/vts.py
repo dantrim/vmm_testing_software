@@ -31,7 +31,8 @@ def args_ok(args) :
 def server_command_and_exit(args, vts_client) :
 
     if args.server.lower() == "ping" :
-        print("{}".format(vts_client.ping_server()))
+        #print("{}".format(vts_client.ping_server()))
+        vts_client.ping_server()
     elif args.server.lower() == "start" :
         vts_client.start_server()
     elif args.server.lower() == "stop" :
@@ -40,6 +41,36 @@ def server_command_and_exit(args, vts_client) :
         vts_client.clean()
     elif args.server.lower() == "dummy" :
         vts_client.dummy_send()
+
+class VTSWindow(QtWidgets.QDialog) :
+    def __init__(self, parent = None, client = None) :
+        super(VTSWindow, self).__init__(parent)
+
+
+        self.vts_client = client
+
+        self.start_button = QtWidgets.QPushButton("Start")
+        self.stop_button = QtWidgets.QPushButton("Stop")
+        self.ping_button = QtWidgets.QPushButton("Ping")
+        self.dummy_button = QtWidgets.QPushButton("Dummy")
+
+        button_box = QtWidgets.QDialogButtonBox()
+        button_box.addButton(self.start_button, QtWidgets.QDialogButtonBox.ActionRole)
+        button_box.addButton(self.stop_button, QtWidgets.QDialogButtonBox.ActionRole)
+        button_box.addButton(self.ping_button, QtWidgets.QDialogButtonBox.ActionRole)
+        button_box.addButton(self.dummy_button, QtWidgets.QDialogButtonBox.ActionRole)
+
+        self.start_button.clicked.connect(self.vts_client.start_server)
+        self.stop_button.clicked.connect(self.vts_client.kill_server)
+        self.ping_button.clicked.connect(self.vts_client.ping_server)
+        self.dummy_button.clicked.connect(self.vts_client.dummy_send)
+
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(button_box)
+        self.setLayout(layout)
+
+        self.setWindowTitle("VTS")
+        self.start_button.setFocus()
 
 def main() :
 
@@ -79,7 +110,7 @@ def main() :
     ##
     ## instantiate the VTS client
     ##
-    client = vts_client.VTSClient(config = vts_server_config)
+    client = vts_client.VTSClient(config = vts_server_config, config_file = args.config)
 
     ##
     ## process commands
@@ -87,6 +118,13 @@ def main() :
     if args.server :
         server_command_and_exit(args, client)
         sys.exit(0)
+    if args.gui :
+        app = QtWidgets.QApplication(sys.argv) 
+        window = VTSWindow(client = client)
+        window.show()
+        sys.exit(window.exec_())
+        
+        
 
 if __name__ == "__main__" :
     main()

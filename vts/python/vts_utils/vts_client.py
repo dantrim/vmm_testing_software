@@ -14,26 +14,30 @@ import json
 from vts_utils import vts_comm
 
 class VTSClient(QtCore.QObject) :
-    def __init__(self, parent = None, config = None) :
+    def __init__(self, parent = None, config = None, config_file = "") :
         super(VTSClient, self).__init__(parent)
 
         self.socket = QtNetwork.QTcpSocket(self)
         self.config = config
+        self.config_file = config_file
         self.comms = vts_comm.VTSCommunicator()
+        self.server_process = None
 
     def check_for_vts(self, by_name = False) :
 
         for proc in psutil.process_iter() :
             try :
-                pinfo = proc.as_dict(attrs = ["pid", "name"])
+                pinfo = proc.as_dict(attrs = ["pid", "name", "status"])
+                is_zombie = pinfo["status"].lower() == "zombie"
+                is_actually_running = not is_zombie
                 if not by_name :
-                    return self.pid_exists(int(self.server_pid))
+                    return self.pid_exists(int(self.server_pid)) and is_actually_running
                 elif by_name and pinfo["name"] == self.config["binary_name"] :
-                    return True, int(pinfo["pid"])
+                    return is_actually_running, int(pinfo["pid"])
             except :
                 pass
-        return False, -1
         self.server_pid = -1
+        return False, -1
 
     def pid_exists(self, pid_num) :
 
@@ -57,9 +61,11 @@ class VTSClient(QtCore.QObject) :
         if not executable.exists() :
             raise Exception("Executable path (={}) does not exist".format(str(executable)))
         
-        pid = subprocess.Popen([str(executable), '&'])
+        pid = subprocess.Popen([str(executable), '--config', str(os.path.abspath(self.config_file))])
+        #pid = subprocess.call([str(executable), '--config', str(os.path.abspath(self.config_file))])
         print("VTS server starting (process={}, pid={})".format(self.config["binary_name"], pid.pid))
         self.server_pid = int(pid.pid)
+        self.server_process = pid
 
         # allow for some time to pass to ensure that everything is running before we return
         if wait > 0 :
@@ -87,7 +93,7 @@ class VTSClient(QtCore.QObject) :
         }
 
         attempts = 0
-        while self.pid_exists(vts_pid) :
+        while attempts == 0 : #self.pid_exists(vts_pid) :
 
             if attempts > 5 :
                 raise Exception("Failed to kill VTS server after 5 attempts") 
@@ -96,9 +102,12 @@ class VTSClient(QtCore.QObject) :
                         message_data = message,
                         expect_reply = False,
                         cmd_type = "SERVER")
+            self.socket.close()
 
             time.sleep(0.2)
             attempts += 1
+
+        #self.clean(by_name = True)
         self.server_pid = -1
 
     def ping_server(self, close_after = True) :
@@ -107,15 +116,20 @@ class VTSClient(QtCore.QObject) :
         ip, port = self.config["server_ip"], self.config["server_port"]
         self.socket.connectToHost(ip, int(port))
         attempts = 0
+        found_server = False
         while True :
             if attempts > 5 :
                 self.socket.close()
-                return False
+                found_server = False
+                break
             if self.socket.waitForConnected(3000) :
                 if close_after :
                     self.socket.close()
-                return True
+                found_server = True
+                break
             attempts += 1
+        print("ping? {}".format(found_server)) 
+        return found_server
 
     def clean(self, by_name = False) :
 

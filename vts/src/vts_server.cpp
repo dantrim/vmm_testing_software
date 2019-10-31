@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLatin1String>
+#include <string>
 using namespace std;
 
 #include "nlohmann/json.hpp"
@@ -28,15 +29,25 @@ VTSServer::VTSServer(QWidget* parent) :
     m_validate_json_string(false)
 {
     log = spdlog::get("vts");
-    //cout << "VTSServer::VTSServer()" << endl;
-    //m_server.listen(QHostAddress::LocalHost, 1234);
-    //connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+}
+
+void VTSServer::load_config(json config_data)
+{
+    m_server_config = config_data;
 }
 
 bool VTSServer::start()
 {
     log->info("Starting VTS server...");
-    m_server.listen(QHostAddress::LocalHost,1234);
+    auto server_config = m_server_config.at("vts_server");
+    std::string ip = server_config.at("server_ip");
+    std::string jport = server_config.at("server_port");
+    int port = std::stoi(jport);
+    stringstream msg;
+    msg << "VTS server hosted at (ip,port)=(" << ip << "," << port << ")";
+    log->info("{0} - {1}", __VTFUNC__, msg.str());
+    m_server.listen(QHostAddress(QString::fromStdString(ip)), port);
+    //m_server.listen(QHostAddress::LocalHost,1234);
     connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
     m_is_running = true;
     return true;
@@ -46,6 +57,8 @@ bool VTSServer::start()
 bool VTSServer::stop()
 {
     log->info("Closing VTS server...");
+    for(auto & conx : m_sockets)
+        delete conx;
     m_server.close();
     QCoreApplication::quit();
     m_is_running = false;
