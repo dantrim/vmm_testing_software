@@ -59,25 +59,25 @@ VTSServer::~VTSServer()
 void VTSServer::onNewConnection()
 {
 
-    log->debug("VTSServer::onNewConnection");
+    //log->debug("VTSServer::onNewConnection");
     QTcpSocket* clientSocket = m_server.nextPendingConnection();
     connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
     connect(clientSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
     m_sockets.push_back(clientSocket);
-    for(auto socket : m_sockets)
-    {
-        string msg = clientSocket->peerAddress().toString().toStdString() + " connected to server!";
-        log->info("{0} - {1}", __VTFUNC__, msg);
-        socket->write(QByteArray::fromStdString(clientSocket->peerAddress().toString().toStdString() + " connected to server!\n"));
-    }
+   // for(auto socket : m_sockets)
+   // {
+   //     string msg = clientSocket->peerAddress().toString().toStdString() + " connected to server!";
+   //     log->info("{0} - {1}", __VTFUNC__, msg);
+   //     socket->write(QByteArray::fromStdString(clientSocket->peerAddress().toString().toStdString() + " connected to server!\n"));
+   // }
 }
 
 void VTSServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
 {
 
-    string msg = "removing socket";
-    log->info("{0} - {1}", __VTFUNC__, msg);
+//    string msg = "removing socket";
+//    log->info("{0} - {1}", __VTFUNC__, msg);
     if(socketState == QAbstractSocket::UnconnectedState)
     {
         QTcpSocket* sender = static_cast<QTcpSocket*>(QObject::sender());
@@ -147,46 +147,113 @@ void VTSServer::onReadyRead()
 
     log->critical("{0} - DATA RECEIVED : {1}", __VTFUNC__, data_string);
 
-    if(data_string=="EXIT")
-    {
-        string msg = "received KILL command (->"+data_string+")";
-        log->info("{0} - {1}", __VTFUNC__, msg);
-        this->stop();
-        return;
-    }
+    //if(data_string=="EXIT")
+    //{
+    //    string msg = "received KILL command (->"+data_string+")";
+    //    log->info("{0} - {1}", __VTFUNC__, msg);
+    //    this->stop();
+    //    return;
+    //}
 
     try
     {
-        auto json_input = json::parse(data_string);
-        for(auto& element : json_input)
+        auto message = json::parse(data_string);
+        std::string message_string = message.dump();
+        cout << "=================================" << endl;
+        cout << "SERVER RECEIVED MESSAGE:" << endl;
+        cout << message_string << endl;
+        cout << "=================================" << endl;
+
+        int cmd_id = int(message["ID"]);
+        std::string message_type = message["TYPE"];
+        bool send_reply = bool(message["EXPECTS_REPLY"]);
+        auto message_data = message["DATA"];
+        std::string message_data_string = message_data.dump();
+        cout << "- - - - - - - - - - - - - - - - -" << endl;
+        cout << "CMD:" << endl;
+        cout << message_data_string << endl;
+        cout << "=================================" << endl;
+
+        /// catch server messages
+        if(message_type == "SERVER")
         {
-            cout << "ITERATE: " << element << endl;
+            // server type messages are single strings
+            string server_cmd = message_data["CMD"];
+            if(server_cmd == "EXIT")
+            {
+                string msg = "received KILL command";
+                log->info("{0} - {1}", __VTFUNC__, msg);
+                this->stop();
+                return;
+            }
         }
-        std::string dumped = json_input.dump();
-        cout << "json size = " << json_input.size() << endl;
-        cout << "================ JSON DUMP BEGIN ===============" << endl;
-        cout << dumped << endl;
-        cout << "================  JSON DUMP END  ===============" << endl;
-        auto vec = json_input["peaking_time"];
-        cout << "peaking_time size = " << vec.size() << endl;
-        cout << "peaking times:" << endl;
-        for(auto pt : vec)
+        else if(message_type == "TEST")
         {
-            cout << "   peaking time: " << pt << endl;
+
         }
-        auto channels = json_input["channels"];
-        cout << "channels size = " << channels.size() << endl;
-        for(json::iterator chit = channels.begin(); chit != channels.end(); ++chit)
+
+
+        /// done
+        if(send_reply)
         {
-            cout << "   channels[" << chit.key() << "] = " << chit.value() << endl;
+            cout << "SERVER SENDING REPLY" << endl;
+            json response = {
+                {"CMD_ID", cmd_id},
+                {"REPLY", true}
+            };
+            std::string response_str = response.dump();
+            cout << "---> " << response_str << endl;
+            QByteArray response_data;
+            response_data.append(response_str.c_str());
+            sender->write(response_data);
         }
-    } // try
+
+    }
     catch(std::exception& e)
     {
         stringstream err;
         err << "VTSServer failed to load command: " << e.what();
         cout << "JSON PARSING ERROR: " << err.str() << endl;
     } // catch
+
+    //std::string response_str = response.dump();
+    //cout << "BLAH " << response_str << endl;
+    //QByteArray response_data;
+    //response_data.append(response_str.c_str());
+    //sender->write(response_data);
+
+//    try
+//    {
+//        auto json_input = json::parse(data_string);
+//        for(auto& element : json_input)
+//        {
+//            cout << "ITERATE: " << element << endl;
+//        }
+//        std::string dumped = json_input.dump();
+//        cout << "json size = " << json_input.size() << endl;
+//        cout << "================ JSON DUMP BEGIN ===============" << endl;
+//        cout << dumped << endl;
+//        cout << "================  JSON DUMP END  ===============" << endl;
+//        auto vec = json_input["peaking_time"];
+//        cout << "peaking_time size = " << vec.size() << endl;
+//        cout << "peaking times:" << endl;
+//        for(auto pt : vec)
+//        {
+//            cout << "   peaking time: " << pt << endl;
+//        }
+//        auto channels = json_input["channels"];
+//        cout << "channels size = " << channels.size() << endl;
+//        for(json::iterator chit = channels.begin(); chit != channels.end(); ++chit)
+//        {
+//            cout << "   channels[" << chit.key() << "] = " << chit.value() << endl;
+//        }
+//    } // try
+//    catch(std::exception& e)
+//    {
+//        stringstream err;
+//        err << "VTSServer failed to load command: " << e.what();
+//        cout << "JSON PARSING ERROR: " << err.str() << endl;
+//    } // catch
 }
 
 

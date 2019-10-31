@@ -8,6 +8,10 @@ from PySide2 import QtCore, QtNetwork
 import sys, os, subprocess, psutil
 from pathlib import Path
 import time
+import json
+
+# vts
+from vts_utils import vts_comm
 
 class VTSClient(QtCore.QObject) :
     def __init__(self, parent = None, config = None) :
@@ -15,6 +19,7 @@ class VTSClient(QtCore.QObject) :
 
         self.socket = QtNetwork.QTcpSocket(self)
         self.config = config
+        self.comms = vts_comm.VTSCommunicator()
 
     def check_for_vts(self, by_name = False) :
 
@@ -62,29 +67,41 @@ class VTSClient(QtCore.QObject) :
 
     def kill_server(self) :
 
+        ##
+        ## check if any server is even running
+        ##
         vts_found, vts_pid = self.check_for_vts(by_name = True)
         if not vts_found :
             raise Exception("VTS server does not appear to be running")
 
-        self.socket.abort()
-        ip, port = self.config["server_ip"], self.config["server_port"]
-        self.socket.connectToHost(ip, int(port))
-        if not self.socket.waitForConnected(3000) :
-            raise Exception("Failed to connect to server in attempt to kill VTS server")
-        data_string = "EXIT"
-        cmd_data = bytearray(data_string, encoding = "utf-8")
-        block = QtCore.QByteArray(cmd_data)
+        ##
+        ## prepare the socket for a new message
+        ##
+        self.reset_socket()
+
+        ##
+        ## prepare the data to send
+        ##
+        message = {
+            "CMD" : "EXIT"
+        }
+
         attempts = 0
         while self.pid_exists(vts_pid) :
+
             if attempts > 5 :
-                raise Exception("Failed to kill VTS server after 5 attempts")
-            self.socket.write(block)
-            self.socket.waitForBytesWritten()
-            time.sleep(0.200) # 200 milliseconds
+                raise Exception("Failed to kill VTS server after 5 attempts") 
+
+            _ = self.comms.send_message(socket = self.socket,
+                        message_data = message,
+                        expect_reply = False,
+                        cmd_type = "SERVER")
+
+            time.sleep(0.2)
             attempts += 1
         self.server_pid = -1
 
-    def ping_server(self) :
+    def ping_server(self, close_after = True) :
 
         self.socket.abort()
         ip, port = self.config["server_ip"], self.config["server_port"]
@@ -95,7 +112,8 @@ class VTSClient(QtCore.QObject) :
                 self.socket.close()
                 return False
             if self.socket.waitForConnected(3000) :
-                self.socket.close()
+                if close_after :
+                    self.socket.close()
                 return True
             attempts += 1
 
@@ -110,11 +128,28 @@ class VTSClient(QtCore.QObject) :
             except :
                 pass
 
-                    
-                
+    def reset_socket(self) :
         
+        self.socket.abort()
+        ip, port = self.config["server_ip"], self.config["server_port"]
+        self.socket.connectToHost(ip, int(port))
+        if not self.ping_server(close_after = False) :
+            raise Exception("Failed to reset TCP socket")
 
-        
-        
-        
-        
+    def dummy_send(self) :
+
+        self.reset_socket()
+
+        ##
+        ## prepare the data to send
+        ##
+
+        dummy_data = {
+            "CMD_ID" : 1,
+            "CMD" : "UP"
+        }
+        reply = self.comms.send_message(socket = self.socket,
+                    message_data = dummy_data,
+                    expect_reply = True
+        )
+        print("reply? {}".format(reply))

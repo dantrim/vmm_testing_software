@@ -28,6 +28,19 @@ def args_ok(args) :
         ok = False
     return ok
 
+def server_command_and_exit(args, vts_client) :
+
+    if args.server.lower() == "ping" :
+        print("{}".format(vts_client.ping_server()))
+    elif args.server.lower() == "start" :
+        vts_client.start_server()
+    elif args.server.lower() == "stop" :
+        vts_client.kill_server()
+    elif args.server.lower() == "clean" :
+        vts_client.clean()
+    elif args.server.lower() == "dummy" :
+        vts_client.dummy_send()
+
 def main() :
 
     ##
@@ -41,15 +54,20 @@ def main() :
             help = "Launch the graphical user interface"
     )
     parser.add_argument("-s", "--server",
-            choices = ["START", "STOP", "PING", "CLEAN"],
+            choices = ["START", "STOP", "PING", "CLEAN", "DUMMY"],
             help = "VTS Server Commands"
     )
+    ##
+    ## parse and check the args
+    ##
     args = parser.parse_args()
-
     if not args_ok(args) :
         print("Unable to begin")
         sys.exit(1)
 
+    ##
+    ## load the VTS configuration
+    ##
     with open(args.config) as config_file :
         config_data = json.load(config_file)
         if "vts_config" not in config_data :
@@ -59,21 +77,15 @@ def main() :
     vts_server_config, logging_config = config_data["vts_server"], config_data["logging"]
 
     ##
-    ## client
+    ## instantiate the VTS client
     ##
     client = vts_client.VTSClient(config = vts_server_config)
 
-    if args.server.lower() == "ping" :
-        print("ping? {}".format(client.ping_server()))
-        sys.exit(0)
-    elif args.server.lower() == "start" :
-        client.start_server()
-        sys.exit(0)
-    elif args.server.lower() == "stop" :
-        client.kill_server()
-        sys.exit(0)
-    elif args.server.lower() == "clean" :
-        client.clean()
+    ##
+    ## process commands
+    ##
+    if args.server :
+        server_command_and_exit(args, client)
         sys.exit(0)
 
 if __name__ == "__main__" :
