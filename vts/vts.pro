@@ -30,11 +30,15 @@ UI_DIR += ./ui/
 SOURCES += \
         src/main.cpp \
         src/helpers.cpp \
-        src/vts_server.cpp
+        src/vts_server.cpp \
+        src/vts_commands.cpp \
+        src/communicator_frontend.cpp
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
         include/vts_message.h \
+        include/vts_commands.h \
+        include/communicator_frontend.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h

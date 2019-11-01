@@ -10,6 +10,9 @@
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+// Qt
+#include <QByteArray>
+
 namespace vts
 {
     enum VTSMessageType
@@ -17,6 +20,7 @@ namespace vts
         SERVER=0
         ,TEST
         ,REPLY
+        ,FRONTEND
         ,MessageTypeInvalid
         ,NMessageType
     };
@@ -29,6 +33,7 @@ namespace vts
             case VTSMessageType::SERVER : { out = "SERVER"; break; }
             case VTSMessageType::TEST : { out = "TEST"; break; }
             case VTSMessageType::REPLY : { out = "REPLY"; break; }
+            case VTSMessageType::FRONTEND : { out = "FRONTEND"; break; }
             case VTSMessageType::MessageTypeInvalid : { out = "MessageTypeInvalid"; break; }
             case VTSMessageType::NMessageType : { out = "NMessageType"; break; }
         } // swtich
@@ -41,6 +46,7 @@ namespace vts
         if(type == "SERVER") { out = VTSMessageType::SERVER; }
         else if(type == "TEST") { out = VTSMessageType::TEST; }
         else if(type == "REPLY") { out = VTSMessageType::REPLY; }
+        else if(type == "FRONTEND") { out = VTSMessageType::FRONTEND; }
         else { out = VTSMessageType::MessageTypeInvalid; }
         return out;
     }
@@ -48,6 +54,13 @@ namespace vts
     class VTSMessage
     {
         public :
+            VTSMessage() :
+                m_cmd_id(-1),
+                m_type(VTSMessageType::MessageTypeInvalid),
+                m_expects_reply(false),
+                m_message_data({})
+            {
+            }
             VTSMessage(int cmd_id, vts::VTSMessageType type,
                         bool expects_reply, json message_data) :
                 m_cmd_id(cmd_id),
@@ -73,26 +86,41 @@ namespace vts
                 }
             }
 
-            int id() { return m_cmd_id; }
-            VTSMessageType type() { return m_type; }
-            bool expects_reply() { return m_expects_reply; }
-            json message_data() { return m_message_data; }
-            json message()
+            QByteArray byte_array()
+            {
+                QByteArray block;
+                block.append(message().dump().c_str());
+                return block;
+            }
+
+            int id() const { return m_cmd_id; }
+            void id(int id) { m_cmd_id = id; }
+
+            VTSMessageType type() const { return m_type; }
+            void type(VTSMessageType type) { m_type = type; }
+
+            bool expects_reply() const { return m_expects_reply; }
+            void expects_reply(bool does_it) { m_expects_reply = does_it; }
+
+            json data() const { return m_message_data; }
+            void data(json data) { m_message_data = data; }
+
+            json message() const
             {
                 json out = {
                     {"ID", m_cmd_id},
                     {"TYPE", MessageTypeToStr(m_type)},
                     {"EXPECTS_REPLY", m_expects_reply},
-                    {"DATA", message_data()}
+                    {"DATA", data()}
                 };
                 return out;
             }
-            std::string str()
+            std::string str() const
             {
                 std::stringstream msg;
-                msg << "ID: " << id() << ", TYPE: " << type()
+                msg << "ID: " << id() << ", TYPE: " << MessageTypeToStr(type())
                     << ", EXPECTS_REPLY: " << expects_reply()
-                    << ", DATA: " << message_data();
+                    << ", DATA: " << data();
                 return msg.str();
             }
 
@@ -106,6 +134,13 @@ namespace vts
     class VTSReply
     {
         public :
+            VTSReply() :
+                m_cmd_id(-1),
+                m_type(VTSMessageType::REPLY),
+                m_reply_data({})
+            {
+            }
+
             VTSReply(int cmd_id, json reply_data) :
                 m_cmd_id(cmd_id),
                 m_type(VTSMessageType::REPLY),
@@ -127,23 +162,37 @@ namespace vts
                     throw std::runtime_error(err.str());
                 }
             }
-            int id() { return m_cmd_id; }
-            VTSMessageType type() { return m_type; }
-            json message_data() { return m_reply_data; }
-            json message()
+
+            QByteArray byte_array()
+            {
+                QByteArray block;
+                block.append(message().dump().c_str());
+                return block;
+            }
+
+            int id() const { return m_cmd_id; }
+            void id(int id) { m_cmd_id = id; }
+
+            VTSMessageType type() const { return m_type; }
+            void type(VTSMessageType type) { m_type = type; }
+
+            json data() const { return m_reply_data; }
+            void data(json data) { m_reply_data = data; }
+
+            json message() const
             {
                 json out = {
                     {"ID", m_cmd_id},
                     {"TYPE", MessageTypeToStr(m_type)},
-                    {"DATA", message_data()}
+                    {"DATA", data()}
                 };
                 return out;
             }
-            std::string str()
+            std::string str() const
             {
                 std::stringstream msg;
-                msg << "ID: " << id() << ", TYPE: " << type()
-                    << ", DATA: " << message_data();
+                msg << "ID: " << id() << ", TYPE: " << MessageTypeToStr(type())
+                    << ", DATA: " << data();
                 return msg.str();
             }
 

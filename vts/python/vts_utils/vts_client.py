@@ -110,7 +110,7 @@ class VTSClient(QtCore.QObject) :
         #self.clean(by_name = True)
         self.server_pid = -1
 
-    def ping_server(self, close_after = True) :
+    def ping_server(self, close_after = True, quiet = False) :
 
         self.socket.abort()
         ip, port = self.config["server_ip"], self.config["server_port"]
@@ -119,16 +119,24 @@ class VTSClient(QtCore.QObject) :
         found_server = False
         while True :
             if attempts > 5 :
-                self.socket.close()
+                #self.socket.close()
                 found_server = False
                 break
             if self.socket.waitForConnected(3000) :
-                if close_after :
-                    self.socket.close()
+                #if close_after :
+                #    self.socket.close()
                 found_server = True
                 break
             attempts += 1
-        print("ping? {}".format(found_server)) 
+
+        # clear and close
+        if not found_server or close_after :
+            _ = self.socket.waitForReadyRead(1)
+            _ = self.socket.readAll()
+            self.socket.close()
+
+        if not quiet :
+            print("ping? {}".format(found_server))
         return found_server
 
     def clean(self, by_name = False) :
@@ -147,7 +155,7 @@ class VTSClient(QtCore.QObject) :
         self.socket.abort()
         ip, port = self.config["server_ip"], self.config["server_port"]
         self.socket.connectToHost(ip, int(port))
-        if not self.ping_server(close_after = False) :
+        if not self.ping_server(close_after = False, quiet = True) :
             raise Exception("Failed to reset TCP socket")
 
     def dummy_send(self) :
@@ -167,3 +175,35 @@ class VTSClient(QtCore.QObject) :
                     expect_reply = True
         )
         print("reply? {}".format(reply))
+
+    def frontend_cmd(self, cmd = "") :
+
+        self.reset_socket()
+        data = {
+            "CMD" : cmd
+        }
+        reply = self.comms.send_message(socket = self.socket,
+                    message_data = data,
+                    expect_reply = True,
+                    cmd_type = "FRONTEND",
+                    wait = 5000
+        )
+        print("reply? {}".format(reply))
+
+    def board_on(self) :
+        self.frontend_cmd(cmd = "POWERON")
+
+    def board_off(self) :
+        self.frontend_cmd(cmd = "POWEROFF")
+
+    def ping_fpga(self) :
+        self.frontend_cmd(cmd = "PINGFPGA")
+
+    def configure_fpga(self) :
+        self.frontend_cmd(cmd = "CONFIGUREFPGA")
+
+    def acq_on(self) :
+        self.frontend_cmd(cmd = "ACQON")
+
+    def acq_off(self) :
+        self.frontend_cmd(cmd = "ACQOFF")

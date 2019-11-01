@@ -15,7 +15,7 @@
         },
         "frontend" :
         {
-            "board_ip" : "127.0.0.2"
+            "board_ip" : "127.0.0.1"
         },
         "testing" :
         {

@@ -31,8 +31,7 @@ def args_ok(args) :
 def server_command_and_exit(args, vts_client) :
 
     if args.server.lower() == "ping" :
-        #print("{}".format(vts_client.ping_server()))
-        vts_client.ping_server()
+        vts_client.ping_server(quiet = False)
     elif args.server.lower() == "start" :
         vts_client.start_server()
     elif args.server.lower() == "stop" :
@@ -48,6 +47,10 @@ class VTSWindow(QtWidgets.QDialog) :
 
 
         self.vts_client = client
+
+        ##
+        ## server buttons
+        ##
 
         self.start_button = QtWidgets.QPushButton("Start")
         self.stop_button = QtWidgets.QPushButton("Stop")
@@ -65,8 +68,40 @@ class VTSWindow(QtWidgets.QDialog) :
         self.ping_button.clicked.connect(self.vts_client.ping_server)
         self.dummy_button.clicked.connect(self.vts_client.dummy_send)
 
+        ##
+        ## frontend buttons
+        ##
+
+        self.board_power_on_button = QtWidgets.QPushButton("Power On")
+        self.board_power_off_button = QtWidgets.QPushButton("Power Off")
+        self.ping_fpga_button = QtWidgets.QPushButton("Ping FPGA")
+        self.configure_fpga_button = QtWidgets.QPushButton("Configure FPGA")
+        self.acq_on_button = QtWidgets.QPushButton("ACQ On")
+        self.acq_off_button = QtWidgets.QPushButton("ACQ Off")
+
+
+        buttons_frontend = QtWidgets.QDialogButtonBox()
+        buttons_frontend.addButton(self.board_power_on_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.board_power_off_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.ping_fpga_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.configure_fpga_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.acq_on_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.acq_off_button, QtWidgets.QDialogButtonBox.ActionRole)
+
+        self.board_power_on_button.clicked.connect(self.vts_client.board_on)
+        self.board_power_off_button.clicked.connect(self.vts_client.board_off)
+        self.ping_fpga_button.clicked.connect(self.vts_client.ping_fpga)
+        self.configure_fpga_button.clicked.connect(self.vts_client.configure_fpga)
+        self.acq_on_button.clicked.connect(self.vts_client.acq_on)
+        self.acq_off_button.clicked.connect(self.vts_client.acq_off)
+
+        ##
+        ## layout
+        ##
+
         layout = QtWidgets.QGridLayout()
         layout.addWidget(button_box)
+        layout.addWidget(buttons_frontend)
         self.setLayout(layout)
 
         self.setWindowTitle("VTS")

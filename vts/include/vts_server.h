@@ -1,23 +1,17 @@
 #ifndef VTS_SERVER_H
 #define VTS_SERVER_H
 
-//
 // QT
-//
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QByteArray>
 
-//
 // logging
-//
 namespace spdlog {
     class logger;
 }
 
-//
-// std
-//
+// std/stld
 #include <memory>
 
 // json
@@ -26,6 +20,8 @@ using json = nlohmann::json;
 
 namespace vts
 {
+    class VTSMessage;
+    class VTSReply;
 
     class VTSServer : QObject
     {
@@ -43,6 +39,13 @@ namespace vts
                     const std::string& whitespace = " \t");
             bool isASCII(const std::string& s);
             std::string QByteArrayToValidString(QByteArray& json_byte_array);
+
+            void handle_server_command(const vts::VTSMessage& message,
+                        vts::VTSReply& reply);
+            void handle_test_command(const vts::VTSMessage& message,
+                        vts::VTSReply& reply);
+            void handle_frontend_command(const vts::VTSMessage& message,
+                        vts::VTSReply& reply);
 
         private :
 

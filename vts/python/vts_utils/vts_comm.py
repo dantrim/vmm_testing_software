@@ -11,7 +11,7 @@ class VTSCommunicator :
     def __init__(self) :
         self.cmd_id = -1
 
-    def send_message(self, socket = None, message_data = {}, expect_reply = False, cmd_type = "TEST") :
+    def send_message(self, socket = None, message_data = {}, expect_reply = False, cmd_type = "TEST", wait = 1) :
 
         """
         Send data with the TCP socket \'socket\', assumed to already
@@ -32,11 +32,11 @@ class VTSCommunicator :
 
         reply = {}
         if not expect_reply :
-            _ = socket.waitForReadyRead(1)
+            _ = socket.waitForReadyRead(wait)
             _ = socket.readAll()
             return reply
 
-        if socket.waitForReadyRead(2) : #5000) :
+        if socket.waitForReadyRead(wait) : #5000) :
             reply = str(socket.readAll(), "utf-8")
             reply = json.loads(reply)
 

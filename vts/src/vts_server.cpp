@@ -1,6 +1,8 @@
 #include "vts_server.h"
+#include "communicator_frontend.h"
 #include "helpers.h"
 #include "vts_message.h"
+#include "vts_commands.h"
 
 #include <QCoreApplication>
 #include <QHostAddress>
@@ -169,99 +171,110 @@ void VTSServer::onReadyRead()
 
     try
     {
-        auto message = json::parse(data_string);
-        vts::VTSMessage incoming(message);
+        auto raw_message = json::parse(data_string);
+        vts::VTSMessage incoming(raw_message);
+        VTSReply reply;
 
         cout << "=================================" << endl;
-        cout << "Incoming Message: " << incoming.str() << endl;
-//        cout << "Incoming Message:" << endl;
-//        cout << "  - id             : " << incoming.id() << endl;
-//        cout << "  - type           : " << MessageTypeToStr(incoming.type()) << endl;
-//        cout << "  - expects reply? : " << incoming.expects_reply() << endl;
-//        cout << "  - message data   : " << incoming.message_data().dump() << endl;
+        cout << "VTS server :: Incoming Message: " << incoming.str() << endl;
         cout << "=================================" << endl;
 
-        /// catch server messages
+        /////////////////////////////////////////////////////////////
+        // handle incoming messages
+        /////////////////////////////////////////////////////////////
         if(incoming.type() == vts::VTSMessageType::SERVER)
         {
-            auto message_data = incoming.message_data();
-            // server type messages are single strings
-            string server_cmd = message_data.at("CMD");
-            if(server_cmd == "EXIT")
-            {
-                string msg = "received KILL command";
-                log->info("{0} - {1}", __VTFUNC__, msg);
-                this->stop();
-                return;
-            }
+            handle_server_command(incoming, reply);
         }
         else if(incoming.type() == vts::VTSMessageType::TEST)
         {
-
+            handle_test_command(incoming, reply);
+        }
+        else if(incoming.type() == vts::VTSMessageType::FRONTEND)
+        {
+            handle_frontend_command(incoming, reply);
+        }
+        else
+        {
+            stringstream msg;
+            msg << "Incoming message has unexpected message type: " << MessageTypeToStr(incoming.type()) << " (raw message: " << raw_message.dump() << ")";
+            log->warn("{0} - {1}",__VTFUNC__,msg.str());
         }
 
-
-        /// done
-        if(incoming.expects_reply())
+        /////////////////////////////////////////////////////////////
+        // send reply if one is requested and it has been filled
+        /////////////////////////////////////////////////////////////
+        if(incoming.expects_reply() && (reply.id()>=0))
         {
-            cout << "SERVER SENDING REPLY" << endl;
-            json response = {
-                {"CMD_ID", incoming.id()},
-                {"REPLY", true}
-            };
-            vts::VTSReply reply(incoming.id(), response);
-            cout << "---> " << reply.str() << endl;
-            QByteArray response_data;
-            response_data.append(reply.message().dump().c_str());
-            sender->write(response_data);
+            sender->write(reply.byte_array());
         }
 
     }
     catch(std::exception& e)
     {
         stringstream err;
-        err << "VTSServer failed to load command: " << e.what();
-        cout << "JSON PARSING ERROR: " << err.str() << endl;
+        err << "VTS server failed to load command: " << e.what();
+        log->error("{0} - {1}",__VTFUNC__,err.str());
     } // catch
+}
 
-    //std::string response_str = response.dump();
-    //cout << "BLAH " << response_str << endl;
-    //QByteArray response_data;
-    //response_data.append(response_str.c_str());
-    //sender->write(response_data);
+void VTSServer::handle_server_command(const vts::VTSMessage& message,
+                    vts::VTSReply& /*reply*/)
+{
+    log->info("{0} - {1}",__VTFUNC__,message.str());
 
-//    try
-//    {
-//        auto json_input = json::parse(data_string);
-//        for(auto& element : json_input)
-//        {
-//            cout << "ITERATE: " << element << endl;
-//        }
-//        std::string dumped = json_input.dump();
-//        cout << "json size = " << json_input.size() << endl;
-//        cout << "================ JSON DUMP BEGIN ===============" << endl;
-//        cout << dumped << endl;
-//        cout << "================  JSON DUMP END  ===============" << endl;
-//        auto vec = json_input["peaking_time"];
-//        cout << "peaking_time size = " << vec.size() << endl;
-//        cout << "peaking times:" << endl;
-//        for(auto pt : vec)
-//        {
-//            cout << "   peaking time: " << pt << endl;
-//        }
-//        auto channels = json_input["channels"];
-//        cout << "channels size = " << channels.size() << endl;
-//        for(json::iterator chit = channels.begin(); chit != channels.end(); ++chit)
-//        {
-//            cout << "   channels[" << chit.key() << "] = " << chit.value() << endl;
-//        }
-//    } // try
-//    catch(std::exception& e)
-//    {
-//        stringstream err;
-//        err << "VTSServer failed to load command: " << e.what();
-//        cout << "JSON PARSING ERROR: " << err.str() << endl;
-//    } // catch
+    auto msg_data = message.data();
+    string server_command = "";
+    try
+    {
+        server_command = msg_data.at("CMD");
+    }
+    catch(std::exception& e)
+    {
+        stringstream err;
+        err << "Failed to acquire server command at message ID=" << message.id();
+        err << ": " << e.what();
+        log->error("{0} - {1}",__VTFUNC__,err.str());
+        return;
+    }
+    if(server_command == "EXIT")
+    {
+        log->info("{0} - {1}",__VTFUNC__, "VTS received EXIT command");
+        stop();
+        return;
+    }
+}
+
+void VTSServer::handle_test_command(const vts::VTSMessage& message,
+                vts::VTSReply& reply)
+{
+    log->info("{0} - {1}",__VTFUNC__,message.str());
+    auto msg_data = message.data();
+    reply = vts::VTSReply(message.id(), msg_data);
+}
+
+void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
+                vts::VTSReply& reply)
+{
+    log->info("{0} - {1}",__VTFUNC__,message.str());
+    auto msg_data = message.data();
+
+    vts::CommunicatorFrontEnd comm(m_server_config.at("frontend"));
+    auto frontend_cmd = StrToCMDFrontEnd(msg_data.at("CMD"));
+    if(frontend_cmd == CMDFrontEnd::PINGFPGA)
+    {
+        bool status = comm.ping_fpga();
+        stringstream status_str;
+        status_str << "Ping status? " << (status ? "GOOD" : "BAD");
+        log->info("{0} - {1}",__VTFUNC__,status_str.str());
+
+        status_str.str("");
+        status_str << (status ? "OK" : "ERROR");
+        json jreply = {
+            {"STATUS", status_str.str() }
+        };
+        reply = vts::VTSReply(message.id(), jreply);
+    }
 }
 
 
