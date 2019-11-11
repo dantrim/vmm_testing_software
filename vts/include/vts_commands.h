@@ -16,8 +16,11 @@ namespace vts
         ,POWEROFF
         ,PINGFPGA
         ,CONFIGUREFPGA
+        ,CONFIGUREVMM
         ,ACQON
         ,ACQOFF
+        ,RESETVMM
+        ,RESETFPGA
         ,CMDFrontEndInvalid
         ,NCMDFrontEnd
     };

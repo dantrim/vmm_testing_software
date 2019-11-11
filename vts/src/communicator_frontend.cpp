@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 // logging
@@ -86,6 +87,34 @@ bool CommunicatorFrontEnd::acq_toggle(bool turn_on)
     {
         log->info("{0} - {1}",__VTFUNC__,"(NOT IMPLEMENTED) Turning ACQ OFF");
     }
+    return true;
+}
+
+bool CommunicatorFrontEnd::reset_fpga()
+{
+    log->info("{0} - {1}",__VTFUNC__,"(NOT IMPLEMENTED) Resetting FPGA");
+    return true;
+}
+
+bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename)
+{
+    if(spi_filename == "")
+        return false;
+
+    json spi_json;
+    try
+    {
+        std::ifstream ifs(spi_filename);
+        spi_json = json::parse(ifs);
+    }
+    catch(std::exception& e)
+    {
+        stringstream err;
+        err << "Could not load VMM SPI json file: " << e.what();
+        log->error("{0} - {1}",__VTFUNC__,err.str());
+        return false;
+    }
+
     return true;
 }
 

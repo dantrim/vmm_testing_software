@@ -275,6 +275,10 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
         };
         reply = vts::VTSReply(message.id(), jreply);
     }
+    else if(frontend_cmd == CMDFrontEnd::RESETFPGA)
+    {
+        comm.reset_fpga();
+    }
 }
 
 

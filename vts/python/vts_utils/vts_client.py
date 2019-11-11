@@ -207,3 +207,9 @@ class VTSClient(QtCore.QObject) :
 
     def acq_off(self) :
         self.frontend_cmd(cmd = "ACQOFF")
+
+    def configure_vmm(self) :
+        self.frontend_cmd(cmd = "CONFIGUREVMM")
+
+    def reset_vmm(self) :
+        self.frontend_cmd(cmd = "RESETVMM")

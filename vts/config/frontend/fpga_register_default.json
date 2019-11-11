@@ -1,0 +1,23 @@
+{
+    "fpga_registers" :
+    {
+        "trigger" :
+        {
+            "latency" : "40",
+            "latency_extra_ckbc" : "88",
+            "dead_time" : "65535",
+            "num_ckbc" : "6",
+            "art_timeout" : "24",
+            "run_mode" : "pulser"
+        },
+        "clocks" :
+        {
+            "cktk_max" : "7",
+            "ckbc" : "40",
+            "cktp_max" : "-1",
+            "cktp_skew" : "0",
+            "cktp_period" : "50000",
+            "cktp_width" : "8"
+        }
+    }
+}

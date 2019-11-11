@@ -23,8 +23,11 @@ namespace vts
 
             bool power_board_toggle(bool turn_on);
             bool ping_fpga();
+            bool reset_fpga();
             bool configure_fpga();
             bool acq_toggle(bool turn_on);
+            bool reset_vmm();
+            bool configure_vmm(std::string vmm_spi_file = "");
 
         private :
             std::shared_ptr<spdlog::logger> log;

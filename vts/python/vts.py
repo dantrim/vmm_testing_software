@@ -79,6 +79,8 @@ class VTSWindow(QtWidgets.QDialog) :
         self.acq_on_button = QtWidgets.QPushButton("ACQ On")
         self.acq_off_button = QtWidgets.QPushButton("ACQ Off")
 
+        self.send_spi_button = QtWidgets.QPushButton("Send SPI")
+        self.vmm_reset_button = QtWidgets.QPushButton("Reset VMM")
 
         buttons_frontend = QtWidgets.QDialogButtonBox()
         buttons_frontend.addButton(self.board_power_on_button, QtWidgets.QDialogButtonBox.ActionRole)
@@ -87,6 +89,8 @@ class VTSWindow(QtWidgets.QDialog) :
         buttons_frontend.addButton(self.configure_fpga_button, QtWidgets.QDialogButtonBox.ActionRole)
         buttons_frontend.addButton(self.acq_on_button, QtWidgets.QDialogButtonBox.ActionRole)
         buttons_frontend.addButton(self.acq_off_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.send_spi_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_frontend.addButton(self.vmm_reset_button, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.board_power_on_button.clicked.connect(self.vts_client.board_on)
         self.board_power_off_button.clicked.connect(self.vts_client.board_off)
@@ -94,6 +98,8 @@ class VTSWindow(QtWidgets.QDialog) :
         self.configure_fpga_button.clicked.connect(self.vts_client.configure_fpga)
         self.acq_on_button.clicked.connect(self.vts_client.acq_on)
         self.acq_off_button.clicked.connect(self.vts_client.acq_off)
+        self.send_spi_button.clicked.connect(self.vts_client.configure_vmm)
+        self.vmm_reset_button.clicked.connect(self.vts_client.reset_vmm)
 
         ##
         ## layout
