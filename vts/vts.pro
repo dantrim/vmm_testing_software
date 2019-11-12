@@ -33,7 +33,8 @@ SOURCES += \
         src/vts_server.cpp \
         src/vts_commands.cpp \
         src/communicator_frontend.cpp \
-        src/spi_builder.cpp
+        src/spi_builder.cpp \
+        src/frontend_address.cpp
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
@@ -41,6 +42,7 @@ HEADERS += \
         include/vts_commands.h \
         include/communicator_frontend.h \
         include/spi_builder.h \
+        include/frontend_address.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h

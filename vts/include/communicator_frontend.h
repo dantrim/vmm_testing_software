@@ -30,15 +30,17 @@ namespace vts
             bool power_board_toggle(bool turn_on);
             bool ping_fpga();
             bool reset_fpga();
-            bool configure_fpga();
+            bool configure_fpga(std::string fpga_file = "");
             bool acq_toggle(bool turn_on);
             bool reset_vmm();
             bool configure_vmm(std::string vmm_spi_file = "", bool perform_reset = false);
+            void write(const QByteArray& data, int port);
 
         private :
             std::shared_ptr<spdlog::logger> log;
             std::string m_board_ip;
             int m_spi_recv_port;
+            int m_fpga_recv_port;
     }; // class CommunicatorFrontEnd
 } // namespace vts
 

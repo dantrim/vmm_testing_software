@@ -5,19 +5,19 @@
         {
             "latency" : "40",
             "latency_extra_ckbc" : "88",
-            "dead_time" : "65535",
-            "num_ckbc" : "6",
+            "trigger_dead_time" : "65535",
+            "ckbc_max_number" : "6",
             "art_timeout" : "24",
             "run_mode" : "pulser"
         },
         "clocks" :
         {
-            "cktk_max" : "7",
+            "cktk_max_number" : "7",
             "ckbc" : "40",
-            "cktp_max" : "-1",
+            "cktp_max_number" : "-1",
             "cktp_skew" : "0",
             "cktp_period" : "50000",
-            "cktp_width" : "8"
+            "cktp_width" : "2"
         }
     }
 }

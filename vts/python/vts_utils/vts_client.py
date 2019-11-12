@@ -176,7 +176,7 @@ class VTSClient(QtCore.QObject) :
         )
         print("reply? {}".format(reply))
 
-    def frontend_cmd(self, cmd = "") :
+    def frontend_cmd(self, cmd = "", expect_reply = True, wait = 5000) :
 
         self.reset_socket()
         data = {
@@ -186,7 +186,7 @@ class VTSClient(QtCore.QObject) :
                     message_data = data,
                     expect_reply = True,
                     cmd_type = "FRONTEND",
-                    wait = 5000
+                    wait = wait
         )
         print("reply? {}".format(reply))
 

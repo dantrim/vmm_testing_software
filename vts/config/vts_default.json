@@ -16,7 +16,9 @@
         "frontend" :
         {
             "board_ip" : "192.168.0.2",
-            "spi_port" : "6008"
+            "spi_port" : "6008",
+            "fpga_port" : "6600",
+            "xadc_port" : "6608"
         },
         "testing" :
         {

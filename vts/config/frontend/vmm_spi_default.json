@@ -3,8 +3,8 @@
     {
         "global_registers" :
         {
-            "sdp_dac" : "100",
-            "sdt_dac" : "300",
+            "sdp_dac" : "400",
+            "sdt_dac" : "200",
             "st" : "200",
             "sm5" : "0",
             "scmx" : "ENABLED",
@@ -13,7 +13,7 @@
             "sp" : "NEGATIVE",
             "sng" : "DISABLED",
             "sdrv" : "DISABLED",
-            "sg" : "16.0",
+            "sg" : "1.0",
             "stc" : "60",
             "sfm" : "ENABLED",
             "ssh" : "DISABLED",

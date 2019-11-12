@@ -292,6 +292,52 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
         };
         reply = vts::VTSReply(message.id(), jreply);
     }
+    else if(frontend_cmd == CMDFrontEnd::CONFIGUREFPGA)
+    {
+        log->critical("{0} - {1}",__VTFUNC__,"HARDCODING DEFAULT FPGA JSON FILE");
+        std::string fpga_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/fpga_register_default.json";
+        bool status = comm->configure_fpga(fpga_file);
+
+        stringstream status_str;
+        status_str << (status ? "OK" : "ERROR");
+        json jreply = {
+            {"STATUS", status_str.str() }
+        };
+        reply = vts::VTSReply(message.id(), jreply);
+    }
+    else if(frontend_cmd == CMDFrontEnd::RESETFPGA)
+    {
+        bool status = comm->reset_fpga();
+        stringstream status_str;
+        status_str << (status ? "OK" : "ERROR");
+        json jreply = {
+            {"STATUS", status_str.str() }
+        };
+        reply = vts::VTSReply(message.id(), jreply);
+    }
+    else if(frontend_cmd == CMDFrontEnd::ACQON)
+    {
+        cout << "RECEIVED ACQON" << endl;
+        bool status = comm->acq_toggle(1);
+        stringstream status_str;
+        status_str << (status ? "OK" : "ERROR");
+        json jreply = {
+            {"STATUS", status_str.str() }
+        };
+        reply = vts::VTSReply(message.id(), jreply);
+    }
+    else if(frontend_cmd == CMDFrontEnd::ACQOFF)
+    {
+        cout << "RECEIVED ACQOFF" << endl;
+        bool status = comm->acq_toggle(0);
+        stringstream status_str;
+        status_str << (status ? "OK" : "ERROR");
+        json jreply = {
+            {"STATUS", status_str.str() }
+        };
+        reply = vts::VTSReply(message.id(), jreply);
+    }
+
     delete comm;
 }
 
