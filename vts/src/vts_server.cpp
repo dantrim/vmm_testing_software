@@ -259,11 +259,12 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
     log->info("{0} - {1}",__VTFUNC__,message.str());
     auto msg_data = message.data();
 
-    vts::CommunicatorFrontEnd comm(m_server_config.at("frontend"));
+    vts::CommunicatorFrontEnd* comm = new vts::CommunicatorFrontEnd();//m_server_config.at("frontend"));
+    comm->load_config(m_server_config.at("frontend"));
     auto frontend_cmd = StrToCMDFrontEnd(msg_data.at("CMD"));
     if(frontend_cmd == CMDFrontEnd::PINGFPGA)
     {
-        bool status = comm.ping_fpga();
+        bool status = comm->ping_fpga();
         stringstream status_str;
         status_str << "Ping status? " << (status ? "GOOD" : "BAD");
         log->info("{0} - {1}",__VTFUNC__,status_str.str());
@@ -275,10 +276,23 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
         };
         reply = vts::VTSReply(message.id(), jreply);
     }
-    else if(frontend_cmd == CMDFrontEnd::RESETFPGA)
+    else if(frontend_cmd == CMDFrontEnd::CONFIGUREVMM || frontend_cmd == CMDFrontEnd::RESETVMM)
     {
-        comm.reset_fpga();
+        log->critical("{0} - {1}",__VTFUNC__,"HARDCODING DEFAULT VMM SPI JSON FILE");
+        std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_default.json";
+
+        bool perform_reset = (frontend_cmd == CMDFrontEnd::RESETVMM);
+
+        bool status = comm->configure_vmm(vmm_file, perform_reset);
+
+        stringstream status_str;
+        status_str << (status ? "OK" : "ERROR");
+        json jreply = {
+            {"STATUS",status_str.str()}
+        };
+        reply = vts::VTSReply(message.id(), jreply);
     }
+    delete comm;
 }
 
 
