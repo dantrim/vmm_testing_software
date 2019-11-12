@@ -34,6 +34,9 @@ namespace vts
             bool acq_toggle(bool turn_on);
             bool reset_vmm();
             bool configure_vmm(std::string vmm_spi_file = "", bool perform_reset = false);
+            void construct_spi(QDataStream& stream,
+                            const std::vector<std::string>& global,
+                            const std::vector<std::string>& channel);
             void write(const QByteArray& data, int port);
 
         private :

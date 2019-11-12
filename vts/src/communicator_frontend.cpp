@@ -306,6 +306,20 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
     QDataStream out(&datagram, QIODevice::WriteOnly);
     out.device()->seek(0);
 
+    construct_spi(out, global_vec, channel_vec);
+
+    // prepare the socket and write
+    write(datagram, m_spi_recv_port);
+
+    return true;
+
+}
+
+void CommunicatorFrontEnd::construct_spi(QDataStream& stream,
+            const std::vector<string>& global_vec,
+            const std::vector<string>& channel_vec)
+{
+
     bool ok;
 
     // header information hard coded by firmware, it has no meaning
@@ -313,15 +327,15 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
     QString h1 = "ffbb";
     QString h2 = "aadd";
     QString h3 = "bb00";
-    out << (quint16)h1.toUInt(&ok,16)
+    stream << (quint16)h1.toUInt(&ok,16)
         << (quint16)h2.toUInt(&ok,16)
         << (quint16)vmm_mask
         << (quint16)h3.toUInt(&ok,16);
 
     // write global (first block)
-    out << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(5))).toUInt(&ok,2));
-    out << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(4))).toUInt(&ok,2));
-    out << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(3))).toUInt(&ok,2));
+    stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(5))).toUInt(&ok,2));
+    stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(4))).toUInt(&ok,2));
+    stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(3))).toUInt(&ok,2));
 
     // write channels
     for(int i = 63; i >=0; i--)
@@ -329,19 +343,15 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
         QString first8bits = QString::fromStdString(channel_vec.at(i)).mid(8,8);
         QString second16bits = QString::fromStdString(channel_vec.at(i)).mid(16,16);
 
-        out << (quint8)(first8bits).toUInt(&ok,2);
-        out << (quint16)(second16bits).toUInt(&ok,2);
+        stream << (quint8)(first8bits).toUInt(&ok,2);
+        stream << (quint16)(second16bits).toUInt(&ok,2);
     } // i
 
     // write global (second block)
-    out << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(2))).toUInt(&ok,2));
-    out << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(1))).toUInt(&ok,2));
-    out << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(0))).toUInt(&ok,2));
+    stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(2))).toUInt(&ok,2));
+    stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(1))).toUInt(&ok,2));
+    stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(0))).toUInt(&ok,2));
 
-    // prepare the socket and write
-    write(datagram, m_spi_recv_port);
-
-    return true;
 }
 
 } // namespace vts
