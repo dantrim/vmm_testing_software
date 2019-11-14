@@ -1,5 +1,5 @@
 {
-    "test" : "PassThrough",
+    "test_type" : "PassThrough",
     "test_data" :
     {
         "output_dir" : "./"

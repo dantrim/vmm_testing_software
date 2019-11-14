@@ -1,11 +1,15 @@
 #ifndef VTS_TEST_HANDLER_H
 #define VTS_TEST_HANDLER_H
 
+//vts
+#include "vts_test.h"
+
 //std/stl
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
+#include <thread>
 
 // json
 #include "nlohmann/json.hpp"
@@ -21,8 +25,10 @@ namespace spdlog {
 
 namespace vts
 {
-    class VTSTestHandler : QObject
+    class VTSTestHandler : public QObject
     {
+        Q_OBJECT
+
         public :
             explicit VTSTestHandler(QObject* parent = 0);
             ~VTSTestHandler();
@@ -40,6 +46,11 @@ namespace vts
             std::shared_ptr<spdlog::logger> log;
             std::vector<std::string> m_test_configs;
             std::map<std::string, std::string> m_test_config_map;
+            std::shared_ptr<vts::VTSTest> m_test;
+            std::thread m_test_thread;
+
+        public slots :
+            void update_state(QString);
             
     }; // class VTSTestHandler
 

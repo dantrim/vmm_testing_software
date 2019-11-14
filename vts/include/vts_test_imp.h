@@ -22,9 +22,13 @@ class VTSTestImp : public QObject
 
     public :
         virtual bool initialize(const json& config) = 0;
+        virtual bool start() = 0;
 
     protected :
         std::shared_ptr<spdlog::logger> log;
+
+    signals :
+        void finished();
 
 }; // class VTSTestImp
 

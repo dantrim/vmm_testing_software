@@ -39,6 +39,7 @@ SOURCES += \
         src/vts_result.cpp \
         src/vts_test_types.cpp \
         src/vts_test_handler.cpp \
+        src/vts_test_states.cpp \
         # tests
         src/vts_test.cpp
 HEADERS += \
@@ -55,6 +56,7 @@ HEADERS += \
         include/vts_test.h \
         include/vts_test_imp.h \
         include/vts_test_handler.h \
+        include/vts_test_states.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h

@@ -253,7 +253,6 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
     auto msg_data = message.data();
     reply = vts::VTSReply(message.id(), msg_data);
 
-    cout << "FOOBS: " << msg_data.dump() << endl;
     auto test_cmd = StrToCMDVMMTest(msg_data.at("CMD"));
     auto test_data = msg_data.at("TEST_DATA");
 
@@ -285,6 +284,12 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
 
         if(ok)
         {
+// 221     std::future<int> user_process = std::async( std::launch::async,
+// 222                 &ddaq::ConfigurationSvc::user_send_command, m_config_svcs.at(0), commands);
+            // std::future<int> test_status = std::async(
+            //    std::launch::async,
+            //    &vts::VTSTestHandler::start, m_test_handler.get()
+            //);
             m_test_handler->start();
         }
     }

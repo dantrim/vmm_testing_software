@@ -15,6 +15,7 @@ class VTSTestPassThrough : public VTSTestImp
         explicit VTSTestPassThrough();
         ~VTSTestPassThrough();
         bool initialize(const json& config);
+        bool start();
 
     private :
 

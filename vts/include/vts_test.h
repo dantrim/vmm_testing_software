@@ -3,11 +3,13 @@
 
 // std/stl
 #include <memory>
+#include <map>
 
 // vts
 namespace vts {
     class VTSTestImp;
 }
+#include "vts_test_states.h"
 
 // Qt
 #include <QObject>
@@ -24,7 +26,7 @@ namespace spdlog {
 namespace vts
 {
 
-class VTSTest : QObject
+class VTSTest : public QObject
 {
     Q_OBJECT
 
@@ -35,10 +37,31 @@ class VTSTest : QObject
         bool initialize(const json& test_config);
 
         void start();
+        void stop();
+
 
     private :
         std::shared_ptr<spdlog::logger> log;
         std::shared_ptr<vts::VTSTestImp> m_imp;
+        void initialize_fsm();
+        vts::VTSTestState current_state();
+        void update_fsm(vts::VTSTestState s);
+        vts::VTSTestState m_fsm_state;
+        void broadcast_state();
+        std::string current_state_name();
+
+    signals :
+        void broadcast_state_signal(QString);
+        void test_completed();
+        void test_ready();
+        void begin_test();
+        void revert();
+        void test_done();
+
+    public slots :
+        void state_updated_slot();
+        void test_finished_slot();
+        
 
 }; // class VTSTest
 
