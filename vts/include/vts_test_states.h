@@ -11,14 +11,18 @@ namespace vts
     ///////////////////////////////////////////////////////////
     enum VTSTestState
     {
-        INITIAL=0
+        NONE=0
+        ,INITIALIZING
+        ,INITIAL
         ,LOADING
         ,READY
         ,CONFIGURED
         ,RUNNING
         ,ANALYZING
         ,ANALYZINGTEST
+        ,FINALIZING
         ,FINISHED
+        ,TESTCOMPLETE
         ,TESTSTATEINVALID
     };
     std::string VTSTestStateToStr(const VTSTestState& s);

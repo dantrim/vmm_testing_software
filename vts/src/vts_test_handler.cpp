@@ -104,19 +104,104 @@ void VTSTestHandler::start()
         }
         m_test = std::make_shared<vts::VTSTest>();
         connect(m_test.get(), SIGNAL(broadcast_state_signal(QString)),
-                            this, SLOT(update_state(QString)));
-        bool status = m_test->initialize(jtest);
-        if(status)
+                            this, SLOT(update_state(QString)), Qt::DirectConnection);
+
+        /////////////////////////////////////////////////////////////////
+        // INITIALIZE
+        /////////////////////////////////////////////////////////////////
+        bool initialize_ok = m_test->initialize(jtest);
+        initialize_ok &= (m_test->current_state() == vts::VTSTestState::INITIAL);
+        if(!initialize_ok)
         {
-            //stringstream msg;
-            //msg << "STARTING FROM MAIN THREAD: 0x" << std::hex << std::this_thread::get_id() << std::dec;
-            //log->critical("{0} - {1}",__VTFUNC__,msg.str());
-            // start the process
-            m_test_thread = std::thread(&vts::VTSTest::start, m_test.get()); // [this] () {
-        
-//        m_thread = std::thread( [m_test.get()] () { } 
-//            m_test->start();
+            // at this point, nothing in the test has started, so we can just exit
+            return;
         }
+
+        bool status = true;
+        stringstream msg;
+        msg << "====================================";
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        msg.str("");
+        msg << "STARTING TEST LOOP";
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        msg.str("");
+        msg << "====================================";
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        msg.str("");
+        while((m_test->current_state() != vts::VTSTestState::FINISHED) && status)
+        {
+            try
+            {
+                ////////////////////////////////////////////////////////
+                // LOAD
+                ////////////////////////////////////////////////////////
+                status = m_test->load();
+
+                ////////////////////////////////////////////////////////
+                // CONFIGURE
+                ////////////////////////////////////////////////////////
+                status = m_test->configure();
+
+                ////////////////////////////////////////////////////////
+                // RUN/COLLECT DATA
+                ////////////////////////////////////////////////////////
+                status = m_test->run();
+
+                ////////////////////////////////////////////////////////
+                // ANALYZE THIS STEPS DATA
+                ////////////////////////////////////////////////////////
+                status = m_test->analyze();
+
+                ////////////////////////////////////////////////////////
+                // IF WE ARE AT THE END FINISH THE TEST LOOP
+                ////////////////////////////////////////////////////////
+                if(m_test->current_step() == m_test->n_steps())
+                {
+                    status = m_test->finalize();
+                }
+
+            } // try
+            catch(std::exception& e)
+            {
+                status = false;
+                msg.str("");
+                msg << "Error during test: " << e.what();
+                log->error("{0} - {1}",__VTFUNC__,msg.str());
+            } // catch
+        } // while
+
+        /////////////////////////////////////////////////////////////////
+        // ANALYZE COMPLETE TEST RESULTS AND DATA
+        /////////////////////////////////////////////////////////////////
+        bool analyze_status = m_test->analyze_test();
+
+       // /////////////////////////////////////////////////////////////////
+       // // FINALIZE
+       // /////////////////////////////////////////////////////////////////
+       // bool finalize_status = m_test->finalize();
+
+        msg.str();
+        msg << "====================================";
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        msg.str("");
+        msg << "TEST LOOP COMPLETE";
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        msg.str("");
+        msg << "====================================";
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        
+
+//        if(status)
+//        {
+//            //stringstream msg;
+//            //msg << "STARTING FROM MAIN THREAD: 0x" << std::hex << std::this_thread::get_id() << std::dec;
+//            //log->critical("{0} - {1}",__VTFUNC__,msg.str());
+//            // start the process
+////            m_test_thread = std::thread(&vts::VTSTest::start, m_test.get()); // [this] () {
+//        
+////        m_thread = std::thread( [m_test.get()] () { } 
+////            m_test->start();
+//        }
     }
 }
 

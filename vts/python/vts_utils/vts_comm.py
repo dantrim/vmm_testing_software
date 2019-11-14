@@ -32,7 +32,7 @@ class VTSCommunicator :
 
         reply = {}
         if not expect_reply :
-            _ = socket.waitForReadyRead(wait)
+            #_ = socket.waitForReadyRead(wait)
             _ = socket.readAll()
             return reply
 

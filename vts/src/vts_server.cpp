@@ -15,6 +15,7 @@
 #include <QJsonObject>
 #include <QLatin1String>
 #include <string>
+#include <future>
 using namespace std;
 
 #include "nlohmann/json.hpp"
@@ -290,7 +291,12 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
             //    std::launch::async,
             //    &vts::VTSTestHandler::start, m_test_handler.get()
             //);
-            m_test_handler->start();
+            std::future<void> test_result = std::async(
+                std::launch::async,
+                &vts::VTSTestHandler::start,
+                m_test_handler.get()
+            );
+            //m_test_handler->start();
         }
     }
     else if(test_cmd == CMDVMMTest::STOP)

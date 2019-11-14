@@ -235,7 +235,7 @@ class VTSClient(QtCore.QObject) :
         self.test_cmd(cmd = "LOAD", test_data = test_files)
 
     def start_test(self) :
-        self.test_cmd(cmd = "START")
+        self.test_cmd(cmd = "START", expect_reply = False)
 
     def stop_test(self) :
         self.test_cmd(cmd = "STOP")

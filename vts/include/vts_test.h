@@ -35,20 +35,29 @@ class VTSTest : public QObject
         ~VTSTest();
 
         bool initialize(const json& test_config);
-
-        void start();
+        bool load();
+        bool configure();
+        bool run();
+        bool analyze();
+        bool analyze_test();
+        bool finalize();
+        //void start();
         void stop();
+
+        int current_step();
+        int n_steps();
+        vts::VTSTestState current_state();
 
 
     private :
         std::shared_ptr<spdlog::logger> log;
         std::shared_ptr<vts::VTSTestImp> m_imp;
         void initialize_fsm();
-        vts::VTSTestState current_state();
         void update_fsm(vts::VTSTestState s);
         vts::VTSTestState m_fsm_state;
         void broadcast_state();
         std::string current_state_name();
+        std::string transition_string(vts::VTSTestState current, vts::VTSTestState next);
 
     signals :
         void broadcast_state_signal(QString);
