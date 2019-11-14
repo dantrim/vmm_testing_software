@@ -22,10 +22,22 @@ namespace vts
         ,RESETVMM
         ,RESETFPGA
         ,CMDFrontEndInvalid
-        ,NCMDFrontEnd
     };
     std::string CMDFrontEndToStr(const CMDFrontEnd& cmd);
     CMDFrontEnd StrToCMDFrontEnd(const std::string& cmd);
+
+    ///////////////////////////////////////////////////////////
+    // TESTS
+    ///////////////////////////////////////////////////////////
+    enum CMDVMMTest
+    {
+        LOAD=0
+        ,START
+        ,STOP
+        ,CMDVMMTESTINVALID
+    };
+    std::string CMDVMMTestToStr(const CMDVMMTest& cmd);
+    CMDVMMTest StrToCMDVMMTest(const std::string& cmd);
 
 } // namespace vts
 

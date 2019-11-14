@@ -3,6 +3,7 @@
 #include "communicator_frontend.h"
 #include "spi_builder.h"
 #include "frontend_address.h"
+#include "frontend_struct.h"
 
 //std/stl
 #include <iostream>
@@ -31,6 +32,7 @@ CommunicatorFrontEnd::CommunicatorFrontEnd(QObject* parent) :
     m_spi_recv_port(0),
     m_fpga_recv_port(0)
 {
+    log = spdlog::get("vts_logger");
 }
 
 CommunicatorFrontEnd::~CommunicatorFrontEnd()
@@ -68,13 +70,9 @@ bool CommunicatorFrontEnd::power_board_toggle(bool turn_on)
 
 bool CommunicatorFrontEnd::ping_fpga()
 {
-    stringstream msg;
-    msg << "Pinging FPGA at IP: " << m_board_ip;
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
-
-    msg.str("");
-    msg << "ping " << m_board_ip << " -c 1 -W 1 > /dev/null";
-    int status_code = system(msg.str().c_str());
+    stringstream cmd;
+    cmd << "ping " << m_board_ip << " -c 1 -W 10 > /dev/null";
+    int status_code = system(cmd.str().c_str());
     if(status_code != 0)
         return false;
     return true;
@@ -298,6 +296,29 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
         );
     vector<string> channel_vec =
         vts::spi::spi_channel_register_vec(vmm_top_lvl.at("channel_registers"));
+
+//    vector<vts::vmm::Channel> channels;
+//    for(int i = 0; i < 64; i++)
+//    {
+//        int tr = (i>31) ? 31 : i;
+//        json jch =
+//        {
+//            {"id",i},
+//            {"sc",false},
+//            {"sl",false},
+//            {"sth",false},
+//            {"st",true},
+//            {"sm",false},
+//            {"smx",false},
+//            {"sd",tr}
+//        };
+//        vmm::Channel ch;
+//        ch.load(jch);
+//        channels.push_back(ch);
+//    }
+//    auto chvec = channel_vec_to_json_config(channels);
+//    auto reg = chvec.at("channel_registers");
+//    auto xtry = vts::spi::spi_channel_register_vec(reg);
 
     //
     // build the datagram to send

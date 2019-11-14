@@ -20,7 +20,7 @@ namespace vts
     {
         std::vector<std::string> spi_string_vec(json vmm_spi);
         std::vector<std::string> spi_global_register_vec(json global_reg, bool reset = false);
-        std::vector<std::string> spi_channel_register_vec(json channel_reg);
+        std::vector<std::string> spi_channel_register_vec(const json& channel_reg);
         int ena_dis(std::string val, bool inverted = false);
         int pos_neg(std::string val, bool inverted = false);
         QString reverseString(QString string);

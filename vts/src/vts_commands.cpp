@@ -22,7 +22,6 @@ string CMDFrontEndToStr(const CMDFrontEnd& cmd)
         case CMDFrontEnd::RESETVMM : { out = "RESETVMM"; break; }
         case CMDFrontEnd::RESETFPGA : { out = "RESETFPGA"; break; }
         case CMDFrontEnd::CMDFrontEndInvalid : { out = "CMDFrontEndInvalid"; break; }
-        case CMDFrontEnd::NCMDFrontEnd : { out = "NCMDFrontEnd"; break; }
     }
     return out;
 }
@@ -42,6 +41,28 @@ CMDFrontEnd StrToCMDFrontEnd(const string& cmd)
     return out;
 }
 
+string CMDVMMTestToStr(const CMDVMMTest& cmd)
+{
+    string out = "CMDVMMTESTINVALID";
+    switch(cmd)
+    {
+        case CMDVMMTest::LOAD : { out = "LOAD"; break; }
+        case CMDVMMTest::START : { out = "START"; break; }
+        case CMDVMMTest::STOP : { out = "STOP"; break; }
+        case CMDVMMTest::CMDVMMTESTINVALID : { out = "CMDVMMTESTINVALID"; break; }
+    } // switch
+    return out;
+}
+
+CMDVMMTest StrToCMDVMMTest(const string& cmd)
+{
+    CMDVMMTest out = CMDVMMTest::CMDVMMTESTINVALID;
+    if(cmd == "LOAD") { out = CMDVMMTest::LOAD; }
+    else if(cmd == "START") { out = CMDVMMTest::START; }
+    else if(cmd == "STOP") { out = CMDVMMTest::START; }
+    else { out = CMDVMMTest::CMDVMMTESTINVALID; }
+    return out;
+}
 
 
 } // namespace vts

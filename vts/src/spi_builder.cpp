@@ -3,6 +3,7 @@
 
 //std/stl
 #include <iostream>
+#include <sstream>
 using namespace std;
 
 namespace vts
@@ -425,13 +426,14 @@ vector<string> spi_global_register_vec(json jreg, bool reset)
     return out;
 }
 
-vector<string> spi_channel_register_vec(json jreg)
+vector<string> spi_channel_register_vec(const json& jreg)
 {
     int pos = 0;
     QString tmp;
     QString reg;
     QString bit32_empty = "00000000000000000000000000000000";
 
+    cout << "BLOO: " << jreg.dump() << endl;
     
 
     bool ok;
@@ -441,6 +443,50 @@ vector<string> spi_channel_register_vec(json jreg)
     uint64_t st  = QString::fromStdString(jreg.at("st").get<std::string>()).toULong(&ok,0);
     uint64_t sm  = QString::fromStdString(jreg.at("sm").get<std::string>()).toULong(&ok,0);
     uint64_t smx = QString::fromStdString(jreg.at("smx").get<std::string>()).toULong(&ok,0);
+
+    std::map<int,int> trim_map;
+    for(size_t i = 0; i < 64; i++) trim_map[i] = 0;
+    // channel registers
+    if(jreg.find("channel_trims") != jreg.end())
+    {
+        bool all_ok = true;
+        json jtrims = jreg.at("channel_trims");
+        size_t n_trims = jtrims.size();
+        if(n_trims!=64)
+        {
+            cout << "TRIMS NOT CORRECT SIZE" << endl;
+            all_ok = false;
+        }
+        else
+        {
+            stringstream key;
+            for(size_t i = 0; i < 64; i++)
+            {
+                key.str("");
+                key << "channel_";
+                if(i<10) key << "0";
+                key << i;
+                if(jtrims.find(key.str()) == jtrims.end())
+                {
+                    all_ok = false;
+                    cout << "FAILED TO FIND TRIM VALUE FOR AT KEY: " << key.str() << endl; 
+                }
+                else
+                {
+                    int ch_trim = jtrims.at(key.str()).get<int>();
+                    if(ch_trim<0 || ch_trim>=32)
+                    {
+                        all_ok = false;
+                        cout << "INVALID TRIM VALUE FOR KEY: " << key.str() << endl;
+                        continue;
+                    }
+                    trim_map[i] = ch_trim;
+                }
+            } // i
+        }
+        if(!all_ok)
+            for(size_t i = 0; i < 64; i++) trim_map[i] = 0;
+    } // channel trims
 
     // hardcode for testing
     cout << "WARNING HARDCODING NON-BOOL CHANNEL BITS" << endl;
@@ -476,7 +522,7 @@ vector<string> spi_channel_register_vec(json jreg)
         pos++;
 
         // sd (trim)
-        tmp = QString("%1").arg(0,5,2,QChar('0'));
+        tmp = QString("%1").arg(trim_map.at(i),5,2,QChar('0'));
         tmp = reverseString(tmp);
         reg.replace(pos,tmp.size(),tmp);
         pos+=tmp.size();
