@@ -59,7 +59,7 @@ CMDVMMTest StrToCMDVMMTest(const string& cmd)
     CMDVMMTest out = CMDVMMTest::CMDVMMTESTINVALID;
     if(cmd == "LOAD") { out = CMDVMMTest::LOAD; }
     else if(cmd == "START") { out = CMDVMMTest::START; }
-    else if(cmd == "STOP") { out = CMDVMMTest::START; }
+    else if(cmd == "STOP") { out = CMDVMMTest::STOP; }
     else { out = CMDVMMTest::CMDVMMTESTINVALID; }
     return out;
 }

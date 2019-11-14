@@ -35,7 +35,12 @@ SOURCES += \
         src/communicator_frontend.cpp \
         src/spi_builder.cpp \
         src/frontend_address.cpp \
-        src/frontend_struct.cpp
+        src/frontend_struct.cpp \
+        src/vts_result.cpp \
+        src/vts_test_types.cpp \
+        src/vts_test_handler.cpp \
+        # tests
+        src/vts_test.cpp
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
@@ -45,9 +50,21 @@ HEADERS += \
         include/spi_builder.h \
         include/frontend_address.h \
         include/frontend_struct.h \
+        include/vts_result.h \
+        include/vts_test_types.h \
+        include/vts_test.h \
+        include/vts_test_imp.h \
+        include/vts_test_handler.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h
+
+testsources = $$files(src/tests/*.cpp)
+testheaders = $$files(include/tests/*.h)
+SOURCES += $$testsources
+HEADERS += $$testheaders
+message($$testsources)
+message($$testheaders)
 
 TARGET = vts_server
 

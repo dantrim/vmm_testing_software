@@ -102,12 +102,29 @@ class VTSWindow(QtWidgets.QDialog) :
         self.vmm_reset_button.clicked.connect(self.vts_client.reset_vmm)
 
         ##
+        ## test buttons
+        ##
+        self.load_test_button = QtWidgets.QPushButton("Load Test")
+        self.start_test_button = QtWidgets.QPushButton("Start Test")
+        self.stop_test_button = QtWidgets.QPushButton("Stop Test")
+        buttons_test = QtWidgets.QDialogButtonBox()
+        buttons_test.addButton(self.load_test_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_test.addButton(self.start_test_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_test.addButton(self.stop_test_button, QtWidgets.QDialogButtonBox.ActionRole)
+
+        self.load_test_button.clicked.connect(self.vts_client.load_test)
+        self.start_test_button.clicked.connect(self.vts_client.start_test)
+        self.stop_test_button.clicked.connect(self.vts_client.stop_test)
+
+
+        ##
         ## layout
         ##
 
         layout = QtWidgets.QGridLayout()
         layout.addWidget(button_box)
         layout.addWidget(buttons_frontend)
+        layout.addWidget(buttons_test)
         self.setLayout(layout)
 
         self.setWindowTitle("VTS")

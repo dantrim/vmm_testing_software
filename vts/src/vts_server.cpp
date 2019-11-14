@@ -3,6 +3,7 @@
 #include "helpers.h"
 #include "vts_message.h"
 #include "vts_commands.h"
+#include "vts_test_types.h"
 
 #include <QCoreApplication>
 #include <QHostAddress>
@@ -19,11 +20,12 @@ using namespace std;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
-//
+// loggin
 #include "spdlog/spdlog.h"
 
 // std
 #include <memory>
+#include <vector>
 
 namespace vts
 {
@@ -186,7 +188,7 @@ void VTSServer::onReadyRead()
         {
             handle_server_command(incoming, reply);
         }
-        else if(incoming.type() == vts::VTSMessageType::TEST)
+        else if(incoming.type() == vts::VTSMessageType::VMMTEST)
         {
             handle_test_command(incoming, reply);
         }
@@ -248,9 +250,65 @@ void VTSServer::handle_server_command(const vts::VTSMessage& message,
 void VTSServer::handle_test_command(const vts::VTSMessage& message,
                 vts::VTSReply& reply)
 {
-    log->info("{0} - {1}",__VTFUNC__,message.str());
     auto msg_data = message.data();
     reply = vts::VTSReply(message.id(), msg_data);
+
+    cout << "FOOBS: " << msg_data.dump() << endl;
+    auto test_cmd = StrToCMDVMMTest(msg_data.at("CMD"));
+    auto test_data = msg_data.at("TEST_DATA");
+
+    stringstream msg;
+    bool ok = true;
+    if(test_cmd == CMDVMMTest::LOAD)
+    {
+        if(m_test_handler.get() != nullptr)
+        {
+            log->error("{0} - {1}",__VTFUNC__,"TestHandler already started, cannot load new tests!");
+            ok = false;
+        }
+
+        if(!vts::VTSTestHandler::tests_are_ok(test_data)) { ok = false; }
+
+        if(ok)
+        {
+            m_test_handler = std::make_shared<vts::VTSTestHandler>();
+            m_test_handler->load_test_configs(test_data);
+        }
+    }
+    else if(test_cmd == CMDVMMTest::START)
+    {
+        if(m_test_handler.get() == nullptr)
+        {
+            log->error("{0} - {1}",__VTFUNC__,"TestHandler not initialized, cannot start tests!");
+            ok = false;
+        }
+
+        if(ok)
+        {
+            m_test_handler->start();
+        }
+    }
+    else if(test_cmd == CMDVMMTest::STOP)
+    {
+        if(m_test_handler.get() == nullptr)
+        {
+            log->error("{0} - {1}",__VTFUNC__,"TestHandler not started, no tests to stop!");
+            ok = false;
+        }
+
+        if(ok)
+        {
+            m_test_handler->stop();
+            m_test_handler.reset();
+        }
+    }
+
+    stringstream status_str;
+    status_str << (ok ? "OK" : "ERROR");
+    json jreply = {
+        {"STATUS", status_str.str() }
+    };
+    reply = vts::VTSReply(message.id(), jreply);
 }
 
 void VTSServer::handle_frontend_command(const vts::VTSMessage& message,

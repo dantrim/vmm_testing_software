@@ -18,7 +18,7 @@ namespace vts
     enum VTSMessageType
     {
         SERVER=0
-        ,TEST
+        ,VMMTEST
         ,REPLY
         ,FRONTEND
         ,MessageTypeInvalid
@@ -31,7 +31,7 @@ namespace vts
         switch(type)
         {
             case VTSMessageType::SERVER : { out = "SERVER"; break; }
-            case VTSMessageType::TEST : { out = "TEST"; break; }
+            case VTSMessageType::VMMTEST : { out = "VMMTEST"; break; }
             case VTSMessageType::REPLY : { out = "REPLY"; break; }
             case VTSMessageType::FRONTEND : { out = "FRONTEND"; break; }
             case VTSMessageType::MessageTypeInvalid : { out = "MessageTypeInvalid"; break; }
@@ -44,7 +44,7 @@ namespace vts
     {
         VTSMessageType out = VTSMessageType::MessageTypeInvalid;
         if(type == "SERVER") { out = VTSMessageType::SERVER; }
-        else if(type == "TEST") { out = VTSMessageType::TEST; }
+        else if(type == "VMMTEST") { out = VTSMessageType::VMMTEST; }
         else if(type == "REPLY") { out = VTSMessageType::REPLY; }
         else if(type == "FRONTEND") { out = VTSMessageType::FRONTEND; }
         else { out = VTSMessageType::MessageTypeInvalid; }

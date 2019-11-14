@@ -1,0 +1,7 @@
+{
+    "test" : "PassThrough",
+    "test_data" :
+    {
+        "output_dir" : "./"
+    }
+}

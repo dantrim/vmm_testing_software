@@ -9,6 +9,7 @@ import sys, os, subprocess, psutil
 from pathlib import Path
 import time
 import json
+import glob
 
 # vts
 from vts_utils import vts_comm
@@ -213,3 +214,28 @@ class VTSClient(QtCore.QObject) :
 
     def reset_vmm(self) :
         self.frontend_cmd(cmd = "RESETVMM")
+
+    def test_cmd(self, cmd = "", test_data = [], expect_reply = True, wait = 5000) :
+        self.reset_socket()
+        data = {
+            "CMD" : cmd,
+            "TEST_DATA" : test_data
+        }
+        reply = self.comms.send_message(socket = self.socket,
+                    message_data = data,
+                    expect_reply = expect_reply,
+                    cmd_type = "VMMTEST",
+                    wait = wait
+        )
+        print("reply? {}".format(reply))
+
+    def load_test(self) :
+        hard_coded_dir = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/tests/"
+        test_files = glob.glob("{}/test_config*.json".format(hard_coded_dir))
+        self.test_cmd(cmd = "LOAD", test_data = test_files)
+
+    def start_test(self) :
+        self.test_cmd(cmd = "START")
+
+    def stop_test(self) :
+        self.test_cmd(cmd = "STOP")

@@ -289,6 +289,7 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
     // Get the 32-bit words
     //
     json vmm_top_lvl = spi_json.at("vmm_spi");
+
     vector<string> global_vec =
         vts::spi::spi_global_register_vec(
             vmm_top_lvl.at("global_registers"),

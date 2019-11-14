@@ -1,6 +1,9 @@
 #ifndef VTS_SERVER_H
 #define VTS_SERVER_H
 
+//vts
+#include "vts_test_handler.h"
+
 // QT
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -55,6 +58,9 @@ namespace vts
             bool m_validate_json_string;
             std::shared_ptr<spdlog::logger> log;
             json m_server_config;
+
+            // Test Handling
+            std::shared_ptr<vts::VTSTestHandler> m_test_handler;
 
         public slots :
             void onNewConnection();
