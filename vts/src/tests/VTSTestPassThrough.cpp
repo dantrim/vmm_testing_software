@@ -77,8 +77,8 @@ bool VTSTestPassThrough::configure()
     log->info("{0}",__VTFUNC__);
 
     // establish the communicator
-    vts::CommunicatorFrontEnd* comm = new vts::CommunicatorFrontEnd();
-    comm->load_config(m_frontend_config);
+    vts::CommunicatorFrontEnd comm;
+    comm.load_config(m_frontend_config);
 
     // get the configuration step for this one
     TestStep t = m_test_steps.at(get_current_state() - 1);
@@ -90,7 +90,7 @@ bool VTSTestPassThrough::configure()
     json fpga_clocks = fpga_registers.at("clocks");
     fpga_clocks["cktp_width"] = t.pulse_width;
 
-    comm->configure_fpga(fpga_triggers, fpga_clocks);
+    comm.configure_fpga(fpga_triggers, fpga_clocks);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // build the VMM config info for this step
@@ -125,10 +125,10 @@ bool VTSTestPassThrough::configure()
     vmm_config["vmm_spi"] = vmm_spi;
 
     // first reset
-    bool ok = comm->configure_vmm(vmm_config, /*perform reset*/ true);
+    bool ok = comm.configure_vmm(vmm_config, /*perform reset*/ true);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     // now send configuration
-    ok = comm->configure_vmm(vmm_config, false);
+    ok = comm.configure_vmm(vmm_config, false);
 
 
     //json vmm_config = m_base_vmm_config;
@@ -155,8 +155,6 @@ bool VTSTestPassThrough::configure()
 
     //std::this_thread::sleep_for(std::chrono::seconds(2));
 
-    delete comm;
-
     return true;
 }
 
@@ -165,11 +163,11 @@ bool VTSTestPassThrough::run()
     log->info("{0}",__VTFUNC__);
 
     // establish the communicator
-    vts::CommunicatorFrontEnd* comm = new vts::CommunicatorFrontEnd();
-    comm->load_config(m_frontend_config);
-    bool status = comm->acq_toggle(1);
+    vts::CommunicatorFrontEnd comm;
+    comm.load_config(m_frontend_config);
+    bool status = comm.acq_toggle(1);
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    status = comm->acq_toggle(0);
+    status = comm.acq_toggle(0);
     return true;
 }
 
