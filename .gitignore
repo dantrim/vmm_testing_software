@@ -24,3 +24,7 @@
 *.cxx.d
 
 *~
+
+*/build/
+*.autosave
+*pro.user
