@@ -110,6 +110,12 @@ bool CommunicatorFrontEnd::configure_fpga(string fpga_config_file)
     json fpga_trigger = fpga_top_lvl.at("trigger");
     json fpga_clocks = fpga_top_lvl.at("clocks");
 
+    return configure_fpga(fpga_trigger, fpga_clocks);
+}
+
+bool CommunicatorFrontEnd::configure_fpga(json fpga_trigger, json fpga_clocks)
+{
+
     //
     // start building the words
     //
@@ -283,6 +289,12 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
         log->error("{0} - {1}",__VTFUNC__,err.str());
         return false;
     }
+
+    return configure_vmm(spi_json, perform_reset);
+}
+
+bool CommunicatorFrontEnd::configure_vmm(json spi_json, bool perform_reset)
+{
 
 
     //

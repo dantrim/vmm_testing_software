@@ -31,9 +31,11 @@ namespace vts
             bool ping_fpga();
             bool reset_fpga();
             bool configure_fpga(std::string fpga_file = "");
+            bool configure_fpga(json trigger_conf, json clock_conf);
             bool acq_toggle(bool turn_on);
             bool reset_vmm();
             bool configure_vmm(std::string vmm_spi_file = "", bool perform_reset = false);
+            bool configure_vmm(json vmm_spi, bool perform_reset = false);
             void construct_spi(QDataStream& stream,
                             const std::vector<std::string>& global,
                             const std::vector<std::string>& channel);

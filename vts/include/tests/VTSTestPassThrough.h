@@ -1,6 +1,8 @@
 #ifndef VTS_TEST_PASS_THROUGH_H
 #define VTS_TEST_PASS_THROUGH_H
 
+//std/stl
+
 //vts
 #include "vts_test_imp.h"
 
@@ -34,6 +36,17 @@ class VTSTestPassThrough : public VTSTestImp
         json get_results();
 
     private :
+
+        json m_test_data;
+        json m_base_fpga_config;
+        json m_base_vmm_config;
+        struct TestStep
+        {
+            //std::string global_threshold_dac;
+            //std::string global_pulser_dac;
+            std::string pulse_width;
+        };
+        std::vector<TestStep> m_test_steps;
 
 }; // class VTSTestPassThrough
 

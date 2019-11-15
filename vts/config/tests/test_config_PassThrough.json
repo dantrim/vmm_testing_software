@@ -2,6 +2,8 @@
     "test_type" : "PassThrough",
     "test_data" :
     {
-        "output_dir" : "./"
+        "output_dir" : "./",
+        "base_config_global" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_default.json",
+        "base_config_fpga" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/fpga_register_default.json"
     }
 }

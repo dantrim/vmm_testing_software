@@ -34,14 +34,13 @@ class VTSTest : public QObject
         explicit VTSTest(QObject* parent =  0);
         ~VTSTest();
 
-        bool initialize(const json& test_config);
+        bool initialize(const json& test_config, const json& frontend_cfg);
         bool load();
         bool configure();
         bool run();
         bool analyze();
         bool analyze_test();
         bool finalize();
-        //void start();
         void stop();
 
         int current_step();

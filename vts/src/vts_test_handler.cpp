@@ -55,6 +55,11 @@ bool VTSTestHandler::is_valid_test(string test_type)
     return(!(StrToVTSTestType(test_type) == VTSTestType::VTSTESTTYPEINVALID));
 }
 
+void VTSTestHandler::load_frontend(const json& cfg)
+{
+    m_frontend_cfg = cfg;
+}
+
 void VTSTestHandler::load_test_configs(vector<string> test_config_files)
 {
     log = spdlog::get("vts_logger");
@@ -103,13 +108,14 @@ void VTSTestHandler::start()
             m_test.reset();
         }
         m_test = std::make_shared<vts::VTSTest>();
+
         connect(m_test.get(), SIGNAL(broadcast_state_signal(QString)),
                             this, SLOT(update_state(QString)), Qt::DirectConnection);
 
         /////////////////////////////////////////////////////////////////
         // INITIALIZE
         /////////////////////////////////////////////////////////////////
-        bool initialize_ok = m_test->initialize(jtest);
+        bool initialize_ok = m_test->initialize(jtest, m_frontend_cfg);
         initialize_ok &= (m_test->current_state() == vts::VTSTestState::INITIAL);
         if(!initialize_ok)
         {

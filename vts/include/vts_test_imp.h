@@ -25,6 +25,12 @@ class VTSTestImp : public QObject
 
     public :
 
+        void load_test_config(const json& test_config, const json& frontend_config)
+        {
+            m_test_config = test_config;
+            m_frontend_config = frontend_config;
+        }
+
         virtual bool initialize(const json& config) = 0;
         virtual bool load() = 0;
         virtual bool configure() = 0;
@@ -46,6 +52,9 @@ class VTSTestImp : public QObject
 
     protected :
         std::shared_ptr<spdlog::logger> log;
+
+        json m_test_config;
+        json m_frontend_config;
 
 
         int m_current_state;

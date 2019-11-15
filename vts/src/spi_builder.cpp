@@ -155,7 +155,6 @@ vector<string> spi_global_register_vec(json jreg, bool reset)
 
     // first 4 bits of sdt
     uint32_t sdt_tmp = 0;
-    cout << "SDT_DAC = " << std::stoi(jreg.at("sdt_dac").get<std::string>()) << endl;
     sdt_tmp |= ( (0x3C0 & std::stoi(jreg.at("sdt_dac").get<std::string>())) >> 6 );
     //sdt_tmp |= ( 0xF & config().globalSettings().sdt_dac );
     tmp = QString("%1").arg(sdt_tmp,4,2,QChar('0'));
@@ -432,9 +431,6 @@ vector<string> spi_channel_register_vec(const json& jreg)
     QString tmp;
     QString reg;
     QString bit32_empty = "00000000000000000000000000000000";
-
-    cout << "BLOO: " << jreg.dump() << endl;
-    
 
     bool ok;
     uint64_t sc  = QString::fromStdString(jreg.at("sc").get<std::string>()).toULong(&ok,0);
