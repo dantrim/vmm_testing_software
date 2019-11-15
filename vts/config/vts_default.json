@@ -20,10 +20,9 @@
             "fpga_port" : "6600",
             "xadc_port" : "6608"
         },
-        "testing" :
+        "daq" :
         {
-            "tests" : ["FEBPing"],
-            "results_dir" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/python/results"
+            "recv_port" : "6008"
         }
     }
 }

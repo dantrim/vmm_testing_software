@@ -10,15 +10,17 @@ CONFIG -= app_bundle
 # deprecated API in order to know how to port your code away from it.
 DEFINES += QT_DEPRECATED_WARNINGS
 
-# You can also make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-# You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+boostinclude=/usr/local/Cellar/boost160/1.60.0/include
+boostlib=/usr/local/Cellar/boost160/1.60.0/lib
+
+DEFINES += BOOST_ALL_NO_LIB
 
 INCLUDEPATH += src/
 INCLUDEPATH += include/
+INCLUDEPATH += $$boostinclude
 INCLUDEPATH += external/
 
+DEPENDPATH += $$boostinclude
 DEPENDPATH += external/
 DEPENDPATH += external/spdlog
 
@@ -26,6 +28,14 @@ OBJECTS_DIR += ./objects/
 MOC_DIR += ./moc/
 RCC_DIR += ./rcc/
 UI_DIR += ./ui/
+
+linux {
+    QMAKE_RPATHDIR += $$boostlib
+    QMAKE_RPATHDIR += ./objects
+}
+
+LIBS +=  -L$$boostlib -lboost_thread-mt -lboost_filesystem-mt  -lboost_system-mt -lboost_chrono-mt -lboost_atomic-mt
+#LIBS += -L$$boostlib -lboost_thread-mt -lboost_filesystem-mt  -lboost_system-mt 
 
 SOURCES += \
         src/main.cpp \
@@ -41,7 +51,10 @@ SOURCES += \
         src/vts_test_handler.cpp \
         src/vts_test_states.cpp \
         # tests
-        src/vts_test.cpp
+        src/vts_test.cpp \
+        # daq
+        src/daq_handler.cpp \
+        src/daq_listener.cpp
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
@@ -57,9 +70,16 @@ HEADERS += \
         include/vts_test_imp.h \
         include/vts_test_handler.h \
         include/vts_test_states.h \
+        # daq
+        include/daq_data_fragment.h \
+        include/daq_defs.h \
+        include/daq_handler.h \
+        include/daq_listener.h \
         # external
         external/nlohmann/json.hpp \
-        external/spdlog/spdlog.h
+        external/spdlog/spdlog.h \
+        external/concurrentqueue/concurrentqueue.h
+        
 
 testsources = $$files(src/tests/*.cpp)
 testheaders = $$files(include/tests/*.h)

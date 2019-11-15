@@ -118,7 +118,7 @@ bool check_config(const json& config)
 
     // check subsequent levels
     auto top_level = config.at("vts_config");
-    vector<std::string> nodes = { "vts_server", "logging", "frontend", "testing" };
+    vector<std::string> nodes = { "vts_server", "logging", "frontend", "daq" };
     bool all_ok = true;
     for(auto & exp : nodes)
     {

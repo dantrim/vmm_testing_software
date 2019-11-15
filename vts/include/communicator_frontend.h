@@ -3,6 +3,7 @@
 
 // std/stl
 #include <memory>
+#include <vector>
 
 // json
 #include "nlohmann/json.hpp"

@@ -37,7 +37,7 @@ namespace vts
             static bool tests_are_ok(std::vector<std::string> test_config_files);
             static bool is_valid_test(std::string test_type);
 
-            void load_frontend(const json& cfg);
+            void load_frontend_config(const json& frontend_cfg, const json& daq_cfg);
             void load_test_configs(std::vector<std::string> test_config_files);
 
             void start();
@@ -46,6 +46,7 @@ namespace vts
         private :
             std::shared_ptr<spdlog::logger> log;
             json m_frontend_cfg;
+            json m_daq_cfg;
             std::vector<std::string> m_test_configs;
             std::map<std::string, std::string> m_test_config_map;
             std::shared_ptr<vts::VTSTest> m_test;

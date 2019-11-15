@@ -272,7 +272,7 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
         if(ok)
         {
             m_test_handler = std::make_shared<vts::VTSTestHandler>();
-            m_test_handler->load_frontend(m_server_config.at("frontend"));
+            m_test_handler->load_frontend_config(m_server_config.at("frontend"), m_server_config.at("daq"));
             m_test_handler->load_test_configs(test_data);
         }
     }

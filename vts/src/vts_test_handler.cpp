@@ -55,9 +55,10 @@ bool VTSTestHandler::is_valid_test(string test_type)
     return(!(StrToVTSTestType(test_type) == VTSTestType::VTSTESTTYPEINVALID));
 }
 
-void VTSTestHandler::load_frontend(const json& cfg)
+void VTSTestHandler::load_frontend_config(const json& frontend_cfg, const json& daq_cfg)
 {
-    m_frontend_cfg = cfg;
+    m_frontend_cfg = frontend_cfg;
+    m_daq_cfg = daq_cfg;
 }
 
 void VTSTestHandler::load_test_configs(vector<string> test_config_files)
@@ -115,7 +116,7 @@ void VTSTestHandler::start()
         /////////////////////////////////////////////////////////////////
         // INITIALIZE
         /////////////////////////////////////////////////////////////////
-        bool initialize_ok = m_test->initialize(jtest, m_frontend_cfg);
+        bool initialize_ok = m_test->initialize(jtest, m_frontend_cfg, m_daq_cfg);
         initialize_ok &= (m_test->current_state() == vts::VTSTestState::INITIAL);
         if(!initialize_ok)
         {
@@ -152,6 +153,7 @@ void VTSTestHandler::start()
                 // RUN/COLLECT DATA
                 ////////////////////////////////////////////////////////
                 status = m_test->run();
+                if(!status) break;
 
                 ////////////////////////////////////////////////////////
                 // ANALYZE THIS STEPS DATA

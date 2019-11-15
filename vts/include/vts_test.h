@@ -10,6 +10,7 @@ namespace vts {
     class VTSTestImp;
 }
 #include "vts_test_states.h"
+#include "daq_handler.h"
 
 // Qt
 #include <QObject>
@@ -34,7 +35,7 @@ class VTSTest : public QObject
         explicit VTSTest(QObject* parent =  0);
         ~VTSTest();
 
-        bool initialize(const json& test_config, const json& frontend_cfg);
+        bool initialize(const json& test_config, const json& frontend_cfg, const json& daq_cfg);
         bool load();
         bool configure();
         bool run();
@@ -57,6 +58,7 @@ class VTSTest : public QObject
         void broadcast_state();
         std::string current_state_name();
         std::string transition_string(vts::VTSTestState current, vts::VTSTestState next);
+        vts::daq::DaqHandler* m_daq_handler;
 
     signals :
         void broadcast_state_signal(QString);

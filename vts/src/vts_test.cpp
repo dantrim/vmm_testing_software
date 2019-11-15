@@ -38,7 +38,7 @@ int VTSTest::n_steps()
     return m_imp->get_n_states();
 }
 
-bool VTSTest::initialize(const json& config, const json& frontend_cfg)
+bool VTSTest::initialize(const json& config, const json& frontend_cfg, const json& daq_cfg)
 {
     update_fsm(VTSTestState::NONE);
 
@@ -77,6 +77,10 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg)
 
     connect(m_imp.get(), SIGNAL(finished()), this, SLOT(test_finished_slot()));
 
+    // setup DAQ
+    m_daq_handler = new vts::daq::DaqHandler(this);
+    m_daq_handler->load_connections(frontend_cfg, daq_cfg);
+
     return initialize_status;
 }
 
@@ -98,7 +102,27 @@ bool VTSTest::configure()
 
 bool VTSTest::run()
 {
-    return m_imp->run();
+    // temp
+    try
+    {
+        if(!m_daq_handler->is_running())
+        {
+            m_daq_handler->start_listening();
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
+    }
+    catch(std::exception& e)
+    {
+        log->error("{0} - {1}: {2}",__VTFUNC__,"Unable to start DAQ", e.what());
+        return false;
+    }
+    
+    bool status = m_imp->run();
+    // temp
+//    delete m_daq_handler;
+//    m_daq_handler = 0x0;
+
+    return status;
 }
 
 bool VTSTest::analyze()
@@ -113,6 +137,9 @@ bool VTSTest::analyze_test()
 
 bool VTSTest::finalize()
 {
+    m_daq_handler->stop_listening();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
     update_fsm(VTSTestState::FINALIZING);
     bool status = m_imp->finalize();
     if(status)

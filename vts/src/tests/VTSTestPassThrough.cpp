@@ -104,8 +104,8 @@ bool VTSTestPassThrough::configure()
     vector<vts::vmm::Channel> channels; 
     for(size_t i = 0; i < 64; i++)
     {
-        bool st = true; //(i==14 ? true : false);
-        bool sm = false;//(i==14 ? false : true);
+        bool st = (i==14 ? true : false);
+        bool sm = (i==14 ? false : true);
         json jch = {{"id",i},{"sc",false},{"sl",false},{"sth",false},{"st",st},{"sm",sm},{"smx",false},{"sd",0}};
         vmm::Channel ch; ch.load(jch);
         channels.push_back(ch);
