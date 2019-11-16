@@ -2,6 +2,7 @@
 #include "vts_test.h"
 #include "helpers.h"
 #include "tests/tests.h"
+#include "daq_defs.h"
 
 //std/stl
 #include <string>
@@ -80,6 +81,7 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
     // setup DAQ
     m_daq_handler = new vts::daq::DaqHandler(this);
     m_daq_handler->load_connections(frontend_cfg, daq_cfg);
+    m_daq_handler->load_test(this);
 
     return initialize_status;
 }
@@ -108,7 +110,7 @@ bool VTSTest::run()
         if(!m_daq_handler->is_running())
         {
             m_daq_handler->start_listening();
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            m_imp->processing(true);
         }
     }
     catch(std::exception& e)
@@ -118,11 +120,20 @@ bool VTSTest::run()
     }
     
     bool status = m_imp->run();
-    // temp
-//    delete m_daq_handler;
-//    m_daq_handler = 0x0;
+
+    m_daq_handler->stop_listening();
 
     return status;
+}
+
+bool VTSTest::continue_processing()
+{
+    return m_imp->processing_events();
+}
+
+bool VTSTest::process_event(vts::daq::DataFragment* fragment)
+{
+    return m_imp->process_event(fragment);
 }
 
 bool VTSTest::analyze()
@@ -137,8 +148,8 @@ bool VTSTest::analyze_test()
 
 bool VTSTest::finalize()
 {
-    m_daq_handler->stop_listening();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    //m_daq_handler->stop_listening();
+    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     update_fsm(VTSTestState::FINALIZING);
     bool status = m_imp->finalize();

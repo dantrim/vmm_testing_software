@@ -137,18 +137,18 @@ void DataListener::handle_receive(const boost::system::error_code& error, size_t
         fragment->set_level1id(header.level1id);
     }
 
-    stringstream msg;
-    //for(size_t i = (n32-1); i >= 0; --i)
-    msg << "============= INCOMING PACKET ==============";
-    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
-    for(size_t i = 0; i < n32; i++)
-    {
-        msg << std::hex << (unsigned)m_data_in.at(i);
-        log->info("{0} - {1}",__VTFUNC__, msg.str()); msg.str("");
-    }
-    msg.str("");
-    msg << "============================================";
-    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
+    //stringstream msg;
+    ////for(size_t i = (n32-1); i >= 0; --i)
+    //msg << "============= INCOMING PACKET ==============";
+    //log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
+    //for(size_t i = 0; i < n32; i++)
+    //{
+    //    msg << std::hex << (unsigned)m_data_in.at(i);
+    //    log->info("{0} - {1}",__VTFUNC__, msg.str()); msg.str("");
+    //}
+    //msg.str("");
+    //msg << "============================================";
+    //log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
 
     fragment->packet = m_data_in;
 

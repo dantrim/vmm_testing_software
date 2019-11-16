@@ -3,7 +3,14 @@
 
 //vts
 #include "daq_defs.h"
-#include "daq_listener.h"
+//#include "daq_listener.h"
+namespace vts {
+    class VTSTest;
+    namespace daq {
+        class DataListener;
+        class DataBuilder;
+    }
+}
 
 //json
 #include "nlohmann/json.hpp"
@@ -36,12 +43,16 @@ namespace daq
             explicit DaqHandler(QObject* parent = 0);
             virtual ~DaqHandler(){};
 
+
             void load_connections(const json& frontend_config, const json& daq_config);
             std::vector< DataQueue* > listen_queues() { return m_listen_queues; }
+
+            void load_test(vts::VTSTest* test = 0);
 
             bool is_running() { return m_is_running; }
 
         private :
+            vts::VTSTest* m_test;
             std::shared_ptr<spdlog::logger> log;
             std::shared_ptr<boost::asio::io_service> m_io_service;
 
@@ -50,6 +61,7 @@ namespace daq
 
             std::vector< DataQueue* > m_listen_queues;
             std::vector< DataListener* > m_listeners;
+            std::vector< DataBuilder* > m_builders;
 
             // flags
             bool m_is_running;
@@ -59,6 +71,8 @@ namespace daq
         public slots :
             void start_listening();
             void stop_listening();
+            //void start_building();
+            //void stop_building();
 
 
     }; // class DaqHandler

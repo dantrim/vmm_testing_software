@@ -8,6 +8,9 @@
 // vts
 namespace vts {
     class VTSTestImp;
+    namespace daq {
+        class DataFragment;
+    }
 }
 #include "vts_test_states.h"
 #include "daq_handler.h"
@@ -39,6 +42,7 @@ class VTSTest : public QObject
         bool load();
         bool configure();
         bool run();
+        bool process_event(vts::daq::DataFragment* fragment);
         bool analyze();
         bool analyze_test();
         bool finalize();
@@ -48,6 +52,11 @@ class VTSTest : public QObject
         int n_steps();
         vts::VTSTestState current_state();
 
+        bool continue_processing();
+        //{
+        //    return m_imp->processing_events();
+        //}
+        //bool continue_processing;
 
     private :
         std::shared_ptr<spdlog::logger> log;
@@ -59,6 +68,7 @@ class VTSTest : public QObject
         std::string current_state_name();
         std::string transition_string(vts::VTSTestState current, vts::VTSTestState next);
         vts::daq::DaqHandler* m_daq_handler;
+
 
     signals :
         void broadcast_state_signal(QString);

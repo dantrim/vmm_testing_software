@@ -3,6 +3,7 @@
 #include "tests/VTSTestPassThrough.h"
 #include "helpers.h"
 #include "frontend_struct.h"
+#include "daq_defs.h"
 
 //std/stl
 #include <fstream>
@@ -20,6 +21,7 @@ namespace vts
 
 bool VTSTestPassThrough::initialize(const json& config)
 {
+
     stringstream msg;
     msg << "Initializing with config: " << config.dump();
     log->info("{0} - {1}",__VTFUNC__,msg.str());
@@ -76,6 +78,7 @@ bool VTSTestPassThrough::configure()
 {
     log->info("{0}",__VTFUNC__);
 
+    reset_vmm();
     // establish the communicator
     vts::CommunicatorFrontEnd comm;
     comm.load_config(m_frontend_config);
@@ -126,7 +129,7 @@ bool VTSTestPassThrough::configure()
 
     // first reset
     bool ok = comm.configure_vmm(vmm_config, /*perform reset*/ true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     // now send configuration
     ok = comm.configure_vmm(vmm_config, false);
 
@@ -160,14 +163,41 @@ bool VTSTestPassThrough::configure()
 
 bool VTSTestPassThrough::run()
 {
-    log->info("{0}",__VTFUNC__);
+    m_event_count = 0; 
+    //reset_event_counts();
 
     // establish the communicator
     vts::CommunicatorFrontEnd comm;
     comm.load_config(m_frontend_config);
     bool status = comm.acq_toggle(1);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // keep running until data processing has completed
+    //while(processing_events())
+    while(!(m_event_count>=40))
+    {
+        if(!processing_events()) break;
+        if(m_event_count>=40) break;
+        continue;
+    }
     status = comm.acq_toggle(0);
+    processing(false); 
+    return true;
+}
+
+bool VTSTestPassThrough::process_event(vts::daq::DataFragment* fragment)
+{
+    if(m_event_count >= 40) //events_per_step())
+    {
+        processing(false);
+        log->info("{0} - Event count reached : processing_events flag = {1}",__VTFUNC__, processing_events());
+    }
+
+    stringstream msg;
+    msg << "Fragment size: " << fragment->packet.size() << " event count: " << m_event_count;
+    log->info("{0} - {1}",__VTFUNC__, msg.str());
+    //event_processed();
+    m_event_count++;
+
     return true;
 }
 
@@ -198,6 +228,13 @@ json VTSTestPassThrough::get_results()
         {"RESULT",VTSTestResultToStr(VTSTestResult::SUCCESS)}
     };
     return jresults;
+}
+
+void VTSTestPassThrough::reset_vmm()
+{
+    vts::CommunicatorFrontEnd comm;
+    comm.load_config(m_frontend_config);
+    comm.configure_vmm(m_base_vmm_config, /*perform reset*/ true);
 }
 
 } // namespace vts

@@ -3,6 +3,11 @@
 
 //vts
 #include "vts_result.h"
+namespace vts {
+    namespace daq {
+        class DataFragment;
+    }
+}
 
 //Qt
 #include <QObject>
@@ -15,6 +20,9 @@ using json = nlohmann::json;
 namespace spdlog {
     class logger;
 }
+
+//std/stl
+#include <atomic>
 
 namespace vts
 {
@@ -35,6 +43,7 @@ class VTSTestImp : public QObject
         virtual bool load() = 0;
         virtual bool configure() = 0;
         virtual bool run() = 0;
+        virtual bool process_event(vts::daq::DataFragment* fragment) = 0;
         virtual bool analyze() = 0;
         virtual bool analyze_test() = 0;
         virtual bool finalize() = 0;
@@ -50,6 +59,16 @@ class VTSTestImp : public QObject
             return m_n_states;
         }
 
+        void processing(bool is_or_is_not)
+        {
+            m_processing_flag.store(is_or_is_not);
+        }
+
+        bool processing_events()
+        {
+            return m_processing_flag.load(std::memory_order_acquire);
+        }
+
     protected :
         std::shared_ptr<spdlog::logger> log;
 
@@ -59,6 +78,11 @@ class VTSTestImp : public QObject
 
         int m_current_state;
         int m_n_states;
+        long int m_events_processed;
+        long int m_events_per_step;
+
+        std::atomic<bool> m_processing_flag;
+        
 
         void set_current_state(int s)
         {
@@ -67,6 +91,15 @@ class VTSTestImp : public QObject
         void set_n_states(int s)
         {
             m_n_states = s;
+        }
+
+        void set_events_per_step(long int e)
+        {
+            m_events_per_step = e;
+        }
+        long int& events_per_step()
+        {
+            return m_events_per_step;
         }
 
     signals :

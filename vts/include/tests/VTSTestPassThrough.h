@@ -5,6 +5,11 @@
 
 //vts
 #include "vts_test_imp.h"
+namespace vts {
+    namespace daq {
+        class DataFragment;
+    }
+}
 
 //logging
 #include "spdlog/spdlog.h"
@@ -20,6 +25,7 @@ class VTSTestPassThrough : public VTSTestImp
             log = spdlog::get("vts_logger");
             set_current_state(-1);
             set_n_states(1);
+            set_events_per_step(10);
         }
         ~VTSTestPassThrough()
         {
@@ -30,12 +36,21 @@ class VTSTestPassThrough : public VTSTestImp
         bool load();
         bool configure();
         bool run();
+        bool process_event(vts::daq::DataFragment* fragment);
         bool analyze();
         bool analyze_test();
         bool finalize();
         json get_results();
 
     private :
+
+        int m_event_count;
+
+        void reset_event_counts()
+        {
+            m_event_count = 0;
+        }
+        void reset_vmm();
 
         json m_test_data;
         json m_base_fpga_config;
