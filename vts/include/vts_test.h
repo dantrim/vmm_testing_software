@@ -52,6 +52,8 @@ class VTSTest : public QObject
         int n_steps();
         vts::VTSTestState current_state();
 
+        bool start_processing_events();
+        bool stop_processing_events();
         bool continue_processing();
         //{
         //    return m_imp->processing_events();
@@ -67,7 +69,8 @@ class VTSTest : public QObject
         void broadcast_state();
         std::string current_state_name();
         std::string transition_string(vts::VTSTestState current, vts::VTSTestState next);
-        vts::daq::DaqHandler* m_daq_handler;
+        //vts::daq::DaqHandler* m_daq_handler;
+        std::shared_ptr<vts::daq::DaqHandler> m_daq_handler;
 
 
     signals :

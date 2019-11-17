@@ -107,8 +107,8 @@ bool VTSTestPassThrough::configure()
     vector<vts::vmm::Channel> channels; 
     for(size_t i = 0; i < 64; i++)
     {
-        bool st = (i==14 ? true : false);
-        bool sm = (i==14 ? false : true);
+        bool st = true; //( (i==14 || i==15) ? true : false);
+        bool sm = false;//( (i==14 || i==15) ? false : true);
         json jch = {{"id",i},{"sc",false},{"sl",false},{"sth",false},{"st",st},{"sm",sm},{"smx",false},{"sd",0}};
         vmm::Channel ch; ch.load(jch);
         channels.push_back(ch);
@@ -163,8 +163,8 @@ bool VTSTestPassThrough::configure()
 
 bool VTSTestPassThrough::run()
 {
-    m_event_count = 0; 
-    //reset_event_counts();
+    // reset the event counters for this new run
+    reset_event_count();
 
     // establish the communicator
     vts::CommunicatorFrontEnd comm;
@@ -172,53 +172,49 @@ bool VTSTestPassThrough::run()
     bool status = comm.acq_toggle(1);
 
     // keep running until data processing has completed
-    //while(processing_events())
-    while(!(m_event_count>=40))
+    while(processing_events())
     {
         if(!processing_events()) break;
-        if(m_event_count>=40) break;
         continue;
     }
+    log->info("{0} - Turning ACQ OFF",__VTFUNC__);
     status = comm.acq_toggle(0);
-    processing(false); 
     return true;
 }
 
 bool VTSTestPassThrough::process_event(vts::daq::DataFragment* fragment)
 {
-    if(m_event_count >= 40) //events_per_step())
+    if(n_events_processed() >= n_events_per_step())
     {
-        processing(false);
-        log->info("{0} - Event count reached : processing_events flag = {1}",__VTFUNC__, processing_events());
+        log->info("{0} - Event count reached ({1})",__VTFUNC__, n_events_processed());
+        return false;
     }
 
-    stringstream msg;
-    msg << "Fragment size: " << fragment->packet.size() << " event count: " << m_event_count;
-    log->info("{0} - {1}",__VTFUNC__, msg.str());
-    //event_processed();
-    m_event_count++;
-
+    if(n_events_processed()%100==0)
+    {
+        stringstream msg;
+        msg << "Fragment size: " << fragment->packet.size() << " event count: " << n_events_processed();
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+    }
+    event_processed();
     return true;
 }
 
 bool VTSTestPassThrough::analyze()
 {
     log->info("{0}",__VTFUNC__);
-    //std::this_thread::sleep_for(std::chrono::seconds(2));
     return true;
 }
 
 bool VTSTestPassThrough::analyze_test()
 {
     log->info("{0}",__VTFUNC__);
-    //std::this_thread::sleep_for(std::chrono::seconds(2));
     return true;
 }
 
 bool VTSTestPassThrough::finalize()
 {
     log->info("{0}",__VTFUNC__);
-    //std::this_thread::sleep_for(std::chrono::seconds(2));
     return true;
 }
 

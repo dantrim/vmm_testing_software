@@ -13,11 +13,11 @@ namespace daq
 
     struct VMMHeader
     {
-        unsigned level1id : 16;
-        unsigned bcid : 12;
-        unsigned orbit : 2;
-        unsigned reserved : 1;
-        unsigned timeset : 1;
+        unsigned int level1id : 16;
+        unsigned int bcid : 12;
+        unsigned int orbit : 2;
+        unsigned int reserved : 1;
+        unsigned int timeset : 1;
     };
 
     class DataFragment

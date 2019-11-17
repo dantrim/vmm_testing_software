@@ -78,11 +78,25 @@ class VTSTestImp : public QObject
 
         int m_current_state;
         int m_n_states;
-        long int m_events_processed;
-        long int m_events_per_step;
+        std::atomic<unsigned int> m_events_processed;
+        std::atomic<unsigned int> m_events_per_step;
 
         std::atomic<bool> m_processing_flag;
-        
+
+        void reset_event_count()
+        {
+            m_events_processed.store(0);
+        }
+
+        void event_processed()
+        {
+            m_events_processed++;
+        }
+
+        unsigned int n_events_processed()
+        {
+            return m_events_processed.load(std::memory_order_acquire);
+        }
 
         void set_current_state(int s)
         {
@@ -93,13 +107,13 @@ class VTSTestImp : public QObject
             m_n_states = s;
         }
 
-        void set_events_per_step(long int e)
+        void set_n_events_per_step(long int e)
         {
-            m_events_per_step = e;
+            m_events_per_step.store(e);
         }
-        long int& events_per_step()
+        unsigned int n_events_per_step()
         {
-            return m_events_per_step;
+            return m_events_per_step.load(std::memory_order_acquire);
         }
 
     signals :
@@ -107,7 +121,6 @@ class VTSTestImp : public QObject
         void signal_current_state(int, int);
 
 }; // class VTSTestImp
-
 } // namespace vts
 
 #endif

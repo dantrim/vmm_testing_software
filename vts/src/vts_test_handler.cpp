@@ -197,19 +197,6 @@ void VTSTestHandler::start()
         msg.str("");
         msg << "====================================";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
-        
-
-//        if(status)
-//        {
-//            //stringstream msg;
-//            //msg << "STARTING FROM MAIN THREAD: 0x" << std::hex << std::this_thread::get_id() << std::dec;
-//            //log->critical("{0} - {1}",__VTFUNC__,msg.str());
-//            // start the process
-////            m_test_thread = std::thread(&vts::VTSTest::start, m_test.get()); // [this] () {
-//        
-////        m_thread = std::thread( [m_test.get()] () { } 
-////            m_test->start();
-//        }
     }
 }
 

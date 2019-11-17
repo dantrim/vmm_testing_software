@@ -25,7 +25,7 @@ class VTSTestPassThrough : public VTSTestImp
             log = spdlog::get("vts_logger");
             set_current_state(-1);
             set_n_states(1);
-            set_events_per_step(10);
+            set_n_events_per_step(100);
         }
         ~VTSTestPassThrough()
         {
@@ -44,12 +44,12 @@ class VTSTestPassThrough : public VTSTestImp
 
     private :
 
-        int m_event_count;
+        //int m_event_count;
 
-        void reset_event_counts()
-        {
-            m_event_count = 0;
-        }
+        //void reset_event_counts()
+        //{
+        //    m_event_count = 0;
+        //}
         void reset_vmm();
 
         json m_test_data;

@@ -79,7 +79,8 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
     connect(m_imp.get(), SIGNAL(finished()), this, SLOT(test_finished_slot()));
 
     // setup DAQ
-    m_daq_handler = new vts::daq::DaqHandler(this);
+    //m_daq_handler = new vts::daq::DaqHandler(this);
+    m_daq_handler = std::make_shared<vts::daq::DaqHandler>(this);
     m_daq_handler->load_connections(frontend_cfg, daq_cfg);
     m_daq_handler->load_test(this);
 
@@ -102,6 +103,18 @@ bool VTSTest::configure()
     return m_imp->configure();
 }
 
+bool VTSTest::start_processing_events()
+{
+    m_imp->processing(true);
+    return true;
+}
+
+bool VTSTest::stop_processing_events()
+{
+    m_imp->processing(false);
+    return true;
+}
+
 bool VTSTest::run()
 {
     // temp
@@ -109,8 +122,8 @@ bool VTSTest::run()
     {
         if(!m_daq_handler->is_running())
         {
+            // start listening for events from the frontend
             m_daq_handler->start_listening();
-            m_imp->processing(true);
         }
     }
     catch(std::exception& e)
@@ -119,8 +132,10 @@ bool VTSTest::run()
         return false;
     }
     
+    // start the test's event processing
     bool status = m_imp->run();
 
+    // turn off the event handling
     m_daq_handler->stop_listening();
 
     return status;
@@ -148,9 +163,6 @@ bool VTSTest::analyze_test()
 
 bool VTSTest::finalize()
 {
-    //m_daq_handler->stop_listening();
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
     update_fsm(VTSTestState::FINALIZING);
     bool status = m_imp->finalize();
     if(status)

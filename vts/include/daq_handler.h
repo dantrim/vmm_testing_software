@@ -71,8 +71,6 @@ namespace daq
         public slots :
             void start_listening();
             void stop_listening();
-            //void start_building();
-            //void stop_building();
 
 
     }; // class DaqHandler

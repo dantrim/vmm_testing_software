@@ -21,12 +21,14 @@ namespace daq
 DataListener::DataListener(uint32_t listen_ip, uint32_t listen_port,
             std::shared_ptr<boost::asio::io_service> io_service,
             DataQueue* input_queue,
-            std::atomic<bool>& listen_flag) :
-    m_active(false),
-    m_listen_ip(listen_ip),
-    m_listen_port(listen_port)
+            std::atomic<bool>& listen_flag)
 {
     log = spdlog::get("vts_logger");
+
+    m_active = false;
+    m_listen_ip = listen_ip;
+    m_listen_port = listen_port;
+
     m_io_service = io_service;
     m_in_queue = input_queue;
     m_listen_flag = & listen_flag;
@@ -110,7 +112,7 @@ void DataListener::listen()
     }
 }
 
-void DataListener::handle_receive(const boost::system::error_code& error, size_t n_bytes)
+void DataListener::handle_receive(const boost::system::error_code& /*error*/, size_t n_bytes)
 {
     if(!continue_listening()) return;
     if(n_bytes == 0 && m_in_buffer.size() == 0)
@@ -133,7 +135,7 @@ void DataListener::handle_receive(const boost::system::error_code& error, size_t
     fragment->set_port_recv(m_listen_port);
     if(m_data_in.size()>0)
     {
-        VMMHeader header = { (uint32_t)m_data_in.at(0) };
+        VMMHeader header = *(VMMHeader*)(m_data_in.data());//at(0)); //{ m_data_in }; //(uint32_t)m_data_in.at(0) };
         fragment->set_level1id(header.level1id);
     }
 
@@ -156,6 +158,7 @@ void DataListener::handle_receive(const boost::system::error_code& error, size_t
     {
         log->warn("{0} - Unable to enqueue incoming data for Trigger ID {1:x}",__VTFUNC__,
             (unsigned)0x0);
+        delete fragment;
     }
     if(continue_listening())
     {
@@ -163,7 +166,6 @@ void DataListener::handle_receive(const boost::system::error_code& error, size_t
     }
     return;
 }
-
 
 } // namespace daq
 } // namespace vts

@@ -16,7 +16,7 @@
             "ckbc" : "40",
             "cktp_max_number" : "-1",
             "cktp_skew" : "0",
-            "cktp_period" : "50000",
+            "cktp_period" : "500",
             "cktp_width" : "8"
         }
     }

@@ -7,6 +7,7 @@
 
 //std/stl
 #include <iostream>
+#include <chrono>
 using namespace std;
 
 namespace vts
@@ -45,8 +46,9 @@ bool DataBuilder::continue_building()
 
 void DataBuilder::build()
 {
-    //while(continue_building())
-    while(m_test->continue_processing())
+    bool continue_processing = true;
+    m_test->start_processing_events();
+    while(continue_processing && continue_building())
     {
         DataFragment* fragment = nullptr;
         if(!m_in_queue->try_dequeue(fragment))
@@ -54,12 +56,17 @@ void DataBuilder::build()
             continue;
         }
 
-        m_test->process_event(fragment);
+        continue_processing = m_test->process_event(fragment);
+        delete fragment;
     } // while
+    log->info("{0} - Build is setting processing flag to FALSE",__VTFUNC__);
+    m_test->stop_processing_events();
+    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void DataBuilder::stop()
 {
+    m_build_flag->store(false);
     if(!m_active) return;
     if(m_thread.joinable())
     {

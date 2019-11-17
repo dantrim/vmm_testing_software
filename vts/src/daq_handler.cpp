@@ -85,12 +85,14 @@ void DaqHandler::start_listening()
     vts::daq::DataBuilder* builder = new vts::daq::DataBuilder(queue, m_test,
                                                                 std::ref(m_build_flag));
 
+
     if(!listener->connect())
     {
         stringstream err;
         err << "DataListener could not connect to port " << m_listen_port;
         throw std::runtime_error(err.str());
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
 
     // queue up the data listener with the io service
     m_io_service->post(boost::bind(&vts::daq::DataListener::listen, listener));
@@ -102,7 +104,9 @@ void DaqHandler::start_listening()
     size_t n_listeners = m_listeners.size();
     for(size_t i = 0; i < n_listeners; i++)
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
         m_listeners.at(i)->start();
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
         m_builders.at(i)->start();
     } // i
     m_is_running = true;
@@ -122,10 +126,10 @@ void DaqHandler::stop_listening()
         m_io_service->stop();
     }
 
+
     for(size_t i = 0; i < n_listeners; i++)
     {
         m_listeners.at(i)->stop();
-        //m_listeners.at(i)->shutdown();
     }
 
     for(size_t i = 0; i < n_listeners; i++)
@@ -135,7 +139,6 @@ void DaqHandler::stop_listening()
 
     for(size_t i = 0; i < m_listen_queues.size(); i++)
     {
-        //delete m_builders.at(i);
         delete m_listen_queues.at(i);
         delete m_listeners.at(i);
         delete m_builders.at(i);
@@ -146,7 +149,6 @@ void DaqHandler::stop_listening()
     m_builders.clear();
     m_is_running = false;
 
-    //m_io_service->reset();
     m_io_service.reset();
 }
 
