@@ -61,7 +61,6 @@ void DataBuilder::build()
     } // while
     log->info("{0} - Build is setting processing flag to FALSE",__VTFUNC__);
     m_test->stop_processing_events();
-    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 void DataBuilder::stop()

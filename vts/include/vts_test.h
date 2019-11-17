@@ -55,10 +55,6 @@ class VTSTest : public QObject
         bool start_processing_events();
         bool stop_processing_events();
         bool continue_processing();
-        //{
-        //    return m_imp->processing_events();
-        //}
-        //bool continue_processing;
 
     private :
         std::shared_ptr<spdlog::logger> log;
@@ -69,7 +65,6 @@ class VTSTest : public QObject
         void broadcast_state();
         std::string current_state_name();
         std::string transition_string(vts::VTSTestState current, vts::VTSTestState next);
-        //vts::daq::DaqHandler* m_daq_handler;
         std::shared_ptr<vts::daq::DaqHandler> m_daq_handler;
 
 

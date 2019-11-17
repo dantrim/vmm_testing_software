@@ -152,6 +152,5 @@ void DaqHandler::stop_listening()
     m_io_service.reset();
 }
 
-
 } // namespace daq
 } // namespace vts

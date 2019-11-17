@@ -116,7 +116,6 @@ void DataListener::handle_receive(const boost::system::error_code& /*error*/, si
 {
     if(!continue_listening()) return;
     if(n_bytes == 0 && m_in_buffer.size() == 0)
-    //if(n_bytes == 0 && m_data_in.size() == 0)
     {
         listen();
     }
@@ -135,22 +134,9 @@ void DataListener::handle_receive(const boost::system::error_code& /*error*/, si
     fragment->set_port_recv(m_listen_port);
     if(m_data_in.size()>0)
     {
-        VMMHeader header = *(VMMHeader*)(m_data_in.data());//at(0)); //{ m_data_in }; //(uint32_t)m_data_in.at(0) };
+        VMMHeader header = *(VMMHeader*)(m_data_in.data());
         fragment->set_level1id(header.level1id);
     }
-
-    //stringstream msg;
-    ////for(size_t i = (n32-1); i >= 0; --i)
-    //msg << "============= INCOMING PACKET ==============";
-    //log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
-    //for(size_t i = 0; i < n32; i++)
-    //{
-    //    msg << std::hex << (unsigned)m_data_in.at(i);
-    //    log->info("{0} - {1}",__VTFUNC__, msg.str()); msg.str("");
-    //}
-    //msg.str("");
-    //msg << "============================================";
-    //log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
 
     fragment->packet = m_data_in;
 

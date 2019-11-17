@@ -79,7 +79,6 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
     connect(m_imp.get(), SIGNAL(finished()), this, SLOT(test_finished_slot()));
 
     // setup DAQ
-    //m_daq_handler = new vts::daq::DaqHandler(this);
     m_daq_handler = std::make_shared<vts::daq::DaqHandler>(this);
     m_daq_handler->load_connections(frontend_cfg, daq_cfg);
     m_daq_handler->load_test(this);

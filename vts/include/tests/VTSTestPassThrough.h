@@ -44,12 +44,6 @@ class VTSTestPassThrough : public VTSTestImp
 
     private :
 
-        //int m_event_count;
-
-        //void reset_event_counts()
-        //{
-        //    m_event_count = 0;
-        //}
         void reset_vmm();
 
         json m_test_data;
