@@ -4,6 +4,8 @@
 #include "helpers.h"
 #include "frontend_struct.h"
 #include "daq_defs.h"
+//decoding
+#include "vts_decode.h"
 
 //std/stl
 #include <fstream>
@@ -107,8 +109,8 @@ bool VTSTestPassThrough::configure()
     vector<vts::vmm::Channel> channels; 
     for(size_t i = 0; i < 64; i++)
     {
-        bool st = true; //( (i==14 || i==15) ? true : false);
-        bool sm = false;//( (i==14 || i==15) ? false : true);
+        bool st = ( (i==14 || i==28) ? true : false);
+        bool sm = ( (i==14 || i==28) ? false : true);
         json jch = {{"id",i},{"sc",false},{"sl",false},{"sth",false},{"st",st},{"sm",sm},{"smx",false},{"sd",0}};
         vmm::Channel ch; ch.load(jch);
         channels.push_back(ch);
@@ -190,11 +192,21 @@ bool VTSTestPassThrough::process_event(vts::daq::DataFragment* fragment)
         return false;
     }
 
-    if(n_events_processed()%100==0)
+    vector<vts::decode::vmm::Sample> samples = vts::decode::vmm::decode(fragment->packet);
+
+    //if(n_events_processed()%10==0)
+    if(true)
     {
-        stringstream msg;
-        msg << "Fragment size: " << fragment->packet.size() << " event count: " << n_events_processed();
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
+//        stringstream msg;
+//        msg << "Fragment size: " << fragment->packet.size() << " event count: " << n_events_processed();
+//        log->info("{0} - {1}",__VTFUNC__,msg.str());
+
+        stringstream sx;
+        for(const auto & sample : samples)
+        {
+            sx << " " << sample.channel() << "(trig: " << std::hex << (unsigned)sample.header().trigger_counter() << ")";// << " ART channel: " << std::dec << sample.header().art_address();
+        }
+        log->info("{0} - {1}: {2}",__VTFUNC__,"Received data from channels",sx.str());
     }
     event_processed();
     return true;

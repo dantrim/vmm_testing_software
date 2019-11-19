@@ -55,7 +55,9 @@ SOURCES += \
         # daq
         src/daq_handler.cpp \
         src/daq_listener.cpp \
-        src/daq_data_builder.cpp
+        src/daq_data_builder.cpp \
+        # decode
+        src/vts_decode.cpp
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
@@ -77,6 +79,8 @@ HEADERS += \
         include/daq_handler.h \
         include/daq_listener.h \
         include/daq_data_builder.h \
+        # decode
+        include/vts_decode.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h \
