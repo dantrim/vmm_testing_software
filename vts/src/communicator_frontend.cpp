@@ -46,6 +46,7 @@ void CommunicatorFrontEnd::load_config(json config)
         m_board_ip = config.at("board_ip");
         m_spi_recv_port = std::stoi(config.at("spi_port").get<std::string>());
         m_fpga_recv_port = std::stoi(config.at("fpga_port").get<std::string>());
+        m_xadc_recv_port = std::stoi(config.at("xadc_port").get<std::string>());
     }
     catch(std::exception& e)
     {
@@ -386,6 +387,47 @@ void CommunicatorFrontEnd::construct_spi(QDataStream& stream,
     stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(1))).toUInt(&ok,2));
     stream << (quint32)(vts::spi::reverseString(QString::fromStdString(global_vec.at(0))).toUInt(&ok,2));
 
+}
+
+bool CommunicatorFrontEnd::sample_xadc(int n_samples)
+{
+    //
+    // start building the word
+    //
+
+    bool ok;
+    QByteArray datagram;
+    QDataStream out(&datagram, QIODevice::WriteOnly);
+    out.device()->seek(0);
+
+    QString dummy_header0 = "CCAA";
+    QString dummy_header1 = "AAFF";
+
+    // header (not used)
+    out << (quint32)(dummy_header0.toUInt(&ok,16))
+        << (quint32)(dummy_header1.toUInt(&ok,16));
+
+    // VMM ID select
+    out << (quint32)(XADCRegister::XADCVMMID)
+        << (quint32)(1);
+
+    // Number of samples to select
+    out << (quint32)(XADCRegister::XADCSAMPLESIZE)
+        << (quint32)(n_samples);
+
+    // xADC delay
+    out << (quint32)(XADCRegister::XADCDELAY)
+        << (quint32)(10000); //
+        //<< (quint32)(0x1FFFF);
+
+//    // CKTP Enable
+//    out << (quint32)(XADCRegister::XADCCKTPENABLE)
+//        << (quint32)(0x0);
+//
+    // prepare the socket and write
+    write(datagram, m_xadc_recv_port);
+
+    return true;
 }
 
 } // namespace vts

@@ -4,6 +4,7 @@
 //vts
 #include "vts_result.h"
 namespace vts {
+    class CommunicatorFrontEnd;
     namespace daq {
         class DataFragment;
     }
@@ -23,6 +24,7 @@ namespace spdlog {
 
 //std/stl
 #include <atomic>
+#include <memory>
 
 namespace vts
 {
@@ -38,6 +40,8 @@ class VTSTestImp : public QObject
             m_test_config = test_config;
             m_frontend_config = frontend_config;
         }
+
+        std::shared_ptr<vts::CommunicatorFrontEnd> comm();
 
         virtual bool initialize(const json& config) = 0;
         virtual bool load() = 0;

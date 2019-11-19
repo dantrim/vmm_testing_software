@@ -82,6 +82,42 @@ vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t>& datagram)
 
 } // namespace vmm
 
+///////////////////////////////////////////////////////////////////////
+// XADC
+///////////////////////////////////////////////////////////////////////
+
+namespace xadc
+{
+
+vector<vts::decode::xadc::Sample> decode(vector<uint32_t>& data)
+{
+    vector<vts::decode::xadc::Sample> out;
+    for(size_t i = 0; i < data.size(); i+=2)
+    {
+        uint32_t d0 = data.at(i);
+        if(d0 == 0xffffffff) break;
+        uint32_t d1 = data.at(i+1);
+
+        uint32_t chip_number = (d0 & 0xf0) >> 4;
+        uint32_t s0 = ( (d0 & 0xf) << 8         | (d0 & 0xff00) >> 8 );
+        uint32_t s1 = ( (d0 & 0xf0000000) >> 28 | (d0 & 0xff0000) >> 12 );
+        uint32_t s2 = ( (d0 & 0xf000000) >> 16  | (d1 & 0xff) );
+        uint32_t s3 = ( (d1 & 0xff00) >> 4      | (d1 & 0xf00000) >> 20 );
+        uint32_t s4 = ( (d1 & 0xff000000) >> 24 | (d1 & 0xf0000) >> 8 );
+
+        Sample s;
+        if(s0!=0x0) { s.set_sample(s0); s.set_vmm_id(chip_number); out.push_back(s); s.clear(); }
+        if(s1!=0x0) { s.set_sample(s1); s.set_vmm_id(chip_number); out.push_back(s); s.clear(); }
+        if(s2!=0x0) { s.set_sample(s2); s.set_vmm_id(chip_number); out.push_back(s); s.clear(); }
+        if(s3!=0x0) { s.set_sample(s3); s.set_vmm_id(chip_number); out.push_back(s); s.clear(); }
+        if(s4!=0x0) { s.set_sample(s4); s.set_vmm_id(chip_number); out.push_back(s); s.clear(); }
+    }
+    return out;
+}
+
+
+} // namespace xadc
+
 
 } // namespace decode
 } // namespace vts

@@ -40,6 +40,7 @@ namespace vts
             void construct_spi(QDataStream& stream,
                             const std::vector<std::string>& global,
                             const std::vector<std::string>& channel);
+            bool sample_xadc(int n_samples = 1000);
             void write(const QByteArray& data, int port);
 
         private :
@@ -47,6 +48,7 @@ namespace vts
             std::string m_board_ip;
             int m_spi_recv_port;
             int m_fpga_recv_port;
+            int m_xadc_recv_port;
     }; // class CommunicatorFrontEnd
 } // namespace vts
 

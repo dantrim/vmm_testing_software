@@ -52,6 +52,7 @@ SOURCES += \
         src/vts_test_states.cpp \
         # tests
         src/vts_test.cpp \
+        src/vts_test_imp.cpp \
         # daq
         src/daq_handler.cpp \
         src/daq_listener.cpp \

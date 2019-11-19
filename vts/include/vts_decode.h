@@ -149,6 +149,35 @@ namespace vmm
 
 } // namespace vmm
 
+namespace xadc
+{
+    class Sample
+    {
+        public :
+            Sample() { clear(); }
+            virtual ~Sample(){};
+
+            void clear()
+            {
+                m_vmm_id = 0x0;
+                m_sample = 0x0;
+            }
+
+            void set_vmm_id(uint32_t x) { m_vmm_id = x; }
+            const uint32_t& vmm_id() const { return m_vmm_id; }
+
+            void set_sample(uint32_t x) { m_sample = x; }
+            const uint32_t& sample() const { return m_sample; }
+
+        private :
+            uint32_t m_vmm_id;
+            uint32_t m_sample;
+    }; // class Sample
+
+    std::vector<vts::decode::xadc::Sample> decode(std::vector<uint32_t>& data);
+
+} // namespace xadc
+
 } // namespace daq
 } // namespace vts
 
