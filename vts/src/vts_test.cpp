@@ -53,6 +53,11 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
         m_imp = std::make_shared<vts::VTSTestPassThrough>();
         m_imp->load_test_config(config, frontend_cfg);
     }
+    else if(test_type == "Baselines")
+    {
+        m_imp = std::make_shared<vts::VTSTestBaselines>();
+        m_imp->load_test_config(config, frontend_cfg);
+    }
     else
     {
         msg.str("");

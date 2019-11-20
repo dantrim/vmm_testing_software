@@ -12,6 +12,7 @@ namespace vts
     enum VTSTestType
     {
         PassThrough=0
+        ,Baselines
         ,VTSTESTTYPEINVALID
     };
     std::string VTSTestTypeToStr(const VTSTestType& t);    

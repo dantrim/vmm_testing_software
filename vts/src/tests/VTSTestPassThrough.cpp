@@ -228,7 +228,7 @@ bool VTSTestPassThrough::run()
     //comm.load_config(m_frontend_config);
     //bool status = comm.acq_toggle(1);
     //bool status = comm.sample_xadc(n_events_per_step());
-    bool status = comm()->sample_xadc(n_events_per_step());
+    bool status = comm()->sample_xadc(n_events_per_step(), 1000);
 
     // keep running until data processing has completed
     while(processing_events())
@@ -260,8 +260,9 @@ bool VTSTestPassThrough::process_event(vts::daq::DataFragment* fragment)
         log->info("{0} - {1}",__VTFUNC__,msg.str());
 
         stringstream sx;
-        sx << " N XADC SAMPLES = " << std::dec << samples.size();
-        //sx << " (" << std::dec << sample.vmm_id() << ":" << std::dec << sample.sample() << ")";
+        //sx << " N XADC SAMPLES = " << std::dec << samples.size();
+        for(const auto & sample : samples)
+            sx << " (" << std::dec << sample.vmm_id() << ":" << std::dec << sample.sample() << ")";
         log->info("{0} - {1}: {2}",__VTFUNC__,"Received xadc data", sx.str());
 
         //stringstream sx;

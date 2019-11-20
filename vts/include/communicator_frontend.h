@@ -40,7 +40,7 @@ namespace vts
             void construct_spi(QDataStream& stream,
                             const std::vector<std::string>& global,
                             const std::vector<std::string>& channel);
-            bool sample_xadc(int n_samples = 1000);
+            bool sample_xadc(int n_samples = 1000, int sampling_delay = 10000 /*in 5 ns steps*/);
             void write(const QByteArray& data, int port);
 
         private :

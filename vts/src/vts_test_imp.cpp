@@ -13,6 +13,4 @@ std::shared_ptr<CommunicatorFrontEnd> VTSTestImp::comm()
     return comm;
 }
 
-
-
 } // namespace vts

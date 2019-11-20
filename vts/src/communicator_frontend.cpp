@@ -389,7 +389,7 @@ void CommunicatorFrontEnd::construct_spi(QDataStream& stream,
 
 }
 
-bool CommunicatorFrontEnd::sample_xadc(int n_samples)
+bool CommunicatorFrontEnd::sample_xadc(int n_samples, int sampling_delay)
 {
     //
     // start building the word
@@ -417,7 +417,7 @@ bool CommunicatorFrontEnd::sample_xadc(int n_samples)
 
     // xADC delay
     out << (quint32)(XADCRegister::XADCDELAY)
-        << (quint32)(10000); //
+        << (quint32)(sampling_delay); //
         //<< (quint32)(0x1FFFF);
 
 //    // CKTP Enable

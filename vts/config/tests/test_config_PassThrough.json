@@ -1,5 +1,5 @@
 {
-    "test_type" : "PassThrough",
+    "test_type" : "Baselines",
     "test_data" :
     {
         "output_dir" : "./",
