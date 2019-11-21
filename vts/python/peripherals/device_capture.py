@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+import sys, os
+import socket
+from .device import CAM_IP, CMD_PORT, SER_PORT, close_socket, send
+
+class PictureTaker() :
+    def __init__(self) :
+
+        self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.listen_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+        self.serial_number = ""
+
+    def shutoff_camera(self) :
+        self.request(cmd = "X")
+
+    def get_serial_number(self) :
+
+        self.request(cmd = "TRG")
+        return self.serial_number
+
+    def request(self, cmd = "TRG") :
+
+        # make connection
+        listen_address = (CAM_IP, SER_PORT)
+        self.listen_socket.bind(listen_address)
+
+        cmd_address = (CAM_IP, CMD_PORT)
+
+        # start listening with the listen socket
+        self.listen_socket.listen()
+
+        # send the command
+        serial_number = ""
+        attempts = 0
+        try :
+            while True :
+                send(cmd, cmd_address)
+                conn, addr = self.listen_socket.accept()
+                with conn :
+                    ser_data = str(conn.recv(32), "utf-8")
+                    if not ser_data :
+                        break
+                    if "X" in cmd and ser_data == "OK" :
+                        break
+                    elif cmd == "TRG" and ser_data != "" :
+                        if "|-" in ser_data and "-|" in ser_data :
+                            serial_number = ser_data.strip().replace("|-","").replace("-|","").strip()
+                        else :
+                            print("Unknown formatting for received serial number: {}".format(ser_data))
+                            serial_number = ""
+                        break
+                    else :
+                        serial_number = ""
+                        break
+            if serial_number == "" and "X" not in cmd :
+                print("Failed to receive VMM serial number")
+                serial_number = ""
+        except :
+            self.close()
+            return
+        self.close()
+
+        self.serial_number = serial_number
+
+    def close(self) :
+        close_socket(self.listen_socket, socket.SHUT_RD)
+
+if __name__ == "__main__" :
+    main()
