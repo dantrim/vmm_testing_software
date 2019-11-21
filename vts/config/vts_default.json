@@ -8,6 +8,11 @@
             "server_ip" : "127.0.0.1",
             "server_port" : "1234"
         },
+        "test_output" :
+        {
+            "output_directory" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/test_output",
+            "output_level" : "COMPRESSED"
+        },
         "logging" :
         {
             "log_location" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/python/logs",

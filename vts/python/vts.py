@@ -14,6 +14,7 @@ from PySide2 import QtCore, QtGui, QtWidgets, QtNetwork
 
 # vts
 from vts_utils import vts_client
+from peripherals import camera_comm
 
 def args_ok(args) :
 
@@ -42,11 +43,12 @@ def server_command_and_exit(args, vts_client) :
         vts_client.dummy_send()
 
 class VTSWindow(QtWidgets.QDialog) :
-    def __init__(self, parent = None, client = None) :
+    def __init__(self, parent = None, client = None, camera = None) :
         super(VTSWindow, self).__init__(parent)
 
 
         self.vts_client = client
+        self.comm = camera
 
         ##
         ## server buttons
@@ -116,6 +118,17 @@ class VTSWindow(QtWidgets.QDialog) :
         self.start_test_button.clicked.connect(self.vts_client.start_test)
         self.stop_test_button.clicked.connect(self.vts_client.stop_test)
 
+        ##
+        ## serial
+        ##
+        self.take_picture_button = QtWidgets.QPushButton("Take Picture")
+        self.load_vmm_serial_button = QtWidgets.QPushButton("VMM SERIAL")
+        buttons_serial = QtWidgets.QDialogButtonBox()
+        buttons_serial.addButton(self.take_picture_button, QtWidgets.QDialogButtonBox.ActionRole)
+        buttons_serial.addButton(self.load_vmm_serial_button, QtWidgets.QDialogButtonBox.ActionRole)
+        self.take_picture_button.clicked.connect(self.take_vmm_picture)
+        self.load_vmm_serial_button.clicked.connect(self.get_serial) #comm.request_serial) #vts_client.get_vmm_serial)
+
 
         ##
         ## layout
@@ -125,10 +138,26 @@ class VTSWindow(QtWidgets.QDialog) :
         layout.addWidget(button_box)
         layout.addWidget(buttons_frontend)
         layout.addWidget(buttons_test)
+        layout.addWidget(buttons_serial)
         self.setLayout(layout)
 
         self.setWindowTitle("VTS")
         self.start_button.setFocus()
+
+    def take_vmm_picture(self) :
+        self.comm.request_serial()
+        return
+
+    def get_serial_(self) :
+        return self.comm.current_serial()
+
+    def get_serial(self) :
+
+        serial = self.comm.current_serial()
+        if serial == "NULL" :
+            print("Failed to obtain VMM serial number!")
+            return
+        print("Received VMM serial number: {}".format(serial))
 
 def main() :
 
@@ -146,6 +175,7 @@ def main() :
             choices = ["START", "STOP", "PING", "CLEAN", "DUMMY"],
             help = "VTS Server Commands"
     )
+
     ##
     ## parse and check the args
     ##
@@ -178,11 +208,12 @@ def main() :
         sys.exit(0)
     if args.gui :
         app = QtWidgets.QApplication(sys.argv) 
-        window = VTSWindow(client = client)
+        comm = camera_comm.CameraComm()
+        comm.start()
+        comm.connect_to_camera()
+        window = VTSWindow(client = client, camera = comm)
         window.show()
         sys.exit(window.exec_())
-        
-        
 
 if __name__ == "__main__" :
     main()
