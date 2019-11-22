@@ -24,6 +24,13 @@ DEPENDPATH += $$boostinclude
 DEPENDPATH += external/
 DEPENDPATH += external/spdlog
 
+# ROOT
+INCLUDEPATH += $(ROOTSYS)/include
+LIBS += -L$(ROOTSYS)/lib -lCore -lCling -lRIO -lNet \
+            -lHist -lGraf -lGraf3d -lGpad -lTree \
+            -lRint -lPostscript -lMatrix -lPhysics \
+            -lGui -lMathCore #-lRGL -lMathCore
+
 OBJECTS_DIR += ./objects/
 MOC_DIR += ./moc/
 RCC_DIR += ./rcc/
@@ -58,7 +65,9 @@ SOURCES += \
         src/daq_listener.cpp \
         src/daq_data_builder.cpp \
         # decode
-        src/vts_decode.cpp
+        src/vts_decode.cpp \
+        # filemanager
+        src/filemanager.cpp
 HEADERS += \
         include/vts_server.h \
         include/helpers.h \
@@ -82,6 +91,8 @@ HEADERS += \
         include/daq_data_builder.h \
         # decode
         include/vts_decode.h \
+        # filemanager
+        include/filemanager.h \
         # external
         external/nlohmann/json.hpp \
         external/spdlog/spdlog.h \

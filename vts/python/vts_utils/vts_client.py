@@ -13,6 +13,7 @@ import glob
 
 # vts
 from vts_utils import vts_comm
+from peripherals import device_capture
 
 class VTSClient(QtCore.QObject) :
     def __init__(self, parent = None, config = None, config_file = "") :
@@ -215,7 +216,7 @@ class VTSClient(QtCore.QObject) :
     def reset_vmm(self) :
         self.frontend_cmd(cmd = "RESETVMM")
 
-    def test_cmd(self, cmd = "", test_data = [], expect_reply = True, wait = 5000) :
+    def test_cmd(self, cmd = "", test_data = {}, expect_reply = True, wait = 5000) :
         self.reset_socket()
         data = {
             "CMD" : cmd,
@@ -230,9 +231,20 @@ class VTSClient(QtCore.QObject) :
         print("reply? {}".format(reply))
 
     def load_test(self) :
+
+        # first acquire the current VMM serial ID
+        camera = device_capture.PictureTaker()
+        vmm_sn = camera.get_serial_number()
+        if not vmm_sn :
+            print("ERROR Could not acquire VMM serial number - Cannot load tests!")
+            return
         hard_coded_dir = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/tests/"
         test_files = glob.glob("{}/test_config*.json".format(hard_coded_dir))
-        self.test_cmd(cmd = "LOAD", test_data = test_files)
+        test_data = {
+            "VMM_SERIAL_ID" : vmm_sn,
+            "TEST_CONFIG" : test_files
+        }
+        self.test_cmd(cmd = "LOAD", test_data = test_data) #test_files)
 
     def start_test(self) :
         self.test_cmd(cmd = "START", expect_reply = False)

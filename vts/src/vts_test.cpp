@@ -39,6 +39,11 @@ int VTSTest::n_steps()
     return m_imp->get_n_states();
 }
 
+void VTSTest::load_file_manager(vts::FileManager* mgr)
+{
+    m_imp->load_file_manager(mgr);
+}
+
 bool VTSTest::initialize(const json& config, const json& frontend_cfg, const json& daq_cfg)
 {
     update_fsm(VTSTestState::NONE);

@@ -485,7 +485,6 @@ vector<string> spi_channel_register_vec(const json& jreg)
     } // channel trims
 
     // hardcode for testing
-    cout << "WARNING HARDCODING NON-BOOL CHANNEL BITS" << endl;
     vector<string> out;
     for(int i = 0; i < 64; i++)
     {
@@ -523,6 +522,7 @@ vector<string> spi_channel_register_vec(const json& jreg)
         reg.replace(pos,tmp.size(),tmp);
         pos+=tmp.size();
 
+        // hardcoding these last three
         // sz10b 
         tmp = QString("%1").arg(0,5,2,QChar('0'));
         tmp = reverseString(tmp);

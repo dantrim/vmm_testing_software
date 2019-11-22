@@ -12,10 +12,17 @@
 #include <sstream>
 #include <chrono>
 #include <vector>
+#include <math.h> // pow
 using namespace std;
 
 //logging
 #include "spdlog/spdlog.h"
+
+//ROOT
+#include "TTree.h"
+#include "TH1F.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
 
 namespace vts
 {
@@ -26,10 +33,6 @@ bool VTSTestBaselines::initialize(const json& config)
 
     stringstream msg;
     msg << "Initializing with config: " << config.dump();
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    msg.str("");
-    msg << "INITIALIZED!";
     log->info("{0} - {1}",__VTFUNC__,msg.str());
 
     m_test_data = m_test_config.at("test_data");
@@ -49,7 +52,9 @@ bool VTSTestBaselines::initialize(const json& config)
     ifs_vmm >> vmm_data;
     m_base_vmm_config = vmm_data;
 
-    // dummy
+    m_channel_histos.clear();
+    m_channel_baseline_means.clear();
+
     m_test_steps.clear();
     stringstream ch;
     for(int i = 0; i < 64; i++)
@@ -59,6 +64,17 @@ bool VTSTestBaselines::initialize(const json& config)
         TestStep t;
         t.channel = ch.str();
         m_test_steps.push_back(t);
+
+        // histogram
+        stringstream hname;
+        stringstream axis;
+        hname << "baseline_samples_ch" << t.channel;
+        axis << ";xADC samples [counts];Entries";
+        TH1F* h = new TH1F(hname.str().c_str(), axis.str().c_str(),100,0,-1);
+        h->SetLineColor(kBlack);
+        m_channel_histos.push_back(h);
+        m_channel_baseline_means.push_back(0.0);
+        m_channel_baseline_errors.push_back(0.0);
     }
     
     set_current_state(0);
@@ -70,15 +86,11 @@ bool VTSTestBaselines::load()
 {
     set_current_state( get_current_state() + 1);
 
-    log->info("{0}",__VTFUNC__);
-    //std::this_thread::sleep_for(std::chrono::seconds(2));
     return true;
 }
 
 bool VTSTestBaselines::configure()
 {
-    log->info("{0}",__VTFUNC__);
-
     //reset_vmm();
     TestStep t = m_test_steps.at(get_current_state() - 1);
 
@@ -90,7 +102,6 @@ bool VTSTestBaselines::configure()
     fpga_triggers["latency"] = "0";
 
     comm()->configure_fpga(fpga_triggers, fpga_clocks);
-    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // build the VMM config info for this step
     json vmm_config = m_base_vmm_config;
@@ -134,7 +145,7 @@ bool VTSTestBaselines::run()
     // reset the event counters for this new run
     reset_event_count();
 
-    bool status = comm()->sample_xadc(n_events_per_step(), 500);
+    comm()->sample_xadc(n_events_per_step(),500);
 
     // keep running until data processing has completed
     while(processing_events())
@@ -149,47 +160,108 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
 {
     if(n_events_processed() >= n_events_per_step())
     {
-        log->info("{0} - Event count reached ({1})",__VTFUNC__, n_events_processed());
+        log->trace("{0} - Event count reached ({1})",__VTFUNC__, n_events_processed());
         return false;
     }
+    TestStep t = m_test_steps.at(get_current_state() - 1);
+    string current_channel = t.channel;
+    int channel = std::stoi(current_channel);
 
     vector<vts::decode::xadc::Sample> samples = vts::decode::xadc::decode(fragment->packet);
-
-    if(true)
+    for(const auto & sample : samples)
     {
-        TestStep t = m_test_steps.at(get_current_state() - 1);
-        string current_channel = t.channel;
-
-        int n_samples = samples.size();
-        uint32_t avg_sample = 0;
-        for(const auto & sample : samples) avg_sample += sample.sample();
-        avg_sample = float(avg_sample);
-        avg_sample /= float(n_samples);
-        
-        stringstream msg;
-        msg << "Average xadc sampling for " << n_samples << " for CHANNEL " << current_channel << " = " << std::dec << avg_sample;
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        if(n_events_processed() >= n_events_per_step()) break;
+        m_channel_histos.at(channel)->Fill(sample.sample());
+        event_processed();
     }
-    for(const auto& s: samples) event_processed();
     comm()->sample_xadc(n_events_per_step(), 500);
     return true;
 }
 
 bool VTSTestBaselines::analyze()
 {
-    log->info("{0}",__VTFUNC__);
+    TestStep t = m_test_steps.at(get_current_state() - 1);
+    int channel = std::stoi(t.channel);
+
+    auto h = m_channel_histos.at(channel);
+    float mean_baseline_counts = h->GetMean();
+    float mean_baseline_mv = (mean_baseline_counts / pow(2,12)) * 1000.;
+    float mean_baseline_counts_err = h->GetStdDev();
+    float mean_baseline_mv_err = (mean_baseline_counts_err / pow(2,12)) * 1000.;
+    m_channel_baseline_means.at(channel) = mean_baseline_mv;
+    m_channel_baseline_errors.at(channel) = mean_baseline_mv_err;
+
+    stringstream msg;
+    msg << "Average xADC sampling for channel " << channel << " = " << mean_baseline_mv << " +/- " << mean_baseline_mv_err << " [mV] (" <<  mean_baseline_counts << " +/- " << mean_baseline_counts_err << " [counts])";
+    log->info("{0} - {1}",__VTFUNC__,msg.str());
+
     return true;
 }
 
 bool VTSTestBaselines::analyze_test()
 {
-    log->info("{0}",__VTFUNC__);
+    TH1F* h = new TH1F("channel_baselines", ";VMM Channel;Baselines [mV]", 64,0,64);
+    h->SetMarkerStyle(20);
+    h->SetMarkerColor(kBlack);
+
+    float max_y = -1.0;
+    float min_y = 1e3;
+    for(size_t i = 0; i < m_channel_baseline_means.size(); i++)
+    {
+        int ibin = i+1;
+        float val = m_channel_baseline_means.at(i);
+        if(val < min_y) min_y = val;
+        if(val > max_y) max_y = val;
+        h->SetBinContent(ibin,val);
+    }
+    h->SetMinimum(0.9*min_y);
+    h->SetMaximum(1.1*max_y);
+
+    if(!store(h))
+    {
+        log->warn("{0} - Failed to store baseline summary histogram (name = \"{1}\")",__VTFUNC__,h->GetName());
+    }
+    delete h;
+
+    // graph it
+    TGraphErrors* g = new TGraphErrors(m_channel_baseline_means.size());
+    g->SetName("g_channel_baselines");
+    g->SetTitle("g_channel_baselines");
+    for(size_t i = 0; i < m_channel_baseline_means.size(); i++)
+    {
+        float val = m_channel_baseline_means.at(i);
+        float err = m_channel_baseline_errors.at(i);
+        g->SetPoint(i,i,val);
+        g->SetPointError(i, 0, err);
+    }
+    g->SetMarkerStyle(20);
+    g->SetMarkerColor(kBlack);
+    g->SetLineColor(kBlack);
+    if(!store(g))
+    {
+        log->warn("{0} - Failed to store baseline summary graph",__VTFUNC__);
+    }
+    delete g;
+    
+
     return true;
 }
 
 bool VTSTestBaselines::finalize()
 {
-    log->info("{0}",__VTFUNC__);
+    for(size_t i = 0; i < m_channel_histos.size(); i++)
+    {
+        TH1* h = m_channel_histos.at(i);
+        if(!h) { h = 0; continue; }
+        if(!store(h))
+        {
+            log->warn("{0} - Failed to store xADC samples  histogram with name \"{1}\"",__VTFUNC__,h->GetName());
+            continue;
+        }
+        delete h;
+    }
+    m_channel_histos.clear();
+
     return true;
 }
 
@@ -203,9 +275,6 @@ json VTSTestBaselines::get_results()
 
 void VTSTestBaselines::reset_vmm()
 {
-    //vts::CommunicatorFrontEnd comm;
-    //comm.load_config(m_frontend_config);
-    //comm.configure_vmm(m_base_vmm_config, /*perform reset*/ true);
     comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
 }
 

@@ -37,14 +37,18 @@ namespace vts
             static bool tests_are_ok(std::vector<std::string> test_config_files);
             static bool is_valid_test(std::string test_type);
 
+            void load_output_config(const json& output_cfg);
             void load_frontend_config(const json& frontend_cfg, const json& daq_cfg);
-            void load_test_configs(std::vector<std::string> test_config_files);
+            void load_test_config(const json& test_cfg);
+            //void load_test_configs(std::vector<std::string> test_config_files);
 
             void start();
             void stop();
 
         private :
             std::shared_ptr<spdlog::logger> log;
+            std::string m_vmm_serial_id;
+            json m_output_cfg;
             json m_frontend_cfg;
             json m_daq_cfg;
             std::vector<std::string> m_test_configs;

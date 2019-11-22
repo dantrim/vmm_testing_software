@@ -59,7 +59,6 @@ void DataBuilder::build()
         continue_processing = m_test->process_event(fragment);
         delete fragment;
     } // while
-    log->info("{0} - Build is setting processing flag to FALSE",__VTFUNC__);
     m_test->stop_processing_events();
 }
 

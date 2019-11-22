@@ -8,6 +8,7 @@
 // vts
 namespace vts {
     class VTSTestImp;
+    class FileManager;
     namespace daq {
         class DataFragment;
     }
@@ -37,6 +38,7 @@ class VTSTest : public QObject
     public :
         explicit VTSTest(QObject* parent =  0);
         ~VTSTest();
+        void load_file_manager(vts::FileManager* mgr);
 
         bool initialize(const json& test_config, const json& frontend_cfg, const json& daq_cfg);
         bool load();

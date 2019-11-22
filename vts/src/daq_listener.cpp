@@ -80,7 +80,7 @@ bool DataListener::continue_listening()
 
 void DataListener::shutdown()
 {
-    log->debug("{0} - Shutting down listener of port {1}", __VTFUNC__, m_listen_port);
+    log->trace("{0} - Shutting down listener of port {1}", __VTFUNC__, m_listen_port);
     if(m_socket && m_socket->is_open())
     {
         m_socket->close();

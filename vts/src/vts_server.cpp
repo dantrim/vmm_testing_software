@@ -267,13 +267,14 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
             ok = false;
         }
 
-        if(!vts::VTSTestHandler::tests_are_ok(test_data)) { ok = false; }
+        if(!vts::VTSTestHandler::tests_are_ok(test_data.at("TEST_CONFIG"))) { ok = false; }
 
         if(ok)
         {
             m_test_handler = std::make_shared<vts::VTSTestHandler>();
+            m_test_handler->load_output_config(m_server_config.at("test_output"));
             m_test_handler->load_frontend_config(m_server_config.at("frontend"), m_server_config.at("daq"));
-            m_test_handler->load_test_configs(test_data);
+            m_test_handler->load_test_config(test_data);
         }
     }
     else if(test_cmd == CMDVMMTest::START)

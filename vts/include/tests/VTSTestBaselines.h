@@ -11,6 +11,10 @@ namespace vts {
     }
 }
 
+//ROOT
+class TTree;
+class TH1F;
+
 //logging
 #include "spdlog/spdlog.h"
 
@@ -54,6 +58,11 @@ class VTSTestBaselines : public VTSTestImp
             std::string channel;
         };
         std::vector<TestStep> m_test_steps;
+
+        // test data
+        std::vector<TH1F*> m_channel_histos;
+        std::vector<float> m_channel_baseline_means;
+        std::vector<float> m_channel_baseline_errors;
 
 }; // class VTSTestBaselines
 

@@ -66,8 +66,6 @@ void DaqHandler::start_listening()
 {
     m_io_service = std::make_shared<boost::asio::io_service>();
 
-    log->info("{0}",__VTFUNC__);
-
     m_listen_flag.store(true);
     m_build_flag.store(true);
 
@@ -114,9 +112,6 @@ void DaqHandler::start_listening()
 
 void DaqHandler::stop_listening()
 {
-    log->info("{0}",__VTFUNC__);
-    
-
     size_t n_listeners = m_listeners.size();
     m_listen_flag.store(false);
     m_build_flag.store(false);

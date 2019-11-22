@@ -5,10 +5,15 @@
 #include "vts_result.h"
 namespace vts {
     class CommunicatorFrontEnd;
+    class FileManager;
     namespace daq {
         class DataFragment;
     }
 }
+
+//ROOT
+#include "TROOT.h"
+class TTree;
 
 //Qt
 #include <QObject>
@@ -40,6 +45,8 @@ class VTSTestImp : public QObject
             m_test_config = test_config;
             m_frontend_config = frontend_config;
         }
+        void load_file_manager(vts::FileManager* mgr) { m_file_manager = mgr; }
+        bool store(TObject* obj);
 
         std::shared_ptr<vts::CommunicatorFrontEnd> comm();
 
@@ -75,6 +82,8 @@ class VTSTestImp : public QObject
 
     protected :
         std::shared_ptr<spdlog::logger> log;
+
+        vts::FileManager* m_file_manager;
 
         json m_test_config;
         json m_frontend_config;
