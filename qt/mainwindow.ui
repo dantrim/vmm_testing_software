@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>886</width>
-    <height>442</height>
+    <width>883</width>
+    <height>463</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>10</x>
       <y>10</y>
       <width>691</width>
-      <height>381</height>
+      <height>421</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -33,10 +33,10 @@
      <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
-        <x>2</x>
+        <x>3</x>
         <y>10</y>
         <width>681</width>
-        <height>331</height>
+        <height>371</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -572,6 +572,54 @@
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_25">
+           <property name="text">
+            <string>N/M     </string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QProgressBar" name="progressBar">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="sizeIncrement">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>0</width>
+             <height>4</height>
+            </size>
+           </property>
+           <property name="value">
+            <number>24</number>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <property name="invertedAppearance">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -1171,7 +1219,7 @@
       <x>710</x>
       <y>270</y>
       <width>162</width>
-      <height>108</height>
+      <height>110</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -1279,13 +1327,54 @@
      </property>
     </widget>
    </widget>
+   <widget class="QFrame" name="frame_13">
+    <property name="geometry">
+     <rect>
+      <x>710</x>
+      <y>390</y>
+      <width>161</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth">
+     <number>2</number>
+    </property>
+    <widget class="QFrame" name="frame_14">
+     <property name="geometry">
+      <rect>
+       <x>4</x>
+       <y>4</y>
+       <width>153</width>
+       <height>33</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(244, 255, 122)</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>886</width>
+     <width>883</width>
      <height>22</height>
     </rect>
    </property>
@@ -1296,7 +1385,6 @@
    </widget>
    <addaction name="menuVMM_Testing_Software"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <resources>
   <include location="vts_resources.qrc"/>
