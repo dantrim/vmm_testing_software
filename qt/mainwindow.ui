@@ -30,7 +30,7 @@
      <attribute name="title">
       <string>VTS Control</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>3</x>
@@ -165,7 +165,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_2">
+               <widget class="QPushButton" name="button_start_vts_server">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -179,7 +179,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_3">
+               <widget class="QPushButton" name="button_shutdown_vts_server">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -193,7 +193,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_4">
+               <widget class="QPushButton" name="button_ping_vts_server">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -253,7 +253,7 @@
                   <number>1</number>
                  </property>
                  <item row="0" column="0">
-                  <widget class="QLabel" name="label_12">
+                  <widget class="QLabel" name="label_vts_server_status">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -329,7 +329,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_5">
+             <widget class="QPushButton" name="button_acquire_vmm_serial">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -341,7 +341,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_11">
+             <widget class="QPushButton" name="button_ping_camera">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -396,7 +396,7 @@
                 <number>1</number>
                </property>
                <item row="0" column="0">
-                <widget class="QLabel" name="label_15">
+                <widget class="QLabel" name="label_vts_vmm_sn">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
                    <horstretch>0</horstretch>
@@ -628,7 +628,7 @@
      <attribute name="title">
       <string>Frontend Control</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>3</x>

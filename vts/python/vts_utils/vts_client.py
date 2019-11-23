@@ -3,6 +3,7 @@ from __future__ import print_function
 
 # Qt
 from PySide2 import QtCore, QtNetwork
+from PySide2.QtCore import Signal, Slot
 
 # system
 import sys, os, subprocess, psutil
@@ -16,6 +17,8 @@ from vts_utils import vts_comm
 from peripherals import device_capture
 
 class VTSClient(QtCore.QObject) :
+
+
     def __init__(self, parent = None, config = None, config_file = "") :
         super(VTSClient, self).__init__(parent)
 
@@ -24,6 +27,12 @@ class VTSClient(QtCore.QObject) :
         self.config_file = config_file
         self.comms = vts_comm.VTSCommunicator()
         self.server_process = None
+
+    ##
+    ## SIGNALS
+    ##
+    signal_vmm_sn_updated = Signal(str)
+    signal_server_status_updated = Signal(str)
 
     def check_for_vts(self, by_name = False) :
 
@@ -136,6 +145,9 @@ class VTSClient(QtCore.QObject) :
             _ = self.socket.waitForReadyRead(1)
             _ = self.socket.readAll()
             self.socket.close()
+
+        ping_status_str = { True : "Alive", False : "Dead" }[found_server]
+        self.signal_server_status_updated.emit(str(ping_status_str))
 
         if not quiet :
             print("ping? {}".format(found_server))
@@ -251,3 +263,12 @@ class VTSClient(QtCore.QObject) :
 
     def stop_test(self) :
         self.test_cmd(cmd = "STOP")
+
+    def capture_vmm_serial(self) :
+        camera = device_capture.PictureTaker()
+        vmm_sn = camera.get_serial_number()
+        if not vmm_sn :
+            print("ERROR Could not acquire VMM serial number")
+        
+        self.signal_vmm_sn_updated.emit(str(vmm_sn))
+        return vmm_sn
