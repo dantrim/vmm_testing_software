@@ -17,7 +17,8 @@ namespace vts
 {
 
 VTSTestHandler::VTSTestHandler(QObject* parent) :
-    QObject(parent)
+    QObject(parent),
+    m_is_running(false)
 {
 }
 
@@ -102,6 +103,7 @@ void VTSTestHandler::start()
     // testing
     vts::FileManager* fmg = new vts::FileManager(m_vmm_serial_id, m_output_cfg);
     if(!fmg->create_output()) return;
+    m_is_running = true;
 
     stringstream msg;
     for(const auto & tf : m_test_config_map)
@@ -141,7 +143,7 @@ void VTSTestHandler::start()
         if(!initialize_ok)
         {
             // at this point, nothing in the test has started, so we can just exit
-            return;
+            continue;
         }
         // once initialized we can safely provide the FileManager to the Test
         m_test->load_file_manager(fmg);
@@ -221,6 +223,7 @@ void VTSTestHandler::start()
         log->info("{0} - {1}",__VTFUNC__,msg.str());
     }
 
+    m_is_running = false;
     delete fmg;
 }
 

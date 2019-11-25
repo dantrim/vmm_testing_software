@@ -43,6 +43,17 @@ def default_vts_config() :
     else :
         return None
 
+def default_tests_dir() :
+
+    p_config_dir = vts_config_path()
+    if not p_config_dir :
+        return None
+    p_test_dir = p_config_dir / "tests"
+    exists_and_is_dir = p_test_dir.exists() and p_test_dir.is_dir()
+    if not exists_and_is_dir :
+        return None
+    return p_test_dir
+
 def get_defined_tests() :
 
 
@@ -54,9 +65,21 @@ def get_defined_tests() :
     p_test_dir = p_config_dir / "tests"
     if not p_test_dir.exists() :
         return {}
-    test_config_files = list(p_test_dir.glob("test_config*.json"))
-    print("Found {} test config files".format(len(test_config_files)))
+    test_dict = tests_from_test_dir(p_test_dir)
+    return p_test_dir, test_dict
 
+def tests_from_test_dir(p_test_config_dir = None) :
+
+    if p_test_config_dir is None :
+        return {}
+
+    p_test_config_dir = Path(p_test_config_dir)
+
+    exists_and_is_dir = p_test_config_dir.exists() and p_test_config_dir.is_dir()
+    if not exists_and_is_dir :
+        return {}
+    test_config_files = list(p_test_config_dir.glob("test_config*.json"))
+    print("Found {} test config files".format(len(test_config_files)))
     test_dict = {}
     for ptest in test_config_files :
         with open(ptest, "r") as testfile :
@@ -65,7 +88,7 @@ def get_defined_tests() :
         test_dict[test_type] = ptest
 
     test_priority_list = {}
-    test_priority_file = p_test_dir / "test_priority.json"
+    test_priority_file = p_test_config_dir / "test_priority.json"
     if test_priority_file.exists() :
         with open(test_priority_file, "r") as tpfile :
             test_priority_dict = json.load(tpfile)
@@ -77,5 +100,16 @@ def get_defined_tests() :
                     tmp_test_dict[test_name] = tf
                     break
         test_dict = tmp_test_dict
+    return test_dict
 
-    return p_test_dir, test_dict
+def config_file_for_test(test_name = "", p_test_dir = None) :
+
+    p_test_dir = Path(p_test_dir)
+    exists_and_is_dir = p_test_dir.exists() and p_test_dir.is_dir()
+    if not exists_and_is_dir :
+        return None
+    test_filename = "test_config_{}.json".format(test_name)
+    p_test_filename = p_test_dir / test_filename
+    if not p_test_filename.exists() :
+        return None
+    return p_test_filename

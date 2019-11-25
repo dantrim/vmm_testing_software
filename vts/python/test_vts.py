@@ -5,6 +5,7 @@ from pathlib import Path
 import argparse
 import json
 import subprocess
+import time
 
 
 # VTS
@@ -18,6 +19,7 @@ from PySide2.QtCore import Slot, Signal
 #ui->monitoring_enable_button->setStyleSheet("QPushButton {background-color: rgb(15, 147, 255);}");
 
 VTS_GREEN = "(37, 229, 94)"
+VTS_WHITE = "(255, 255, 255)"
 VTS_RED = "(233, 40, 56)"
 VTS_BLUE = "(84, 163, 252)"
 VTS_GREY = "(189, 189, 189)"
@@ -33,6 +35,15 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
 
         self.signal_vts_config_updated.connect(self.signal_emitted)
+
+    def set_background(self, obj = None, obj_type_str = "", color = VTS_WHITE, reset = False) :
+
+        if reset :
+            color = VTS_WHITE
+        bkg = "rgb{};".format(color)
+        bkg = "%s {background-color: %s}" % (obj_type_str, bkg)
+        obj.setStyleSheet(bkg)
+
     ##
     ## VTS SIGNALS
     ##
@@ -75,6 +86,83 @@ class VTSWindow(QtWidgets.QMainWindow) :
     def signal_emitted(self) :
         print("-> Signal Emitted!")
 
+    @Slot(str)
+    def load_test_config_from_dir(self, value) :
+
+        # don't let the user do this if the server isn't alive
+        server_running = self.vts.ping_server(quiet = True)
+        if not server_running :
+            self.set_background(obj = self.ui.lineEdit_test_dir
+                    ,obj_type_str = "QLineEdit"
+                    ,reset = True
+            )
+            return
+
+        test_config_dir = str(value)
+        p_test_config_dir = Path(test_config_dir)
+        exists_and_is_dir = p_test_config_dir.exists() and p_test_config_dir.is_dir()
+        if not exists_and_is_dir :
+            self.set_background(obj = self.ui.lineEdit_test_dir
+                                ,obj_type_str = "QLineEdit"
+                                ,color = VTS_RED
+            )
+            self.clear_tests()
+            return
+        self.ui.lineEdit_test_dir.setText(str(p_test_config_dir))
+        test_dict = vts_helpers.tests_from_test_dir(p_test_config_dir)
+
+        if len(test_dict) >= 0 :
+            reset = len(test_dict) == 0
+            self.set_background(obj = self.ui.lineEdit_test_dir
+                                ,obj_type_str = "QLineEdit"
+                                ,color = VTS_GREEN
+                                ,reset = reset
+            )
+
+        for test_name, test_config_file in test_dict.items() :
+            self.ui.listWidget_loaded_tests.addItem(test_name)
+
+        # assumes that VTS server is running
+        if server_running :
+            self.send_tests_to_vts()
+
+    @Slot()
+    def load_test_config(self) :
+
+        self.clear_tests()
+        test_config_dir = self.ui.lineEdit_test_dir.text()
+        self.load_test_config_from_dir(str(test_config_dir))
+
+
+    def get_loaded_tests(self) :
+
+        test_names = []
+        test_configs = []
+        current_test_dir = self.ui.lineEdit_test_dir.text()
+
+
+        n_items = self.ui.listWidget_loaded_tests.count()
+        for itest in range(n_items) :
+            item = self.ui.listWidget_loaded_tests.item(itest)
+            item_name = item.text()
+            item_config = vts_helpers.config_file_for_test(item_name, Path(current_test_dir))
+            if item_config is None :
+                print("WARNING No config file found for test \"{}\"".format(item_name))
+                continue
+            test_names.append(item_name)
+            test_configs.append(str(item_config))
+        return test_names, test_configs
+
+    @Slot()
+    def clear_tests(self) :
+        self.ui.listWidget_loaded_tests.clear()
+
+    def send_tests_to_vts(self) :
+
+        test_names, test_config_files = self.get_loaded_tests()
+        self.vts.load_test(test_names = test_names, test_config_files = test_config_files)
+        return
+
     ##
     ## VTS CONNECTIONS
     ##
@@ -95,12 +183,32 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ## DEVICE CONTROL
         ##
         ui.button_acquire_vmm_serial.clicked.connect(self.vts.capture_vmm_serial)       
-
         ui.button_vts_config_check.clicked.connect(self.vts_print)
 
-    ##
-    ## VTS CONNECTIONS
-    ##
+        ##
+        ## TESTS
+        ##
+        ui.button_tests_load.clicked.connect(self.load_test_config) #vts.load_test)
+        ui.button_tests_start.clicked.connect(self.vts.start_test)
+        ui.button_tests_stop.clicked.connect(self.vts.stop_test)
+
+        ##
+        ## FPGA
+        ##
+        ui.button_fpga_configure.clicked.connect(self.vts.configure_fpga)
+        ui.button_fpga_ping.clicked.connect(self.vts.ping_fpga)
+
+        ##
+        ## VMM
+        ##
+        ui.button_vmm_configure.clicked.connect(self.vts.configure_vmm)
+        ui.button_vmm_reset.clicked.connect(self.vts.reset_vmm)
+
+        ##
+        ## DAQ
+        ##
+        ui.button_acq_on.clicked.connect(self.vts.acq_on)
+        ui.button_acq_off.clicked.connect(self.vts.acq_off)
 
     def setup_defaults(self, ui = None) :
 
@@ -119,10 +227,12 @@ class VTSWindow(QtWidgets.QMainWindow) :
         # tests
         ui.lineEdit_test_dir.clear()
         ui.listWidget_loaded_tests.clear()
-        test_dir, defined_tests = vts_helpers.get_defined_tests()
-        ui.lineEdit_test_dir.setText(str(test_dir))
-        for test_name, test_config_file in defined_tests.items() :
-            ui.listWidget_loaded_tests.addItem(test_name)
+        default_test_dir = vts_helpers.default_tests_dir()
+        self.load_test_config_from_dir(str(default_test_dir))
+#        test_dir, defined_tests = vts_helpers.get_defined_tests()
+#        ui.lineEdit_test_dir.setText(str(test_dir))
+#        for test_name, test_config_file in defined_tests.items() :
+#            ui.listWidget_loaded_tests.addItem(test_name)
 
 def args_ok(args) :
 

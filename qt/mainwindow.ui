@@ -479,7 +479,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="button_load_test_dir">
+               <widget class="QPushButton" name="button_tests_load">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -536,7 +536,7 @@
                  <number>1</number>
                 </property>
                 <item>
-                 <widget class="QPushButton" name="pushButton_17">
+                 <widget class="QPushButton" name="button_tests_start">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
                     <horstretch>0</horstretch>
@@ -549,7 +549,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_18">
+                 <widget class="QPushButton" name="button_tests_stop">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
@@ -736,7 +736,7 @@
                <number>4</number>
               </property>
               <item>
-               <widget class="QPushButton" name="pushButton_10">
+               <widget class="QPushButton" name="button_fpga_configure">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -748,7 +748,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton_9">
+               <widget class="QPushButton" name="button_fpga_ping">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -905,7 +905,7 @@
              <number>4</number>
             </property>
             <item>
-             <widget class="QPushButton" name="pushButton_13">
+             <widget class="QPushButton" name="button_vmm_configure">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -917,7 +917,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_14">
+             <widget class="QPushButton" name="button_vmm_reset">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -1029,7 +1029,7 @@
              <number>4</number>
             </property>
             <item>
-             <widget class="QPushButton" name="pushButton_7">
+             <widget class="QPushButton" name="button_acq_on">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -1041,7 +1041,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton_8">
+             <widget class="QPushButton" name="button_acq_off">
               <property name="font">
                <font>
                 <pointsize>10</pointsize>

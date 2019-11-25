@@ -263,8 +263,16 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
     {
         if(m_test_handler.get() != nullptr)
         {
-            log->error("{0} - {1}",__VTFUNC__,"TestHandler already started, cannot load new tests!");
-            ok = false;
+            if(!m_test_handler->is_running())
+            {
+                log->debug("{0} - {1}",__VTFUNC__,"Resetting TestHandler");
+                m_test_handler.reset();
+            }
+            else
+            {
+                log->error("{0} - {1}",__VTFUNC__,"TestHandler already started, cannot load new tests!");
+                ok = false;
+            }
         }
 
         if(!vts::VTSTestHandler::tests_are_ok(test_data.at("TEST_CONFIG"))) { ok = false; }

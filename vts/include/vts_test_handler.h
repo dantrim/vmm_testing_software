@@ -43,9 +43,11 @@ namespace vts
             //void load_test_configs(std::vector<std::string> test_config_files);
 
             void start();
+            bool is_running() { return m_is_running; }
             void stop();
 
         private :
+            bool m_is_running;
             std::shared_ptr<spdlog::logger> log;
             std::string m_vmm_serial_id;
             json m_output_cfg;
