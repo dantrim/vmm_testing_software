@@ -4,12 +4,53 @@ from __future__ import print_function
 # Qt
 from PySide2 import QtCore, QtNetwork
 
+# socket
+import socket
+
 # misc
 import json
+import time
 
 class VTSCommunicator :
     def __init__(self) :
         self.cmd_id = -1
+
+    def close_socket(socket, how) :
+        try :
+            socket.shutdown(how)
+            socket.close()
+        except :
+            return
+
+    def send_message_socket(self, address = (), message_data = {}, expect_reply = False, cmd_type = "TEST", wait = 1) :
+
+        self.cmd_id = self.cmd_id + 1
+        reply = ""
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s :
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+            s.settimeout(0.5) # set the timeout for 1 second of no activity
+            result = s.connect_ex(address)
+            connected_ok = not result
+            if not connected_ok :
+                print("ERROR Could not connect to VTS for command id {}".format(self.cmd_id))
+                return
+            #cmd_id = (self.cmd_id + 1)
+            message = {
+                "ID" : self.cmd_id
+                ,"TYPE" : cmd_type
+                ,"EXPECTS_REPLY" : expect_reply
+                ,"DATA" : message_data
+            }
+            data = json.dumps(message, ensure_ascii = True)
+            data = bytearray(data, encoding = "utf-8")
+            s.sendall(data)
+            if expect_reply :
+                try :
+                    reply = str(s.recv(1024), "utf-8")
+                except socket.timeout :
+                    print("WARNING Did not receive reply in time [TIMEOUT]")
+                    reply = ""
+        return reply
 
     def send_message(self, socket = None, message_data = {}, expect_reply = False, cmd_type = "TEST", wait = 1) :
 

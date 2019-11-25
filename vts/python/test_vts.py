@@ -6,6 +6,7 @@ import argparse
 import json
 import subprocess
 import time
+import threading
 
 
 # VTS
@@ -32,9 +33,6 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.ui.setupUi(self)
         self.setup_vts_connections(ui = self.ui)
         self.setup_defaults(ui = self.ui)
-
-
-        self.signal_vts_config_updated.connect(self.signal_emitted)
 
     def set_background(self, obj = None, obj_type_str = "", color = VTS_WHITE, reset = False) :
 
@@ -66,6 +64,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
     @Slot(str)
     def server_status_updated(self, value) :
+        print("SERVER STATUS UPDATED: {}".format(value))
         if value not in ["Alive", "Dead"] :
             bkg_color = "rgb{};".format(VTS_GREY)
         else :
@@ -82,21 +81,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.setup_defaults(self.ui)
         self.signal_vts_config_updated.emit()
         
-    @Slot()
-    def signal_emitted(self) :
-        print("-> Signal Emitted!")
-
-    @Slot(str)
-    def load_test_config_from_dir(self, value) :
-
-        # don't let the user do this if the server isn't alive
-        server_running = self.vts.ping_server(quiet = True)
-        if not server_running :
-            self.set_background(obj = self.ui.lineEdit_test_dir
-                    ,obj_type_str = "QLineEdit"
-                    ,reset = True
-            )
-            return
+    def load_test_config_from_dir(self, value, send_to_server = True) :
 
         test_config_dir = str(value)
         p_test_config_dir = Path(test_config_dir)
@@ -109,6 +94,16 @@ class VTSWindow(QtWidgets.QMainWindow) :
             self.clear_tests()
             return
         self.ui.lineEdit_test_dir.setText(str(p_test_config_dir))
+
+        # don't let the user do this if the server isn't alive
+        server_running = self.vts.ping_server(quiet = True)
+        if not server_running :
+            self.set_background(obj = self.ui.lineEdit_test_dir
+                    ,obj_type_str = "QLineEdit"
+                    ,reset = True
+            )
+            return
+
         test_dict = vts_helpers.tests_from_test_dir(p_test_config_dir)
 
         if len(test_dict) >= 0 :
@@ -123,7 +118,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
             self.ui.listWidget_loaded_tests.addItem(test_name)
 
         # assumes that VTS server is running
-        if server_running :
+        if server_running and send_to_server :
             self.send_tests_to_vts()
 
     @Slot()
@@ -163,6 +158,14 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.vts.load_test(test_names = test_names, test_config_files = test_config_files)
         return
 
+    @Slot()
+    def start_server(self) :
+        self.vts.start_server(wait = 0.15)
+
+    @Slot()
+    def kill_server(self) :
+        self.vts.kill_server(wait = 0.1)
+
     ##
     ## VTS CONNECTIONS
     ##
@@ -172,8 +175,8 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ##
         ## VTS CONTROL
         ##
-        ui.button_start_vts_server.clicked.connect(self.vts.start_server)
-        ui.button_shutdown_vts_server.clicked.connect(self.vts.kill_server)
+        ui.button_start_vts_server.clicked.connect(self.start_server)
+        ui.button_shutdown_vts_server.clicked.connect(self.kill_server)
         ui.button_ping_vts_server.clicked.connect(self.vts.ping_server)
 
         self.vts.signal_vmm_sn_updated.connect(self.vmm_sn_updated)
@@ -228,11 +231,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ui.lineEdit_test_dir.clear()
         ui.listWidget_loaded_tests.clear()
         default_test_dir = vts_helpers.default_tests_dir()
-        self.load_test_config_from_dir(str(default_test_dir))
-#        test_dir, defined_tests = vts_helpers.get_defined_tests()
-#        ui.lineEdit_test_dir.setText(str(test_dir))
-#        for test_name, test_config_file in defined_tests.items() :
-#            ui.listWidget_loaded_tests.addItem(test_name)
+        self.load_test_config_from_dir(str(default_test_dir), send_to_server = False)
 
 def args_ok(args) :
 

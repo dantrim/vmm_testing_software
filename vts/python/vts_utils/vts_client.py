@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 # Qt
-from PySide2 import QtCore, QtNetwork
+from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot
 
 # system
@@ -11,6 +11,7 @@ from pathlib import Path
 import time
 import json
 import glob
+import socket
 
 # vts
 from vts_utils import vts_comm
@@ -22,7 +23,6 @@ class VTSClient(QtCore.QObject) :
     def __init__(self, parent = None, config = None, config_file = "") :
         super(VTSClient, self).__init__(parent)
 
-        self.socket = QtNetwork.QTcpSocket(self)
         self.config = config
         self.config_file = config_file
         self.comms = vts_comm.VTSCommunicator()
@@ -73,7 +73,6 @@ class VTSClient(QtCore.QObject) :
             raise Exception("Executable path (={}) does not exist".format(str(executable)))
         
         pid = subprocess.Popen([str(executable), '--config', str(os.path.abspath(self.config_file))])
-        #pid = subprocess.call([str(executable), '--config', str(os.path.abspath(self.config_file))])
         print("VTS server starting (process={}, pid={})".format(self.config["binary_name"], pid.pid))
         self.server_pid = int(pid.pid)
         self.server_process = pid
@@ -82,7 +81,9 @@ class VTSClient(QtCore.QObject) :
         if wait > 0 :
             time.sleep(wait)
 
-    def kill_server(self) :
+        found_server = self.ping_server(quiet = True)
+
+    def kill_server(self, wait = 1) :
 
         ##
         ## check if any server is even running
@@ -91,66 +92,35 @@ class VTSClient(QtCore.QObject) :
         if not vts_found :
             raise Exception("VTS server does not appear to be running")
 
-        ##
-        ## prepare the socket for a new message
-        ##
-        self.reset_socket()
-
-        ##
-        ## prepare the data to send
-        ##
+        address = (self.config["server_ip"], int(self.config["server_port"]))
         message = {
             "CMD" : "EXIT"
         }
+        _ = self.comms.send_message_socket(address = address,
+                message_data = message,
+                expect_reply = False,
+                cmd_type = "SERVER"
+        )
 
-        attempts = 0
-        while attempts == 0 : #self.pid_exists(vts_pid) :
-
-            if attempts > 5 :
-                raise Exception("Failed to kill VTS server after 5 attempts") 
-
-            _ = self.comms.send_message(socket = self.socket,
-                        message_data = message,
-                        expect_reply = False,
-                        cmd_type = "SERVER")
-            self.socket.close()
-
-            time.sleep(0.2)
-            attempts += 1
-
-        #self.clean(by_name = True)
-        self.server_pid = -1
+        time.sleep(wait)
+        found_server = self.ping_server()
+        return
 
     def ping_server(self, close_after = True, quiet = False) :
 
-        self.socket.abort()
-        ip, port = self.config["server_ip"], self.config["server_port"]
-        self.socket.connectToHost(ip, int(port))
-        attempts = 0
+        ###[START]
         found_server = False
-        while True :
-            if attempts > 5 :
-                #self.socket.close()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s :
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
+            address = (self.config["server_ip"], int(self.config["server_port"]))
+            result = s.connect_ex(address)
+            if result :
                 found_server = False
-                break
-            if self.socket.waitForConnected(3000) :
-                #if close_after :
-                #    self.socket.close()
+            else :
+                s.shutdown(socket.SHUT_WR)
                 found_server = True
-                break
-            attempts += 1
-
-        # clear and close
-        if not found_server or close_after :
-            _ = self.socket.waitForReadyRead(1)
-            _ = self.socket.readAll()
-            self.socket.close()
-
         ping_status_str = { True : "Alive", False : "Dead" }[found_server]
         self.signal_server_status_updated.emit(str(ping_status_str))
-
-        if not quiet :
-            print("ping? {}".format(found_server))
         return found_server
 
     def clean(self, by_name = False) :
@@ -164,39 +134,13 @@ class VTSClient(QtCore.QObject) :
             except :
                 pass
 
-    def reset_socket(self) :
-        
-        self.socket.abort()
-        ip, port = self.config["server_ip"], self.config["server_port"]
-        self.socket.connectToHost(ip, int(port))
-        if not self.ping_server(close_after = False, quiet = True) :
-            raise Exception("Failed to reset TCP socket")
-
-    def dummy_send(self) :
-
-        self.reset_socket()
-
-        ##
-        ## prepare the data to send
-        ##
-
-        dummy_data = {
-            "CMD_ID" : 1,
-            "CMD" : "UP"
-        }
-        reply = self.comms.send_message(socket = self.socket,
-                    message_data = dummy_data,
-                    expect_reply = True
-        )
-        print("reply? {}".format(reply))
-
     def frontend_cmd(self, cmd = "", expect_reply = True, wait = 5000) :
 
-        self.reset_socket()
         data = {
             "CMD" : cmd
         }
-        reply = self.comms.send_message(socket = self.socket,
+        address = (self.config["server_ip"], int(self.config["server_port"]))
+        reply = self.comms.send_message_socket(address = address,
                     message_data = data,
                     expect_reply = True,
                     cmd_type = "FRONTEND",
@@ -229,12 +173,12 @@ class VTSClient(QtCore.QObject) :
         self.frontend_cmd(cmd = "RESETVMM")
 
     def test_cmd(self, cmd = "", test_data = {}, expect_reply = True, wait = 5000) :
-        self.reset_socket()
         data = {
             "CMD" : cmd,
             "TEST_DATA" : test_data
         }
-        reply = self.comms.send_message(socket = self.socket,
+        address = (self.config["server_ip"], int(self.config["server_port"]))
+        reply = self.comms.send_message_socket(address = address,
                     message_data = data,
                     expect_reply = expect_reply,
                     cmd_type = "VMMTEST",
@@ -256,8 +200,6 @@ class VTSClient(QtCore.QObject) :
         if not vmm_sn :
             print("ERROR Could not acquire VMM serial number - Cannot load tests!")
             return
-        #hard_coded_dir = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/tests/"
-        #test_files = glob.glob("{}/test_config*.json".format(hard_coded_dir))
         test_data = {
             "VMM_SERIAL_ID" : vmm_sn,
             "TEST_CONFIG" : test_config_files
