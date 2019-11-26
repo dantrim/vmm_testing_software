@@ -12,10 +12,14 @@
 #include <sstream>
 #include <chrono>
 #include <vector>
+#include <math.h> // pow
 using namespace std;
 
 //logging
 #include "spdlog/spdlog.h"
+
+//ROOT
+#include "TH2F.h"
 
 namespace vts
 {
@@ -26,10 +30,6 @@ bool VTSTestPassThrough::initialize(const json& config)
 
     stringstream msg;
     msg << "Initializing with config: " << config.dump();
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    msg.str("");
-    msg << "INITIALIZED!";
     log->info("{0} - {1}",__VTFUNC__,msg.str());
 
     m_test_data = m_test_config.at("test_data");
@@ -49,21 +49,22 @@ bool VTSTestPassThrough::initialize(const json& config)
     ifs_vmm >> vmm_data;
     m_base_vmm_config = vmm_data;
 
-    // dummy
-    //vector<string> threshold_dacs = { "100", "200", "400", "600", "800", "1000" };
-    //vector<string> pulser_dacs = { "300", "400", "500", "600", "700", "800", "900", "1000" };
-    vector<string> pulse_widths = { "1", "2", "4", "8", "10", "12" };
     m_test_steps.clear();
+    vector<string> pulse_widths = { "1", "2", "4", "8", "10", "12" };
     for(size_t i = 0; i < pulse_widths.size(); i++)
     {
         TestStep t;
         t.pulse_width = pulse_widths.at(i);
-        //t.global_pulser_dac = pulser_dacs.at(i);
         m_test_steps.push_back(t);
-    } // i
+    }
+
+    // initialize histo
+    h2_channel_hit_vs_pdo = new TH2F("h2_chan_vs_pdo", "Pulse Width 1;Channel Number;PDO [counts]", 64, 0, 64, 100, 0, -1);
+    h2_channel_hit_vs_tdo = new TH2F("h2_chan_vs_tdo", "Pulse Width 1;Channel Number;TDO [counts]", 64, 0, 64, 100, 0, -1);
     
     set_current_state(0);
     set_n_states(m_test_steps.size());
+    set_n_events_for_test(m_test_steps.size() * n_events_per_step());
     return true;
 }
 
@@ -71,98 +72,12 @@ bool VTSTestPassThrough::load()
 {
     set_current_state( get_current_state() + 1);
 
-    log->info("{0}",__VTFUNC__);
-    //std::this_thread::sleep_for(std::chrono::seconds(2));
     return true;
 }
 
 bool VTSTestPassThrough::configure()
 {
-    log->info("{0}",__VTFUNC__);
-
-    reset_vmm();
-    // establish the communicator
-//    vts::CommunicatorFrontEnd comm;
-//    comm.load_config(m_frontend_config);
-
-    // get the configuration step for this one
-//    TestStep t = m_test_steps.at(get_current_state() - 1);
-//
-//    // configure the fpga
-//    json fpga_config = m_base_fpga_config;
-//    json fpga_registers = fpga_config.at("fpga_registers");
-//    json fpga_triggers = fpga_registers.at("trigger");
-//    json fpga_clocks = fpga_registers.at("clocks");
-//    fpga_clocks["cktp_width"] = t.pulse_width;
-//
-//    comm.configure_fpga(fpga_triggers, fpga_clocks);
-//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//
-//    // build the VMM config info for this step
-//    json vmm_config = m_base_vmm_config;
-//    json vmm_spi = vmm_config.at("vmm_spi");
-//    json vmm_globals = vmm_spi.at("global_registers");
-//    json vmm_channels = vmm_spi.at("channel_registers");
-//
-//    // monitor and pulse channel 14
-//
-//    vector<vts::vmm::Channel> channels; 
-//    for(size_t i = 0; i < 64; i++)
-//    {
-//        bool st = ( (i==14 || i==28) ? true : false);
-//        bool sm = ( (i==14 || i==28) ? false : true);
-//        json jch = {{"id",i},{"sc",false},{"sl",false},{"sth",false},{"st",st},{"sm",sm},{"smx",false},{"sd",0}};
-//        vmm::Channel ch; ch.load(jch);
-//        channels.push_back(ch);
-//    }
-//    auto chvec = vts::vmm::channel_vec_to_json_config(channels); 
-//    auto channel_registers = chvec.at("channel_registers");
-//    vmm_spi["channel_registers"] = channel_registers;
-//
-//    // setup monitoring
-//    vmm_globals["sm5"] = "14";
-//    vmm_globals["scmx"] = "ENABLED";
-//    vmm_globals["sbfm"] = "ENABLED";
-//    vmm_globals["sdp_dac"] = "400"; //t.global_pulser_dac;
-//    vmm_globals["sdt_dac"] = "200";
-//    vmm_spi["global_registers"] = vmm_globals;
-//
-//    vmm_config["vmm_spi"] = vmm_spi;
-//
-//    // first reset
-//    bool ok = comm.configure_vmm(vmm_config, /*perform reset*/ true);
-//    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//    // now send configuration
-//    ok = comm.configure_vmm(vmm_config, false);
-//
-//
-//    //json vmm_config = m_base_vmm_config;
-//    //json vmm_spi = vmm_config.at("vmm_spi");
-//
-//    //json vmm_globals = vmm_spi.at("global_registers");
-//    //json vmm_channels = vmm_spi.at("channel_registers");
-//    //vmm_globals["sdt_dac"] = t.global_threshold_dac;
-//    //vmm_globals["sm5"] = "2"; // we want to observe the global threshold changing
-//    //vmm_globals["scmx"] = "DISABLED"; // make it global not channel
-//
-//    //vmm_spi["global_registers"] = vmm_globals;
-//    //vmm_channels["st"] = "0x0";
-//    //vmm_spi["channel_registers"] = vmm_channels;
-//
-//    //vmm_config["vmm_spi"] = vmm_spi;
-//
-//    //// first reset the VMM
-//    //bool ok = comm->configure_vmm(vmm_config, /*perform reset*/ true);
-//    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-//
-//    //// now set the threshold
-//    //ok = comm->configure_vmm(vmm_config, /*perform reset*/ false);
-//
-//    //std::this_thread::sleep_for(std::chrono::seconds(2));
-
-    ///////////////////////////////////////////////////////////////
-    // xadc test
-    ///////////////////////////////////////////////////////////////
+    //reset_vmm();
     TestStep t = m_test_steps.at(get_current_state() - 1);
 
     // configure the fpga
@@ -170,11 +85,10 @@ bool VTSTestPassThrough::configure()
     json fpga_registers = fpga_config.at("fpga_registers");
     json fpga_triggers = fpga_registers.at("trigger");
     json fpga_clocks = fpga_registers.at("clocks");
+    //fpga_triggers["latency"] = "40";
     fpga_clocks["cktp_width"] = t.pulse_width;
-    fpga_triggers["latency"] = "0";
 
     comm()->configure_fpga(fpga_triggers, fpga_clocks);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     // build the VMM config info for this step
     json vmm_config = m_base_vmm_config;
@@ -182,14 +96,12 @@ bool VTSTestPassThrough::configure()
     json vmm_globals = vmm_spi.at("global_registers");
     json vmm_channels = vmm_spi.at("channel_registers");
 
-    // monitor and pulse channel 14
-
     vector<vts::vmm::Channel> channels; 
     for(size_t i = 0; i < 64; i++)
     {
-        bool st = false;
-        bool sm =  false; //(i==14) ? false : true;
-        bool smx = false; //(i==14) ? true : false;
+        bool st = true;
+        bool sm =  false;
+        bool smx = false;
         json jch = {{"id",i},{"sc",false},{"sl",false},{"sth",false},{"st",st},{"sm",sm},{"smx",smx},{"sd",0}};
         vmm::Channel ch; ch.load(jch);
         channels.push_back(ch);
@@ -198,22 +110,19 @@ bool VTSTestPassThrough::configure()
     auto channel_registers = chvec.at("channel_registers");
     vmm_spi["channel_registers"] = channel_registers;
 
-    // setup monitoring
-    vmm_globals["sm5"] = "14";
-    vmm_globals["sbmx"] = "ENABLED";
+    vmm_globals["sm5"] = "0";
+    vmm_globals["sbmx"] = "DISABLED";
     vmm_globals["scmx"] = "ENABLED";
-    vmm_globals["sbfm"] = "DISABLED";
-    vmm_globals["sdp_dac"] = "400"; //t.global_pulser_dac;
-    vmm_globals["sdt_dac"] = "200";
+    vmm_globals["sbfm"] = "ENABLED";
+    //vmm_globals["sdt_dac"] = "100";
+    //vmm_globals["sdp_dac"] = "300";
+    //vmm_globals["sg"] = "16.0";
     vmm_spi["global_registers"] = vmm_globals;
 
     vmm_config["vmm_spi"] = vmm_spi;
 
-    // first reset
-    bool ok = comm()->configure_vmm(vmm_config, /*perform reset*/ true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // now send configuration
-    ok = comm()->configure_vmm(vmm_config, false);
+    // send configuration
+    comm()->configure_vmm(vmm_config, false);
 
     return true;
 }
@@ -222,83 +131,86 @@ bool VTSTestPassThrough::run()
 {
     // reset the event counters for this new run
     reset_event_count();
-
-    // establish the communicator
-    //vts::CommunicatorFrontEnd comm;
-    //comm.load_config(m_frontend_config);
-    //bool status = comm.acq_toggle(1);
-    //bool status = comm.sample_xadc(n_events_per_step());
-    bool status = comm()->sample_xadc(n_events_per_step(), 1000);
-
+    comm()->acq_toggle(1);
     // keep running until data processing has completed
     while(processing_events())
     {
         if(!processing_events()) break;
         continue;
     }
-    log->info("{0} - Turning ACQ OFF",__VTFUNC__);
-    //status = comm.acq_toggle(0);
+    comm()->acq_toggle(0);
     return true;
 }
 
 bool VTSTestPassThrough::process_event(vts::daq::DataFragment* fragment)
 {
-    if(n_events_processed() >= n_events_per_step())
+    if((n_events_processed() >= n_events_per_step()) || !processing_events())
     {
-        log->info("{0} - Event count reached ({1})",__VTFUNC__, n_events_processed());
         return false;
     }
+    TestStep t = m_test_steps.at(get_current_state() - 1);
+    string pulse_width = t.pulse_width;
+    //float pulse_width_val = std::stof(pulse_width);
 
-    //vector<vts::decode::vmm::Sample> samples = vts::decode::vmm::decode(fragment->packet);
-    vector<vts::decode::xadc::Sample> samples = vts::decode::xadc::decode(fragment->packet);
-
-    //if(n_events_processed()%10==0)
-    if(true)
+    vector<vts::decode::vmm::Sample> samples = vts::decode::vmm::decode(fragment->packet);
+    for(const auto & sample : samples)
     {
-        stringstream msg;
-        msg << "Fragment size: " << fragment->packet.size() << " event count: " << n_events_processed();
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
-
-        stringstream sx;
-        //sx << " N XADC SAMPLES = " << std::dec << samples.size();
-        for(const auto & sample : samples)
-            sx << " (" << std::dec << sample.vmm_id() << ":" << std::dec << sample.sample() << ")";
-        log->info("{0} - {1}: {2}",__VTFUNC__,"Received xadc data", sx.str());
-
-        //stringstream sx;
-        //for(const auto & sample : samples)
-        //{
-        //    sx << " " << sample.channel() << "(trig: " << std::hex << (unsigned)sample.header().trigger_counter() << ")";// << " ART channel: " << std::dec << sample.header().art_address();
-        //}
-        //log->info("{0} - {1}: {2}",__VTFUNC__,"Received data from channels",sx.str());
+        if(n_events_processed() >= n_events_per_step()) break;
+        if(t.pulse_width == "1")
+        {
+            auto pdo = sample.pdo();
+            auto tdo = sample.tdo();
+            auto channel = sample.channel();
+            h2_channel_hit_vs_pdo->Fill(channel, pdo);
+            h2_channel_hit_vs_tdo->Fill(channel, tdo);
+        }
     }
-    for(const auto& s: samples) event_processed();
-    //event_processed();
-    comm()->sample_xadc(n_events_per_step());
-//    vts::CommunicatorFrontEnd comm;
-//    comm.load_config(m_frontend_config);
-//    //bool status = comm.acq_toggle(1);
-//    bool status = comm.sample_xadc(n_events_per_step());
-    //return false;
+    check_status();
+    event_processed();
     return true;
 }
 
+
 bool VTSTestPassThrough::analyze()
 {
-    log->info("{0}",__VTFUNC__);
     return true;
 }
 
 bool VTSTestPassThrough::analyze_test()
 {
-    log->info("{0}",__VTFUNC__);
     return true;
 }
 
 bool VTSTestPassThrough::finalize()
 {
-    log->info("{0}",__VTFUNC__);
-    return true;
+    vector<TH2F*> histos = { h2_channel_hit_vs_pdo, h2_channel_hit_vs_tdo };
+    bool all_ok = true;
+    for(auto & h : histos)
+    {
+        if(!h)
+        {
+            h = 0;
+            all_ok = false;
+        }
+        if(!store(h))
+        {
+            log->warn("{0} - Failed to store histogram with nae \"{1}\"",__VTFUNC__,h->GetName());
+            all_ok = false;
+        }
+        if(all_ok)
+        {
+            delete h;
+            h = 0;
+        }
+    }
+    if(!all_ok)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 json VTSTestPassThrough::get_results()
@@ -309,11 +221,14 @@ json VTSTestPassThrough::get_results()
     return jresults;
 }
 
+void VTSTestPassThrough::check_status()
+{
+    float frac = event_fraction_processed();
+    emit signal_status_update(frac);
+}
+
 void VTSTestPassThrough::reset_vmm()
 {
-    //vts::CommunicatorFrontEnd comm;
-    //comm.load_config(m_frontend_config);
-    //comm.configure_vmm(m_base_vmm_config, /*perform reset*/ true);
     comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
 }
 

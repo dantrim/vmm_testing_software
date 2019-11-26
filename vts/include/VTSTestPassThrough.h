@@ -1,5 +1,5 @@
-#ifndef VTS_TEST_PASSTHROUGH_H
-#define VTS_TEST_PASSTHROUGH_H
+#ifndef VTS_TEST_PASS_THROUGH_H
+#define VTS_TEST_PASS_THROUGH_H
 
 //std/stl
 
@@ -10,9 +10,6 @@ namespace vts {
         class DataFragment;
     }
 }
-
-//ROOT
-class TH2F;
 
 //logging
 #include "spdlog/spdlog.h"
@@ -29,8 +26,6 @@ class VTSTestPassThrough : public VTSTestImp
             set_current_state(-1);
             set_n_states(1);
             set_n_events_per_step(1000);
-            m_total_events_processed.store(0);
-            m_n_total_events.store(0);
         }
         ~VTSTestPassThrough()
         {
@@ -50,17 +45,17 @@ class VTSTestPassThrough : public VTSTestImp
     private :
 
         void reset_vmm();
-        void check_status();
+
         json m_test_data;
         json m_base_fpga_config;
         json m_base_vmm_config;
         struct TestStep
         {
+            //std::string global_threshold_dac;
+            //std::string global_pulser_dac;
             std::string pulse_width;
         };
         std::vector<TestStep> m_test_steps;
-        TH2F* h2_channel_hit_vs_pdo;
-        TH2F* h2_channel_hit_vs_tdo;
 
 }; // class VTSTestPassThrough
 

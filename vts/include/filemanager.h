@@ -8,7 +8,9 @@ class TTree;
 
 //std/stl
 #include <string>
+#include <vector>
 #include <memory>
+#include <map>
 
 //json
 #include "nlohmann/json.hpp"
@@ -36,6 +38,7 @@ class FileManager
         static int existing_files(std::string dirname, std::string filename); 
         static bool dir_exists(std::string dir);
         bool create_output();
+        bool setup_output(std::vector<std::string> test_names);
 
         TFile* file() { return m_rfile; }
         bool test_dir_exists(std::string test_name = "");
@@ -57,6 +60,11 @@ class FileManager
         std::string m_vmm_serial_id;
         std::string m_current_test;
         json m_output_config;
+
+        std::map<std::string, TDirectory*> m_test_dir_map;
+        std::map<std::string, TDirectory*> m_hist_dir_map;
+        std::map<std::string, TDirectory*> m_tree_dir_map;
+
 
 }; // class FileManager
 

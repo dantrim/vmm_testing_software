@@ -42,13 +42,6 @@ void DaqHandler::load_test(vts::VTSTest* test)
 
 void DaqHandler::load_connections(const json& frontend_config, const json& daq_config)
 {
-    stringstream msg;
-    msg << "Frontend config: " << frontend_config.dump();
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
-    msg.str("");
-    msg << "DAQ config: " << daq_config.dump();
-    log->info("{0} - {1}",__VTFUNC__, msg.str());
-
     // frontend config
     string board_ip = frontend_config.at("board_ip").get<std::string>();
     uint32_t ip = string_ip_to_int(board_ip);

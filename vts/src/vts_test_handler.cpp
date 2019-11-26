@@ -1,6 +1,7 @@
 //vts
 #include "vts_test_handler.h"
 #include "vts_test_types.h"
+#include "vts_result.h"
 #include "filemanager.h"
 #include "helpers.h"
 
@@ -12,6 +13,9 @@ using namespace std;
 
 //logging
 #include "spdlog/spdlog.h"
+
+//Qt
+#include <QUdpSocket>
 
 namespace vts
 {
@@ -35,19 +39,29 @@ bool VTSTestHandler::tests_are_ok(vector<string> test_config_files)
 
     // only continue if all tests are known and ok
     bool all_ok = true;
-    for(auto config_file : test_config_files)
+    try
     {
-        std::ifstream input_config_file(config_file);
-        json jf; 
-        input_config_file >> jf;
-        string test_name = jf.at("test_type").get<std::string>();
-        if(!is_valid_test(test_name))
+        for(auto config_file : test_config_files)
         {
-            stringstream err;
-            err << "Unknown test type \"" << test_name << "\"";
-            logger->error("{0} - {1}",__VTFUNC__,err.str());
-            all_ok = false;
+            std::ifstream input_config_file(config_file);
+            json jf; 
+            input_config_file >> jf;
+            string test_name = jf.at("test_type").get<std::string>();
+            if(!is_valid_test(test_name))
+            {
+                stringstream err;
+                err << "Unknown test type \"" << test_name << "\"";
+                logger->error("{0} - {1}",__VTFUNC__,err.str());
+                all_ok = false;
+            }
         }
+    }
+    catch(std::exception& e)
+    {
+        stringstream err;
+        err << "Provided test configuration files are invalid, exception caught: " << e.what();
+        logger->error("{0} - {1}",__VTFUNC__,err.str());
+        all_ok = false;
     }
     return all_ok;
 }
@@ -99,18 +113,44 @@ void VTSTestHandler::load_test_config(const json& test_cfg)
 void VTSTestHandler::start()
 {
     log->info("{0} - {1} {2}",__VTFUNC__,"Starting tests for VMM",m_vmm_serial_id);
+    m_stop_all_tests.store(false);
 
     // testing
     vts::FileManager* fmg = new vts::FileManager(m_vmm_serial_id, m_output_cfg);
-    if(!fmg->create_output()) return;
+    if(!fmg->create_output())
+    {
+        delete fmg;
+        return;
+    }
     m_is_running = true;
 
     stringstream msg;
+    int test_idx = -1;
+    size_t n_total_tests = m_test_config_map.size();
+    string current_test = "";
+    std::vector<json> test_results;
+    std::vector<std::string> test_names;
+
     for(const auto & tf : m_test_config_map)
     {
+        test_names.push_back(tf.first);
+    }
+    if(!fmg->setup_output(test_names))
+    {
+        log->critical("{0} - Failed to setup output directory structure in ROOT file",__VTFUNC__);
+        delete fmg;
+        return;
+    }
+
+    for(const auto & tf : m_test_config_map)
+    {
+        if(stop_all_tests()) break;
+
+        test_idx++;
         msg.str("");
         string test_name = tf.first;
         string test_config_file = tf.second;
+        current_test = test_name;
 
         // add the test directory to the output
         if(!fmg->add_test_dir(test_name))
@@ -118,12 +158,30 @@ void VTSTestHandler::start()
             log->warn("{0} - Test data already seems to be present in output file",__VTFUNC__);
         }
 
+        // test status
+        {
+            QUdpSocket socket;
+            stringstream s;
+            s << test_idx;
+            json msg_data = {
+                {"TEST_NAME", test_name},
+                {"TEST_IDX", s.str()}
+            };
+            json status_msg = {
+                {"TYPE","START_OF_TEST"},
+                {"DATA",msg_data}
+            };
+            QByteArray data;
+            data.append(QString::fromStdString(status_msg.dump()));
+            socket.writeDatagram(data, QHostAddress::LocalHost,1236);
+        }
+
         std::ifstream input_file(test_config_file);
         json jtest;
         input_file >> jtest;
 
-        msg << "MOVING TO TEST: " << test_name;
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        msg << "Moving to next test: " << test_name;
+        log->debug("{0} - {1}",__VTFUNC__,msg.str());
 
         if(m_test.get() != nullptr)
         {
@@ -134,6 +192,10 @@ void VTSTestHandler::start()
 
         connect(m_test.get(), SIGNAL(broadcast_state_signal(QString)),
                             this, SLOT(update_state(QString)), Qt::DirectConnection);
+        connect(m_test.get(), SIGNAL(signal_test_status_update(float)),
+                            this, SLOT(test_status_update_slot(float)), Qt::DirectConnection);
+        connect(this, SIGNAL(signal_stop_current_test()),
+                        m_test.get(), SLOT(stop_current_test()), Qt::DirectConnection);
 
         /////////////////////////////////////////////////////////////////
         // INITIALIZE
@@ -153,12 +215,13 @@ void VTSTestHandler::start()
         msg << "====================================";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
-        msg << "STARTING TEST LOOP";
+        msg << "STARTING TEST [" << test_name << "]";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
         msg << "====================================";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
+
         while((m_test->current_state() != vts::VTSTestState::FINISHED) && status)
         {
             try
@@ -178,6 +241,11 @@ void VTSTestHandler::start()
                 ////////////////////////////////////////////////////////
                 status = m_test->run();
                 if(!status) break;
+                if(stop_all_tests())
+                {
+                    log->info("{0} - Stopping all tests",__VTFUNC__);
+                    break;
+                }
 
                 ////////////////////////////////////////////////////////
                 // ANALYZE THIS STEPS DATA
@@ -187,9 +255,11 @@ void VTSTestHandler::start()
                 ////////////////////////////////////////////////////////
                 // IF WE ARE AT THE END FINISH THE TEST LOOP
                 ////////////////////////////////////////////////////////
-                if(m_test->current_step() == m_test->n_steps())
+                if((m_test->current_step() == m_test->n_steps()) || stop_all_tests())
                 {
                     status = m_test->finalize();
+                    if(!stop_all_tests())
+                        emit signal_test_status_update(1.0);
                 }
 
             } // try
@@ -205,32 +275,120 @@ void VTSTestHandler::start()
         /////////////////////////////////////////////////////////////////
         // ANALYZE COMPLETE TEST RESULTS AND DATA
         /////////////////////////////////////////////////////////////////
-        bool analyze_status = m_test->analyze_test();
-
-       // /////////////////////////////////////////////////////////////////
-       // // FINALIZE
-       // /////////////////////////////////////////////////////////////////
-       // bool finalize_status = m_test->finalize();
+        if(!stop_all_tests())
+            m_test->analyze_test();
 
         msg.str();
         msg << "====================================";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
-        msg << "TEST LOOP COMPLETE";
+        if(stop_all_tests())
+        {
+            msg << "TEST STOPPED [" << test_name << "]";
+        }
+        else
+        {
+            msg << "TEST COMPLETE [" << test_name << "]";
+        }
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
         msg << "====================================";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
-    }
+
+        VTSTestResult result = VTSTestResult::TESTRESULTINVALID;
+        try
+        {
+            if(!stop_all_tests())
+            {
+                json jtest_result = m_test->get_results();
+                result = StrToVTSTestResult(jtest_result.at("RESULT").get<std::string>());
+                test_results.push_back(jtest_result);
+            }
+            else
+            {
+                json tmp = {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)};
+                result = StrToVTSTestResult(tmp.at("RESULT").get<std::string>());
+                test_results.push_back(tmp);
+            }
+        }
+        catch(std::exception& e)
+        {
+            result = VTSTestResult::INCOMPLETE;
+            stringstream err;
+            err << "Failed to obtain test result for test \"" << test_name << "\", marking it as " << VTSTestResultToStr(result);
+            log->error("{0} - {1}",__VTFUNC__,err.str());
+            json tmp = {
+                {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)}
+            };
+            test_results.push_back(tmp);
+            //jtest_result = tmp;
+        }
+        //test_names.push_back(test_name);
+        //test_results.push_back(jtest_result);
+    } // loop over loaded tests
+
 
     m_is_running = false;
-    delete fmg;
+
+    // test status
+    {
+        QUdpSocket socket;
+        stringstream s;
+        if(stop_all_tests())
+        {
+            s << "INCOMPLETE";
+        }
+        else
+        {
+            s << "COMPLETE";
+        }
+        stringstream test_stat;
+        test_stat << (test_idx+1);
+        string n_tests_touched = test_stat.str(); test_stat.str("");
+        test_stat << n_total_tests;
+        string n_tests_loaded = test_stat.str(); test_stat.str("");
+        json msg_data = {
+            {"TEST_COMPLETION", s.str()},
+            {"N_TESTS_TOUCHED", n_tests_touched},
+            {"N_TESTS_LOADED", n_tests_loaded},
+            {"LAST_TEST_TOUCHED", current_test}
+        };
+        
+        json jr;
+        for(size_t i = 0; i < test_names.size(); i++)
+        {
+            log->critical("{0} - test name size = {1}, aaccessing {2}",__VTFUNC__, test_names.size(), i);
+            if(i>=(test_results.size()))
+            {
+                log->warn("{0} - More test names than test results encountered!",__VTFUNC__);
+                json tmp = {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)};
+                jr[test_names.at(i)] = tmp;
+            }
+            else
+            {
+                jr[test_names.at(i)] = test_results.at(i);
+            }
+        }
+        s.str("");
+        json status_msg = {
+            {"TYPE","END_OF_TEST"},
+            {"DATA",msg_data},
+            {"TEST_RESULTS", jr}
+        };
+        QByteArray data;
+        data.append(QString::fromStdString(status_msg.dump()));
+        socket.writeDatagram(data, QHostAddress::LocalHost,1236);
+    }
+    emit tests_finished();
+    if(fmg) delete fmg;
 }
 
 void VTSTestHandler::stop()
 {
-    log->info("{0} - {1}",__VTFUNC__,"Stopping all tests");
-    m_test->stop();
+    m_stop_all_tests.store(true);
+    //emit signal_stop_current_test();
+    //m_test->stop();
+    //m_test->stop_processing_events();
 }
 
 void VTSTestHandler::update_state(QString state_qstring)
@@ -239,6 +397,11 @@ void VTSTestHandler::update_state(QString state_qstring)
     stringstream msg;
     msg << "Current test state: " << current_state;
     log->trace("{0} - {1}",__VTFUNC__,msg.str());
+}
+
+void VTSTestHandler::test_status_update_slot(float frac)
+{
+    emit signal_test_status_update(frac);
 }
 
 

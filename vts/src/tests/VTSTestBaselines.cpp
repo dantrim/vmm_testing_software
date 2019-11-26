@@ -79,6 +79,7 @@ bool VTSTestBaselines::initialize(const json& config)
     
     set_current_state(0);
     set_n_states(m_test_steps.size());
+    set_n_events_for_test(m_test_steps.size() * n_events_per_step());
     return true;
 }
 
@@ -158,9 +159,9 @@ bool VTSTestBaselines::run()
 
 bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
 {
-    if(n_events_processed() >= n_events_per_step())
+    if((n_events_processed() >= n_events_per_step()) || !processing_events())
     {
-        log->trace("{0} - Event count reached ({1})",__VTFUNC__, n_events_processed());
+        //log->critical("{0} - Event count reached ({1},{2})",__VTFUNC__, n_events_processed(), processing_events());
         return false;
     }
     TestStep t = m_test_steps.at(get_current_state() - 1);
@@ -170,6 +171,7 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
     vector<vts::decode::xadc::Sample> samples = vts::decode::xadc::decode(fragment->packet);
     for(const auto & sample : samples)
     {
+        check_status();
         if(n_events_processed() >= n_events_per_step()) break;
         m_channel_histos.at(channel)->Fill(sample.sample());
         event_processed();
@@ -177,6 +179,7 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
     comm()->sample_xadc(n_events_per_step(), 500);
     return true;
 }
+
 
 bool VTSTestBaselines::analyze()
 {
@@ -191,9 +194,9 @@ bool VTSTestBaselines::analyze()
     m_channel_baseline_means.at(channel) = mean_baseline_mv;
     m_channel_baseline_errors.at(channel) = mean_baseline_mv_err;
 
-    stringstream msg;
-    msg << "Average xADC sampling for channel " << channel << " = " << mean_baseline_mv << " +/- " << mean_baseline_mv_err << " [mV] (" <<  mean_baseline_counts << " +/- " << mean_baseline_counts_err << " [counts])";
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
+//    stringstream msg;
+//    msg << "Average xADC sampling for channel " << channel << " = " << mean_baseline_mv << " +/- " << mean_baseline_mv_err << " [mV] (" <<  mean_baseline_counts << " +/- " << mean_baseline_counts_err << " [counts])";
+//    log->info("{0} - {1}",__VTFUNC__,msg.str());
 
     return true;
 }
@@ -271,6 +274,13 @@ json VTSTestBaselines::get_results()
         {"RESULT",VTSTestResultToStr(VTSTestResult::SUCCESS)}
     };
     return jresults;
+}
+
+void VTSTestBaselines::check_status()
+{
+    float frac = event_fraction_processed();
+    //log->info("{0} - Check status: {1}",__VTFUNC__, frac);
+    emit signal_status_update(frac);
 }
 
 void VTSTestBaselines::reset_vmm()

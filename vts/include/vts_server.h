@@ -16,6 +16,8 @@ namespace spdlog {
 
 // std/stld
 #include <memory>
+#include <thread>
+#include <atomic>
 
 // json
 #include "nlohmann/json.hpp"
@@ -61,14 +63,18 @@ namespace vts
 
             // Test Handling
             std::shared_ptr<vts::VTSTestHandler> m_test_handler;
+            std::atomic<bool>* m_stop_tests_flag;
+            std::thread m_thread;
 
         public slots :
             void onNewConnection();
             void onSocketStateChanged(QAbstractSocket::SocketState socketState);
             void onReadyRead();
+            void tests_finished();
 
         signals :
             void closeServer();
+            void signal_stop_all_tests();
 
     }; // class VTSServer
 

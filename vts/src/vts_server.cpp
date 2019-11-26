@@ -26,6 +26,7 @@ using json = nlohmann::json;
 
 // std
 #include <memory>
+#include <chrono>
 #include <vector>
 
 namespace vts
@@ -59,8 +60,10 @@ bool VTSServer::start()
     log->info("{0} - {1}", __VTFUNC__, msg.str());
     m_server.listen(QHostAddress(QString::fromStdString(ip)), port);
     //m_server.listen(QHostAddress::LocalHost,1234);
-    connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
+    connect(&m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()), Qt::DirectConnection);
     m_is_running = true;
+
+
     return true;
 }
 
@@ -68,8 +71,8 @@ bool VTSServer::start()
 bool VTSServer::stop()
 {
     log->info("Closing VTS server...");
-    for(auto & conx : m_sockets)
-        delete conx;
+    //for(auto & conx : m_sockets)
+    //    delete conx;
     m_server.close();
     QCoreApplication::quit();
     m_is_running = false;
@@ -83,7 +86,7 @@ VTSServer::~VTSServer()
 void VTSServer::onNewConnection()
 {
     QTcpSocket* clientSocket = m_server.nextPendingConnection();
-    connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()));
+    connect(clientSocket, SIGNAL(readyRead()), this, SLOT(onReadyRead()), Qt::DirectConnection);
     connect(clientSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
             this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
     m_sockets.push_back(clientSocket);
@@ -92,8 +95,6 @@ void VTSServer::onNewConnection()
 void VTSServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
 {
 
-//    string msg = "removing socket";
-//    log->info("{0} - {1}", __VTFUNC__, msg);
     if(socketState == QAbstractSocket::UnconnectedState)
     {
         QTcpSocket* sender = static_cast<QTcpSocket*>(QObject::sender());
@@ -161,26 +162,16 @@ void VTSServer::onReadyRead()
         data_string = data.toStdString();
     }
 
-    log->critical("{0} - DATA RECEIVED : {1}", __VTFUNC__, data_string);
-
-
-    //if(data_string=="EXIT")
-    //{
-    //    string msg = "received KILL command (->"+data_string+")";
-    //    log->info("{0} - {1}", __VTFUNC__, msg);
-    //    this->stop();
-    //    return;
-    //}
-
+    log->debug("{0} - DATA RECEIVED : {1}", __VTFUNC__, data_string);
     try
     {
         auto raw_message = json::parse(data_string);
         vts::VTSMessage incoming(raw_message);
         VTSReply reply;
 
-        cout << "=================================" << endl;
-        cout << "VTS server :: Incoming Message: " << incoming.str() << endl;
-        cout << "=================================" << endl;
+        //cout << "=================================" << endl;
+        //cout << "VTS server :: Incoming Message: " << incoming.str() << endl;
+        //cout << "=================================" << endl;
 
         /////////////////////////////////////////////////////////////
         // handle incoming messages
@@ -265,7 +256,6 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
         {
             if(!m_test_handler->is_running())
             {
-                log->debug("{0} - {1}",__VTFUNC__,"Resetting TestHandler");
                 m_test_handler.reset();
             }
             else
@@ -283,6 +273,9 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
             m_test_handler->load_output_config(m_server_config.at("test_output"));
             m_test_handler->load_frontend_config(m_server_config.at("frontend"), m_server_config.at("daq"));
             m_test_handler->load_test_config(test_data);
+            connect(this, SIGNAL(signal_stop_all_tests()),
+                    m_test_handler.get(), SLOT(stop()), Qt::DirectConnection);
+            connect(m_test_handler.get(), SIGNAL(tests_finished()), this, SLOT(tests_finished()), Qt::DirectConnection);
         }
     }
     else if(test_cmd == CMDVMMTest::START)
@@ -295,18 +288,9 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
 
         if(ok)
         {
-// 221     std::future<int> user_process = std::async( std::launch::async,
-// 222                 &ddaq::ConfigurationSvc::user_send_command, m_config_svcs.at(0), commands);
-            // std::future<int> test_status = std::async(
-            //    std::launch::async,
-            //    &vts::VTSTestHandler::start, m_test_handler.get()
-            //);
-            std::future<void> test_result = std::async(
-                std::launch::async,
-                &vts::VTSTestHandler::start,
-                m_test_handler.get()
+            m_thread = std::thread(
+                [this] { m_test_handler->start(); }
             );
-            //m_test_handler->start();
         }
     }
     else if(test_cmd == CMDVMMTest::STOP)
@@ -320,7 +304,10 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
         if(ok)
         {
             m_test_handler->stop();
-            m_test_handler.reset();
+            if(m_thread.joinable())
+            {
+                m_thread.join();
+            }
         }
     }
 
@@ -330,6 +317,21 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
         {"STATUS", status_str.str() }
     };
     reply = vts::VTSReply(message.id(), jreply);
+}
+
+void VTSServer::tests_finished()
+{
+    if(m_test_handler.get())
+    {
+        m_test_handler->stop();
+    }
+    stringstream msg;
+    msg << "====================================";
+    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
+    msg << "ALL TESTS COMPLETED";
+    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
+    msg << "====================================";
+    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
 }
 
 void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
@@ -396,7 +398,6 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
     }
     else if(frontend_cmd == CMDFrontEnd::ACQON)
     {
-        cout << "RECEIVED ACQON" << endl;
         bool status = comm->acq_toggle(1);
         stringstream status_str;
         status_str << (status ? "OK" : "ERROR");
@@ -407,7 +408,6 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
     }
     else if(frontend_cmd == CMDFrontEnd::ACQOFF)
     {
-        cout << "RECEIVED ACQOFF" << endl;
         bool status = comm->acq_toggle(0);
         stringstream status_str;
         status_str << (status ? "OK" : "ERROR");
@@ -419,6 +419,5 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
 
     delete comm;
 }
-
 
 } // namespace vts

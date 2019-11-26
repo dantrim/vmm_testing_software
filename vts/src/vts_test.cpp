@@ -15,7 +15,6 @@ using namespace std;
 //logging
 #include "spdlog/spdlog.h"
 
-
 namespace vts
 {
 
@@ -48,9 +47,11 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
 {
     update_fsm(VTSTestState::NONE);
 
+    // status update socket
+
     stringstream msg;
     msg << "Initializing test: " << config.dump();
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
+    log->debug("{0} - {1}",__VTFUNC__,msg.str());
 
     string test_type = config.at("test_type").get<std::string>();
     if(test_type == "PassThrough")
@@ -87,6 +88,10 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
     }
 
     connect(m_imp.get(), SIGNAL(finished()), this, SLOT(test_finished_slot()));
+    connect(m_imp.get(), SIGNAL(signal_status_update(float)),
+                    this, SLOT(test_status_update_slot(float)), Qt::DirectConnection);
+    connect(this, SIGNAL(signal_stop_current_test()),
+                    m_imp.get(), SLOT(stop_current_test()), Qt::DirectConnection);
 
     // setup DAQ
     m_daq_handler = std::make_shared<vts::daq::DaqHandler>(this);
@@ -150,6 +155,12 @@ bool VTSTest::run()
     return status;
 }
 
+void VTSTest::stop_current_test()
+{
+    log->critical("{0}",__VTFUNC__);
+    emit signal_stop_current_test();
+}
+
 bool VTSTest::continue_processing()
 {
     return m_imp->processing_events();
@@ -178,6 +189,7 @@ bool VTSTest::finalize()
     {
         update_fsm(VTSTestState::FINISHED);
     }
+    test_status_update_slot(1.0);
     return status;
 }
 
@@ -241,10 +253,36 @@ void VTSTest::stop()
     update_fsm(vts::VTSTestState::FINISHED);
 }
 
+//float VTSTest::fraction_processed()
+//{
+//    float frac = m_imp->event_fraction_processed();
+//    return frac;
+//}
+
 void VTSTest::broadcast_state()
 {
     QString qstate = QString::fromStdString(current_state_name());
     emit broadcast_state_signal(qstate);
+}
+
+void VTSTest::test_status_update_slot(float frac)
+{
+    QUdpSocket socket;
+    stringstream s;
+    s << frac;
+    json msg = {
+        {"TYPE","TEST_STATUS"},
+        {"DATA",s.str()}
+    };
+    QByteArray data;
+    data.append(QString::fromStdString(msg.dump()));
+    socket.writeDatagram(data, QHostAddress::LocalHost, 1236);
+}
+
+json VTSTest::get_results()
+{
+    return m_imp->get_results();
+
 }
 
 } // namespace vts

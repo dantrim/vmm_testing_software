@@ -64,7 +64,6 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
     @Slot(str)
     def server_status_updated(self, value) :
-        print("SERVER STATUS UPDATED: {}".format(value))
         if value not in ["Alive", "Dead"] :
             bkg_color = "rgb{};".format(VTS_GREY)
         else :
@@ -74,14 +73,9 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.ui.label_vts_server_status.setStyleSheet(bkg_color)
         self.ui.label_vts_server_status.setText(str(value))
 
-    @Slot(int)
-    @Slot(str)
-    def vts_print(self, value) :
-        print("Sender: {}".format(self.sender().objectName()))
-        self.setup_defaults(self.ui)
-        self.signal_vts_config_updated.emit()
-        
     def load_test_config_from_dir(self, value, send_to_server = True) :
+
+        self.ui.progressBar_current_test_progress.setValue(0)
 
         test_config_dir = str(value)
         p_test_config_dir = Path(test_config_dir)
@@ -114,6 +108,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
                                 ,reset = reset
             )
 
+        n_tests = len(test_dict)
         for test_name, test_config_file in test_dict.items() :
             self.ui.listWidget_loaded_tests.addItem(test_name)
 
@@ -137,6 +132,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
 
         n_items = self.ui.listWidget_loaded_tests.count()
+        self.ui.label_test_count.setText("0/{}".format(n_items))
         for itest in range(n_items) :
             item = self.ui.listWidget_loaded_tests.item(itest)
             item_name = item.text()
@@ -151,20 +147,67 @@ class VTSWindow(QtWidgets.QMainWindow) :
     @Slot()
     def clear_tests(self) :
         self.ui.listWidget_loaded_tests.clear()
+        self.new_test_started("", 0)
 
     def send_tests_to_vts(self) :
 
         test_names, test_config_files = self.get_loaded_tests()
-        self.vts.load_test(test_names = test_names, test_config_files = test_config_files)
+        status = self.vts.load_test(test_names = test_names, test_config_files = test_config_files)
+        if not status :
+            self.set_background(obj = self.ui.lineEdit_test_dir
+                                ,obj_type_str = "QLineEdit"
+                                ,color = VTS_RED
+                                ,reset = False
+            )
+            self.clear_tests()
+        else :
+            self.set_background(obj = self.ui.lineEdit_test_dir
+                                ,obj_type_str = "QLineEdit"
+                                ,color = VTS_GREEN
+                                ,reset = False
+            )
         return
 
     @Slot()
     def start_server(self) :
-        self.vts.start_server(wait = 0.15)
+        status = self.vts.start_server(wait = 0.2)
 
     @Slot()
     def kill_server(self) :
         self.vts.kill_server(wait = 0.1)
+
+    @Slot()
+    def start_tests(self) :
+        status = self.vts.start_test()
+        if status :
+            self.ui.button_tests_stop.setEnabled(True)
+            self.ui.button_tests_start.setEnabled(False)
+
+    @Slot()
+    def stop_tests(self) :
+        self.vts.stop_test()
+        self.ui.button_tests_stop.setEnabled(False)
+        self.ui.button_tests_start.setEnabled(True)
+
+    def test_status_updated(self, status) :
+
+        percentage = 100. * float(status)
+        self.ui.progressBar_current_test_progress.setValue(int(percentage))
+
+    @Slot(str,int)
+    def new_test_started(self, test_name, test_idx) :
+        n_tests = self.ui.listWidget_loaded_tests.count()
+        test_idx = test_idx+1
+        if n_tests == 0 :
+            test_idx = 0
+        test_str = "{}/{}".format(str(test_idx), str(n_tests))
+        self.ui.label_test_count.setText(test_str)
+
+    @Slot(str,str,str,str)
+    def test_ended(self, test_status_str, n_tests_run, n_tests_exp, last_test_run) :
+        n_tests_run = int(n_tests_run)
+        n_tests_exp = int(n_tests_exp)
+        self.ui.button_tests_stop.click()
 
     ##
     ## VTS CONNECTIONS
@@ -186,14 +229,13 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ## DEVICE CONTROL
         ##
         ui.button_acquire_vmm_serial.clicked.connect(self.vts.capture_vmm_serial)       
-        ui.button_vts_config_check.clicked.connect(self.vts_print)
 
         ##
         ## TESTS
         ##
         ui.button_tests_load.clicked.connect(self.load_test_config) #vts.load_test)
-        ui.button_tests_start.clicked.connect(self.vts.start_test)
-        ui.button_tests_stop.clicked.connect(self.vts.stop_test)
+        ui.button_tests_start.clicked.connect(self.start_tests)
+        ui.button_tests_stop.clicked.connect(self.stop_tests)
 
         ##
         ## FPGA
@@ -213,7 +255,15 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ui.button_acq_on.clicked.connect(self.vts.acq_on)
         ui.button_acq_off.clicked.connect(self.vts.acq_off)
 
+        ##
+        ## VTS CLIENT
+        ##
+        self.vts.signal_test_status_updated.connect(self.test_status_updated)
+        self.vts.signal_start_of_test.connect(self.new_test_started)
+        self.vts.signal_end_of_test.connect(self.test_ended)
+
     def setup_defaults(self, ui = None) :
+        self.ui.progressBar_current_test_progress.setValue(0)
 
         ##
         ## VTS CONTROL
@@ -251,7 +301,7 @@ def handle_server_command_and_exit(args, vts_client) :
         vts_client.start_server()
     elif cmd_type == "stop" :
         vts_client.kill_server()
-    elif cmd_time == "clean" :
+    elif cmd_type == "clean" :
         vts_client.clean()
     else :
         print("ERROR Unknown server command \"{}\" provided".format(cmd_type))

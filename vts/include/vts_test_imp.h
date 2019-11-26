@@ -80,6 +80,7 @@ class VTSTestImp : public QObject
             return m_processing_flag.load(std::memory_order_acquire);
         }
 
+
     protected :
         std::shared_ptr<spdlog::logger> log;
 
@@ -91,8 +92,11 @@ class VTSTestImp : public QObject
 
         int m_current_state;
         int m_n_states;
-        std::atomic<unsigned int> m_events_processed;
-        std::atomic<unsigned int> m_events_per_step;
+        std::atomic<long int> m_events_processed;
+        std::atomic<long int> m_events_per_step;
+
+        std::atomic<long int> m_total_events_processed;
+        std::atomic<long int> m_n_total_events;
 
         std::atomic<bool> m_processing_flag;
 
@@ -104,11 +108,17 @@ class VTSTestImp : public QObject
         void event_processed()
         {
             m_events_processed++;
+            m_total_events_processed++;
         }
 
         unsigned int n_events_processed()
         {
             return m_events_processed.load(std::memory_order_acquire);
+        }
+
+        unsigned int n_total_events_processed()
+        {
+            return m_total_events_processed.load(std::memory_order_acquire);
         }
 
         void set_current_state(int s)
@@ -124,14 +134,36 @@ class VTSTestImp : public QObject
         {
             m_events_per_step.store(e);
         }
+
+        void set_n_events_for_test(unsigned int e)
+        {
+            m_n_total_events.store(e);
+        }
+        unsigned int n_events_for_test()
+        {
+            return m_n_total_events.load(std::memory_order_acquire);
+        }
+
         unsigned int n_events_per_step()
         {
             return m_events_per_step.load(std::memory_order_acquire);
         }
 
+        float event_fraction_processed()
+        {
+            float num = n_total_events_processed() * 1.0;
+            float den = n_events_for_test() * 1.0;
+            return (num / den);
+        }
+
     signals :
         void finished();
         void signal_current_state(int, int);
+        //void signal_event_fraction_processed(float);
+        void signal_status_update(float);
+
+    public slots :
+        void stop_current_test();
 
 }; // class VTSTestImp
 } // namespace vts

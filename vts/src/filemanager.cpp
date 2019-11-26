@@ -33,28 +33,13 @@ namespace vts
 FileManager::FileManager(std::string vmm_serial_id, const json& output_config)
 {
     log = spdlog::get("vts_logger");
-    log->info("{0}",__VTFUNC__);
-
-    log->info("{0} - VMM serial {1}, Received output_config {2}",__VTFUNC__,vmm_serial_id, output_config.dump());
-
+    log->debug("{0} - VMM serial {1}, Received output_config {2}",__VTFUNC__,vmm_serial_id, output_config.dump());
 
     m_vmm_serial_id = vmm_serial_id;
     m_output_config = output_config;
     m_current_test_dir = nullptr;
     m_current_hist_dir = nullptr;
     m_current_tree_dir = nullptr;
-
-    ////// testing
-    //TFile* rfile = new TFile("test.root", "recreate");
-
-    //TDirectory* top_dir = rfile->mkdir("MyTest");
-    //top_dir->cd();
-
-    //TDirectory* tree_dir = top_dir->mkdir("trees");
-    //TDirectory* plot_dir = top_dir->mkdir("plots");
-
-    //rfile->Write();
-    //delete rfile;
 }
 
 
@@ -134,10 +119,20 @@ bool FileManager::create_output()
     {
         log->error("{0} - Output test file already exists: {1}, using this one",__VTFUNC__,testfile.str());
         m_rfile = TFile::Open(testfile.str().c_str(), "UPDATE");
+        if(m_rfile->IsZombie())
+        {
+            log->error("{0} - Output file is zombie!",__VTFUNC__);
+            return false;
+        }
     }
     else
     {
         m_rfile = new TFile(testfile.str().c_str(), "UPDATE");
+        if(m_rfile->IsZombie())
+        {
+            log->error("{0} - Output file could not be created, it is a zombie!",__VTFUNC__);
+            return false;
+        }
     }
 
     return true;
@@ -145,6 +140,8 @@ bool FileManager::create_output()
 
 int FileManager::existing_files(string dirname, string filename_no_ext)
 {
+    std::shared_ptr<spdlog::logger> slog;
+    slog = spdlog::get("vts_logger");
     bool ok;
     QStringList filters;
     stringstream filter;
@@ -204,29 +201,169 @@ bool FileManager::test_dir_exists(string test_name)
     return false;
 }
 
+bool FileManager::setup_output(vector<string> test_names)
+{
+    m_test_dir_map.clear();
+    m_hist_dir_map.clear();
+    m_tree_dir_map.clear();
+
+    if(m_rfile)
+        m_rfile->cd();
+    else
+    {
+        return false;
+    }
+
+    for(const auto & test_name : test_names)
+    {
+        m_rfile->cd();
+        stringstream test_dir_name;
+        test_dir_name << test_name;
+        if(m_rfile->GetDirectory(test_dir_name.str().c_str()) == 0x0)
+        {
+            auto top_dir = m_rfile->mkdir(test_dir_name.str().c_str());
+            if(!top_dir)
+            {
+                log->critical("{0} - 0 Failed to create directory \"{1}\"",__VTFUNC__,test_dir_name.str());
+                return false;
+            }
+            m_test_dir_map[test_name] = top_dir;
+        }
+        vector<string> hn = { "histograms", "trees" };
+        for(auto & h : hn)
+        {
+            stringstream hdirname;
+            hdirname << test_dir_name.str() << "/" << h;
+            if(m_rfile->GetDirectory(hdirname.str().c_str()) == 0x0)
+            {
+                m_test_dir_map[test_name]->cd();
+                auto hdir = m_rfile->mkdir(hdirname.str().c_str());
+                if(!hdir)
+                {
+                    log->critical("{0} - 1 Failed to create directory \"{1}\"",__VTFUNC__, hdirname.str());
+                    return false;
+                }
+                if(h=="histograms")
+                {
+                    m_hist_dir_map[test_name] = hdir;
+                }
+                else if(h=="trees")
+                {
+                    m_tree_dir_map[test_name] = hdir;
+                }
+            }
+        }
+    } // test_name
+    return true;
+}
+
+
 bool FileManager::add_test_dir(string test_name)
 {
+    set_current_test(test_name);
+    return true;
+
+    /// TESTING [ENDS]
+    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
     if(test_dir_exists(test_name))
     {
         log->info("{0} - TDirectory for test \"{1}\" already exists in output file",__VTFUNC__,test_name);
         return false;
     }
+    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+    if(m_rfile)
+        m_rfile->cd();
+
+    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+    m_rfile->cd();
+    m_current_test_dir = m_rfile->mkdir(test_name.c_str());
     if(m_current_test_dir)
     {
-        delete m_current_test_dir;
+       // m_current_test_dir->Write();
+        ///m_rfile->cd();
+        //m_current_test_dir = m_rfile->mkdir(test_name.c_str());
+        string name = m_current_test_dir->GetName();
+        
+        log->info("{0} - CURRENT DIR EXISTS {1} vs {2}",__VTFUNC__, name, test_name);
+        if(name == test_name)
+        {
+            vector<string> dirnames = { "histograms", "trees" };
+            for(const auto & n : dirnames)
+            {
+                stringstream d;
+                d << "/" << test_name << "/" << n;
+                m_rfile->cd();
+                auto test_dir = m_rfile->GetDirectory(d.str().c_str());
+                if(test_dir == 0x0)
+                {
+                    log->critical("{0} - {1} directory not found", __VTFUNC__, d.str());
+                    //m_current_test_dir->cd();
+                    m_current_hist_dir = m_rfile->mkdir(d.str().c_str());
+                }
+                else
+                {
+                    log->info("{0} - {1} directory found!",__VTFUNC__,d.str());
+                }
+            }
+            //stringstream histname;
+            //histname << "/" << test_name << "/histograms";
+            //m_rfile->cd();
+            //auto test_dir = m_rfile->GetDirectory(histname.str().c_str());
+            //if(test_dir == 0x0)
+            //{
+            //    log->critical("{0} - {1} directory not found", __VTFUNC__, histname.str());
+            //    //m_current_test_dir->cd();
+            //    m_current_hist_dir = m_rfile->mkdir(histname.str().c_str());
+            //}
+            //else
+            //{
+            //}
+        }
     }
-    set_current_test(test_name);
-    m_current_test_dir = m_rfile->mkdir(test_name.c_str());
+   // if(m_current_hist_dir)
+   // {
+   // log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+   //     m_current_hist_dir->Write();
+   // log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+   //     m_current_hist_dir->Close();
+   //     //delete m_current_hist_dir;
+   // log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+   // }
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//    if(m_current_tree_dir)
+//    {
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//        m_current_tree_dir->Write();
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//        delete m_current_tree_dir;
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//    }
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//
+//    if(m_current_test_dir)
+//    {
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//        m_current_test_dir->Write();
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//        //m_current_test_dir->Close();
+//        //delete m_current_test_dir;
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//    }
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//    set_current_test(test_name);
+//    //m_current_test_dir = m_rfile->mkdir(test_name.c_str());
+//    m_current_test_dir->cd();
+//    log->critical("{0} - {1}",__VTFUNC__,__LINE__);
+//
+//    m_current_hist_dir = m_current_test_dir->mkdir("histograms");
+//    m_current_tree_dir = m_current_test_dir->mkdir("trees");
 
-    if(m_current_hist_dir)
-    {
-        delete m_current_hist_dir;
-    }
-
-    if(m_current_tree_dir)
-    {
-        delete m_current_tree_dir;
-    }
+    //if(m_current_tree_dir)
+    //{
+    //    m_current_tree_dir->Write();
+    //    //m_current_tree_dir->Close();
+    //    delete m_current_tree_dir;
+    //}
 
     return true;
 }
@@ -282,20 +419,35 @@ TDirectory* FileManager::dir_has_dir(TDirectory* dir, string check)
 
 bool FileManager::store(TObject* obj)
 {
-    //TDirectory* current_test_dir = get_test_dir(current_test());
-    if(!m_current_test_dir)
+    if(!obj)
+    {
+        log->warn("{0} - Attempting to store a NULL object",__VTFUNC__);
         return false;
-    m_current_test_dir->cd();
+    }
+    if(!m_rfile)
+    {
+        log->error("{0} - Cannot store output object \"{1}\", output file is null",__VTFUNC__, obj->GetName());
+        return true;
+    }
 
+    m_rfile->cd();
+    stringstream top_dir;
+    top_dir << current_test();
+
+    bool ok = m_rfile->cd(top_dir.str().c_str());
+
+    stringstream h_dir;
     TDirectory* store_dir = nullptr;
-    std::string check_dir_name = "";
     if(obj->InheritsFrom("TTree") || obj->InheritsFrom("TChain"))
     {
-        if(!m_current_tree_dir)
-            m_current_tree_dir = m_current_test_dir->mkdir("trees");
-        store_dir = m_current_tree_dir;
-        ((TTree*)obj)->SetDirectory(m_current_tree_dir);
-        check_dir_name = "trees";
+        h_dir.str("");
+        h_dir << "/" << current_test() << "/" << "trees" << "/";
+        ok = m_rfile->cd(h_dir.str().c_str());
+        if(!ok)
+        {
+            log->error("{0} - Unable to move to storage dir (={1}), output file not setup properly!",__VTFUNC__,h_dir.str());
+            return false;
+        }
     }
     else if(obj->InheritsFrom("TH1") ||
                 obj->InheritsFrom("TH1F") ||
@@ -304,65 +456,33 @@ bool FileManager::store(TObject* obj)
                 obj->InheritsFrom("TGraph") ||
                 obj->InheritsFrom("TGraphErrors"))
     {
-        if(!m_current_hist_dir)
-            m_current_hist_dir = m_current_test_dir->mkdir("histograms");
-        store_dir = m_current_hist_dir;
+        h_dir.str("");
+        h_dir << "/" << current_test() << "/" << "histograms" << "/";
+        ok = m_rfile->cd(h_dir.str().c_str());
+        if(!ok)
+        {
+            log->error("{0} - Unable to move to storage dir (={1}), output file not setup properly!",__VTFUNC__, h_dir.str());
+            return false;
+        }
+        store_dir = m_rfile->GetDirectory(h_dir.str().c_str());
         if(obj->InheritsFrom("TH1") || obj->InheritsFrom("TH1F"))
         {
-            ((TH1*)obj)->SetDirectory(m_current_hist_dir);
+            ((TH1*)obj)->SetDirectory(store_dir);
         }
         else if(obj->InheritsFrom("TH2") || obj->InheritsFrom("TH2F"))
         {
-            ((TH2*)obj)->SetDirectory(m_current_hist_dir);
+            ((TH2*)obj)->SetDirectory(store_dir);
         }
-        //else if(obj->InheritsFrom("TGraph"))
-        //{
-        //    ((TGraph*)obj)->SetDirectory(m_current_hist_dir);
-        //}
-        check_dir_name = "histograms";
     }
-
-    if(check_dir_name == "")
+    if(store_dir == 0x0)
     {
-        log->error("{0} - Unable to store ROOT object of provided type (object name: {1}",__VTFUNC__,obj->GetName());
+        log->error("{0} - Storage directory (={1}) does not exist!",__VTFUNC__,h_dir.str());
         return false;
     }
-
     store_dir->cd();
     obj->Write();
     m_rfile->cd();
     return true;
-
-//    TDirectory* store_dir = nullptr;
-//    if(!dir_has_dir(current_test_dir,check_dir_name))
-//    {
-//        log->info("{0} - BALLS Creating dir name {1}/{2}",__VTFUNC__,current_test_dir->GetName(), check_dir_name);
-//        store_dir = current_test_dir->mkdir(check_dir_name.c_str());
-//    }
-//    store_dir = dir_has_dir(current_test_dir, check_dir_name);
-//    cout << "store_dir 1 = " << store_dir << " " << __LINE__ << endl;
-//    int attempts = 0;
-//    while(store_dir==nullptr)
-//    {
-//        if(store_dir != nullptr) break;
-//        if(attempts>5)
-//        {
-//            log->error("{0} - Unable to create {1}/{2} TDirectory!",__VTFUNC__,current_test(),check_dir_name);
-//            return false;
-//        }
-//        log->warn("{0} - X Creating {1}/{2} directory",__VTFUNC__,current_test(),check_dir_name);
-//        store_dir =  current_test_dir->mkdir(check_dir_name.c_str());
-//        //store_dir = dir_has_dir(current_test_dir, check_dir_name);
-//        cout << "store_dir 2 = " << store_dir << " " << __LINE__ << endl;
-//        attempts++;
-//    }
-//    m_directories.push_back(store_dir);
-//    
-//    store_dir->cd();
-//    obj->Write();
-//    m_rfile->cd();
-//
-//    return true;
 }
 
 } // namespace vts

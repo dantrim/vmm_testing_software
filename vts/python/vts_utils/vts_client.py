@@ -2,8 +2,9 @@
 from __future__ import print_function
 
 # Qt
-from PySide2 import QtCore
+from PySide2 import QtCore, QtNetwork
 from PySide2.QtCore import Signal, Slot
+import threading
 
 # system
 import sys, os, subprocess, psutil
@@ -17,8 +18,11 @@ import socket
 from vts_utils import vts_comm
 from peripherals import device_capture
 
-class VTSClient(QtCore.QObject) :
+# constants
+STATUS_MONITOR_IP="127.0.0.1"
+STATUS_MONITOR_PORT=1236
 
+class VTSClient(QtCore.QObject) :
 
     def __init__(self, parent = None, config = None, config_file = "") :
         super(VTSClient, self).__init__(parent)
@@ -27,12 +31,17 @@ class VTSClient(QtCore.QObject) :
         self.config_file = config_file
         self.comms = vts_comm.VTSCommunicator()
         self.server_process = None
+        self.keep_monitor = False
+        self.status_thread = None
 
     ##
     ## SIGNALS
     ##
     signal_vmm_sn_updated = Signal(str)
     signal_server_status_updated = Signal(str)
+    signal_test_status_updated = Signal(str)
+    signal_start_of_test = Signal(str, int)
+    signal_end_of_test = Signal(str, str, str, str)
 
     def check_for_vts(self, by_name = False) :
 
@@ -50,6 +59,39 @@ class VTSClient(QtCore.QObject) :
         self.server_pid = -1
         return False, -1
 
+    def monitor(self, stop_func) :
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(0.2)
+        addr = (STATUS_MONITOR_IP,STATUS_MONITOR_PORT)
+        sock.bind(addr)
+        while True :
+            if stop_func() :
+                break
+            try :
+                data = str(sock.recv(1024), "utf-8")
+                data = json.loads(data)
+                monitor_type = data["TYPE"]
+                if monitor_type == "TEST_STATUS" :
+                    self.signal_test_status_updated.emit(data["DATA"])
+                elif monitor_type == "START_OF_TEST" :
+                    #print("SOT {}".format(data))
+                    msg = data["DATA"]
+                    current_test = msg["TEST_NAME"]
+                    current_test_idx = msg["TEST_IDX"]
+                    self.signal_start_of_test.emit(current_test, int(current_test_idx))
+                elif monitor_type == "END_OF_TEST" :
+                    #print("EOT {}".format(data))
+                    msg = data["DATA"]
+                    test_completion_status = msg["TEST_COMPLETION"]
+                    n_tests_run = msg["N_TESTS_TOUCHED"]
+                    n_tests_exp = msg["N_TESTS_LOADED"]
+                    last_test_run = msg["LAST_TEST_TOUCHED"]
+                    self.signal_end_of_test.emit(test_completion_status, n_tests_run,  n_tests_exp, last_test_run)
+            except socket.timeout :
+                continue
+            #self.signal_test_status_updated.emit(data)
+
     def pid_exists(self, pid_num) :
 
         for proc in psutil.process_iter() :
@@ -64,8 +106,10 @@ class VTSClient(QtCore.QObject) :
     def start_server(self, wait = 1) :
 
         vts_found, vts_pid = self.check_for_vts(by_name = True)
-        if vts_found :
-            raise Exception("VTS server already appears to be running at process PID={}".format(vts_pid))
+        found_server = self.ping_server(quiet = False)
+        if vts_found or found_server :
+            print("VTS server already appears to be running at process PID={}".format(vts_pid))
+            return
 
         path = Path(self.config["binary_location"])# / self.config["binary_name"])
         executable = path / self.config["binary_name"]
@@ -82,15 +126,27 @@ class VTSClient(QtCore.QObject) :
             time.sleep(wait)
 
         found_server = self.ping_server(quiet = True)
+        
+        self.keep_monitor = False
+        self.status_thread = threading.Thread(target = self.monitor, args = (lambda : self.keep_monitor,))
+        self.status_thread.start()
 
     def kill_server(self, wait = 1) :
+
+        ##
+        ## First, stop the monitoring thread if it is running
+        ##
+        if self.status_thread is not None :
+            self.keep_monitor = True
+            self.status_thread.join()
 
         ##
         ## check if any server is even running
         ##
         vts_found, vts_pid = self.check_for_vts(by_name = True)
         if not vts_found :
-            raise Exception("VTS server does not appear to be running")
+            print("VTS server does not appear to be running")
+            return
 
         address = (self.config["server_ip"], int(self.config["server_port"]))
         message = {
@@ -103,7 +159,7 @@ class VTSClient(QtCore.QObject) :
         )
 
         time.sleep(wait)
-        found_server = self.ping_server()
+        found_server = self.ping_server(quiet = True)
         return
 
     def ping_server(self, close_after = True, quiet = False) :
@@ -121,6 +177,8 @@ class VTSClient(QtCore.QObject) :
                 found_server = True
         ping_status_str = { True : "Alive", False : "Dead" }[found_server]
         self.signal_server_status_updated.emit(str(ping_status_str))
+        if not quiet :
+            print("VTS Server alive? {}".format(found_server))
         return found_server
 
     def clean(self, by_name = False) :
@@ -178,13 +236,19 @@ class VTSClient(QtCore.QObject) :
             "TEST_DATA" : test_data
         }
         address = (self.config["server_ip"], int(self.config["server_port"]))
-        reply = self.comms.send_message_socket(address = address,
+        #if cmd == "STOP" :
+        #    address = (self.config["server_ip"], 1237)
+        #    self.comms.send_message_udp(address = address)
+        #    reply = {}
+        #else :
+        reply, cmd_id = self.comms.send_message_socket(address = address,
                     message_data = data,
                     expect_reply = expect_reply,
                     cmd_type = "VMMTEST",
                     wait = wait
         )
         print("reply? {}".format(reply))
+        return reply
 
 
     @Slot(str)
@@ -204,10 +268,16 @@ class VTSClient(QtCore.QObject) :
             "VMM_SERIAL_ID" : vmm_sn,
             "TEST_CONFIG" : test_config_files
         }
-        self.test_cmd(cmd = "LOAD", test_data = test_data) #test_files)
+
+        reply = self.test_cmd(cmd = "LOAD", test_data = test_data) #test_files)
+        status = reply["STATUS"] == "OK"
+        if not status :
+            print("ERROR Failed to load tests, reply: {}".format(reply))
+        return status
 
     def start_test(self) :
         self.test_cmd(cmd = "START", expect_reply = False)
+        return True
 
     def stop_test(self) :
         self.test_cmd(cmd = "STOP")

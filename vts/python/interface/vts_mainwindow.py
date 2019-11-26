@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mainwindow.ui',
 # licensing of 'mainwindow.ui' applies.
 #
-# Created: Mon Nov 25 11:13:55 2019
+# Created: Tue Nov 26 00:32:47 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -283,23 +283,23 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_11.setSpacing(4)
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
-        self.label_25 = QtWidgets.QLabel(self.layoutWidget)
-        self.label_25.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_25.setObjectName("label_25")
-        self.horizontalLayout_11.addWidget(self.label_25)
-        self.progressBar = QtWidgets.QProgressBar(self.layoutWidget)
+        self.label_test_count = QtWidgets.QLabel(self.layoutWidget)
+        self.label_test_count.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_test_count.setObjectName("label_test_count")
+        self.horizontalLayout_11.addWidget(self.label_test_count)
+        self.progressBar_current_test_progress = QtWidgets.QProgressBar(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.progressBar.sizePolicy().hasHeightForWidth())
-        self.progressBar.setSizePolicy(sizePolicy)
-        self.progressBar.setSizeIncrement(QtCore.QSize(0, 0))
-        self.progressBar.setBaseSize(QtCore.QSize(0, 4))
-        self.progressBar.setProperty("value", 24)
-        self.progressBar.setAlignment(QtCore.Qt.AlignCenter)
-        self.progressBar.setInvertedAppearance(False)
-        self.progressBar.setObjectName("progressBar")
-        self.horizontalLayout_11.addWidget(self.progressBar)
+        sizePolicy.setHeightForWidth(self.progressBar_current_test_progress.sizePolicy().hasHeightForWidth())
+        self.progressBar_current_test_progress.setSizePolicy(sizePolicy)
+        self.progressBar_current_test_progress.setSizeIncrement(QtCore.QSize(0, 0))
+        self.progressBar_current_test_progress.setBaseSize(QtCore.QSize(0, 4))
+        self.progressBar_current_test_progress.setProperty("value", 24)
+        self.progressBar_current_test_progress.setAlignment(QtCore.Qt.AlignCenter)
+        self.progressBar_current_test_progress.setInvertedAppearance(False)
+        self.progressBar_current_test_progress.setObjectName("progressBar_current_test_progress")
+        self.horizontalLayout_11.addWidget(self.progressBar_current_test_progress)
         self.verticalLayout_5.addLayout(self.horizontalLayout_11)
         self.tabWidget.addTab(self.tab0, "")
         self.tab1 = QtWidgets.QWidget()
@@ -629,7 +629,7 @@ class Ui_MainWindow(object):
         self.button_tests_load.setText(QtWidgets.QApplication.translate("MainWindow", "Load", None, -1))
         self.button_tests_start.setText(QtWidgets.QApplication.translate("MainWindow", "START", None, -1))
         self.button_tests_stop.setText(QtWidgets.QApplication.translate("MainWindow", "STOP", None, -1))
-        self.label_25.setText(QtWidgets.QApplication.translate("MainWindow", "N/M     ", None, -1))
+        self.label_test_count.setText(QtWidgets.QApplication.translate("MainWindow", "N/M     ", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab0), QtWidgets.QApplication.translate("MainWindow", "VTS Control", None, -1))
         self.groupBox_4.setTitle(QtWidgets.QApplication.translate("MainWindow", "FPGA", None, -1))
         self.label_16.setText(QtWidgets.QApplication.translate("MainWindow", "Config   ", None, -1))

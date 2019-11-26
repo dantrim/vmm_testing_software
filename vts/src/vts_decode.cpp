@@ -41,7 +41,7 @@ vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t>& datagram)
     uint32_t header1 = data.at(2);
 
     vts::decode::vmm::Header header;
-    cout << "ART data: " << std::hex << (unsigned)art << endl;
+    //cout << "ART data: " << std::hex << (unsigned)art << endl;
 
     // art info
     header.set_art_trigger( (0xfc00 & art) >> 10 );

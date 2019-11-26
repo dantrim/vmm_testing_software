@@ -30,6 +30,8 @@ class VTSTestBaselines : public VTSTestImp
             set_current_state(-1);
             set_n_states(1);
             set_n_events_per_step(50);
+            m_total_events_processed.store(0);
+            m_n_total_events.store(0);
         }
         ~VTSTestBaselines()
         {
@@ -49,6 +51,7 @@ class VTSTestBaselines : public VTSTestImp
     private :
 
         void reset_vmm();
+        void check_status();
 
         json m_test_data;
         json m_base_fpga_config;

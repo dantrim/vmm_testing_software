@@ -4,6 +4,7 @@
 // std/stl
 #include <memory>
 #include <map>
+#include <atomic>
 
 // vts
 namespace vts {
@@ -18,6 +19,7 @@ namespace vts {
 
 // Qt
 #include <QObject>
+#include <QUdpSocket>
 
 //json
 #include "nlohmann/json.hpp"
@@ -49,6 +51,7 @@ class VTSTest : public QObject
         bool analyze_test();
         bool finalize();
         void stop();
+        json get_results();
 
         int current_step();
         int n_steps();
@@ -68,6 +71,7 @@ class VTSTest : public QObject
         std::string current_state_name();
         std::string transition_string(vts::VTSTestState current, vts::VTSTestState next);
         std::shared_ptr<vts::daq::DaqHandler> m_daq_handler;
+        QUdpSocket m_status_socket;
 
 
     signals :
@@ -77,10 +81,14 @@ class VTSTest : public QObject
         void begin_test();
         void revert();
         void test_done();
+        void signal_test_status_update(float);
+        void signal_stop_current_test();
 
     public slots :
         void state_updated_slot();
         void test_finished_slot();
+        void test_status_update_slot(float);
+        void stop_current_test();
         
 
 }; // class VTSTest
