@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <iomanip>
 using namespace std;
 
 //logging
@@ -89,25 +90,36 @@ void VTSTestHandler::load_test_config(const json& test_cfg)
     m_vmm_serial_id = test_cfg.at("VMM_SERIAL_ID").get<std::string>();
     log->debug("{0} - {1} {2}",__VTFUNC__,"Initializing VTS Test Handler for VMM",m_vmm_serial_id);
 
-
     vector<string> test_config_files = test_cfg.at("TEST_CONFIG");
+    m_test_names.clear();
     m_test_configs.clear();
-    m_test_config_map.clear();
-    for(auto config_file : test_config_files)
+    for(size_t test_idx = 0; test_idx < test_config_files.size(); test_idx++)
     {
+        string config_file = test_config_files.at(test_idx);
         std::ifstream input_file(config_file);
         json jf;
         input_file >> jf;
         string test_name = jf.at("test_type").get<std::string>();
+
+        m_test_names.push_back(test_name);
         m_test_configs.push_back(config_file);
-        m_test_config_map[test_name] = config_file;
     }
     stringstream msg;
-    msg << "Loaded " << m_test_configs.size() << " test(s): {";
-    for(const auto & tf : m_test_config_map)
-        msg << " " << tf.first << " ";
-    msg << "}";
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
+    msg << "Loaded " << m_test_configs.size() << " test(s):";
+    stringstream test_msg;
+    for(size_t i = 0; i < m_test_names.size(); i++)
+    {
+        test_msg.str("");
+        if(i>0)
+        {
+            size_t len = msg.str().length();
+            msg.str("");
+            msg << std::setw(len) << "";
+        }
+        test_msg << msg.str() << " " << i << ") " << m_test_names.at(i);
+        log->info("{0} - {1}",__VTFUNC__, test_msg.str());
+    }
+    //log->info("{0} - {1}",__VTFUNC__,msg.str());
 }
 
 void VTSTestHandler::start()
@@ -126,30 +138,25 @@ void VTSTestHandler::start()
 
     stringstream msg;
     int test_idx = -1;
-    size_t n_total_tests = m_test_config_map.size();
+    size_t n_total_tests = m_test_names.size();
     string current_test = "";
     std::vector<json> test_results;
-    std::vector<std::string> test_names;
 
-    for(const auto & tf : m_test_config_map)
-    {
-        test_names.push_back(tf.first);
-    }
-    if(!fmg->setup_output(test_names))
+    if(!fmg->setup_output(m_test_names))
     {
         log->critical("{0} - Failed to setup output directory structure in ROOT file",__VTFUNC__);
         delete fmg;
         return;
     }
 
-    for(const auto & tf : m_test_config_map)
+    for(size_t itest = 0; itest < m_test_names.size(); itest++)
     {
         if(stop_all_tests()) break;
 
         test_idx++;
         msg.str("");
-        string test_name = tf.first;
-        string test_config_file = tf.second;
+        string test_name = m_test_names.at(itest);
+        string test_config_file = m_test_configs.at(itest);
         current_test = test_name;
 
         // add the test directory to the output
@@ -321,10 +328,7 @@ void VTSTestHandler::start()
                 {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)}
             };
             test_results.push_back(tmp);
-            //jtest_result = tmp;
         }
-        //test_names.push_back(test_name);
-        //test_results.push_back(jtest_result);
     } // loop over loaded tests
 
 
@@ -355,17 +359,17 @@ void VTSTestHandler::start()
         };
         
         json jr;
-        for(size_t i = 0; i < test_names.size(); i++)
+        for(size_t i = 0; i < m_test_names.size(); i++)
         {
             if(i>=(test_results.size()))
             {
                 log->warn("{0} - More test names than test results encountered",__VTFUNC__);
                 json tmp = {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)};
-                jr[test_names.at(i)] = tmp;
+                jr[m_test_names.at(i)] = tmp;
             }
             else
             {
-                jr[test_names.at(i)] = test_results.at(i);
+                jr[m_test_names.at(i)] = test_results.at(i);
             }
         }
         s.str("");

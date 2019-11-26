@@ -56,8 +56,8 @@ namespace vts
             json m_output_cfg;
             json m_frontend_cfg;
             json m_daq_cfg;
+            std::vector<std::string> m_test_names;
             std::vector<std::string> m_test_configs;
-            std::map<std::string, std::string> m_test_config_map;
             std::shared_ptr<vts::VTSTest> m_test;
             std::thread m_test_thread;
             std::atomic<bool> m_stop_all_tests;

@@ -254,10 +254,6 @@ class VTSClient(QtCore.QObject) :
     @Slot(str)
     def load_test(self, test_names = [], test_config_files = []) :
 
-        print("test names = {}".format(test_names))
-        print("VTS Client load_test: test names={}".format(test_names))
-        print("VTS Client load_test: test cfg  ={}".format(test_config_files))
-
         # first acquire the current VMM serial ID
         camera = device_capture.PictureTaker()
         vmm_sn = camera.get_serial_number()

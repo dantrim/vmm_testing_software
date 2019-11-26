@@ -1,3 +1,6 @@
 {
-    "test_priority" : ["PassThrough", "Baselines"]
+    "test_priority" : [
+        "Baselines"
+        ,"PassThrough"
+    ]
 }
