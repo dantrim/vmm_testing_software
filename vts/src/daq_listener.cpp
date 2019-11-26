@@ -142,8 +142,11 @@ void DataListener::handle_receive(const boost::system::error_code& /*error*/, si
 
     if(!m_in_queue->try_enqueue(fragment))
     {
-        log->warn("{0} - Unable to enqueue incoming data for Trigger ID {1:x}",__VTFUNC__,
-            (unsigned)0x0);
+        // more often than not, this failure occurs when we've shut down the data building at the end of the
+        // run and since the data rate is  high, the latency between sending the stop command and
+        // the time that the listener dies, we'll overflow the buffer... so just ignore this for now
+        //log->warn("{0} - Unable to enqueue incoming data for Trigger ID {1:x}",__VTFUNC__,
+        //    (unsigned)0x0);
         delete fragment;
     }
     if(continue_listening())

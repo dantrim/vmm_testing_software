@@ -357,10 +357,9 @@ void VTSTestHandler::start()
         json jr;
         for(size_t i = 0; i < test_names.size(); i++)
         {
-            log->critical("{0} - test name size = {1}, aaccessing {2}",__VTFUNC__, test_names.size(), i);
             if(i>=(test_results.size()))
             {
-                log->warn("{0} - More test names than test results encountered!",__VTFUNC__);
+                log->warn("{0} - More test names than test results encountered",__VTFUNC__);
                 json tmp = {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)};
                 jr[test_names.at(i)] = tmp;
             }
