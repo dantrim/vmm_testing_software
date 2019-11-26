@@ -81,7 +81,7 @@ class VTSClient(QtCore.QObject) :
                     current_test_idx = msg["TEST_IDX"]
                     self.signal_start_of_test.emit(current_test, int(current_test_idx))
                 elif monitor_type == "END_OF_TEST" :
-                    #print("EOT {}".format(data))
+                    print("EOT {}".format(data))
                     msg = data["DATA"]
                     test_completion_status = msg["TEST_COMPLETION"]
                     n_tests_run = msg["N_TESTS_TOUCHED"]

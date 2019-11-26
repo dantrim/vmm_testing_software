@@ -609,7 +609,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
+        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "VMM Testing Software", None, -1))
         self.groupBox.setTitle(QtWidgets.QApplication.translate("MainWindow", "VTS Control", None, -1))
         self.label_11.setText(QtWidgets.QApplication.translate("MainWindow", "VTS Config  ", None, -1))
         self.pushButton.setText(QtWidgets.QApplication.translate("MainWindow", "Load", None, -1))
