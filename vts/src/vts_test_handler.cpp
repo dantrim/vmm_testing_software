@@ -322,7 +322,7 @@ void VTSTestHandler::start()
             result = VTSTestResult::INCOMPLETE;
             stringstream err;
             err << "Failed to obtain test result for test \"" << test_name << "\", marking it as " << VTSTestResultToStr(result);
-            log->error("{0} - {1}",__VTFUNC__,err.str());
+            log->warn("{0} - {1}",__VTFUNC__,err.str());
             json tmp = {
                 {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)}
             };
