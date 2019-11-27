@@ -48,7 +48,7 @@ bool VTSTestSKELETONTEST::initialize(const json& config)
     vector<string> dac_pulsers = { "250", "300", "400", "500" };
     for(size_t i = 0; i < pulse_widths.size(); i++)
     {
-        for(size_t j = 0; j < dac_pulser.size(); j++)
+        for(size_t j = 0; j < dac_pulsers.size(); j++)
         {
             TestStep t;
             t.pulse_width = pulse_widths.at(i);

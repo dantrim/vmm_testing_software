@@ -118,7 +118,9 @@ def update_test_type_source(source_code_dir, test_name) :
                     new_line = new_line.replace(old_test_name, test_name)
                     new_lines.append(new_line)
                 new_lines.append(line)
-        for line in new_lines :
+        for iline, line in enumerate(new_lines) :
+            if line.strip() == "{" and new_lines[iline-1].strip() == "{" : continue
+            if line.strip() == "}" and new_lines[iline-1].strip() == "}" : continue
             ofile.write(line)
     return True, old_test_name
 

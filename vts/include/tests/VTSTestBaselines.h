@@ -50,9 +50,6 @@ class VTSTestBaselines : public VTSTestImp
 
     private :
 
-        json m_test_data;
-        json m_base_fpga_config;
-        json m_base_vmm_config;
         struct TestStep
         {
             std::string channel;

@@ -89,6 +89,10 @@ class VTSTestImp : public QObject
         json m_test_config;
         json m_frontend_config;
 
+        json m_test_data;
+        json m_base_fpga_config;
+        json m_base_vmm_config;
+
         virtual void check_status();
         virtual void reset_vmm();
 

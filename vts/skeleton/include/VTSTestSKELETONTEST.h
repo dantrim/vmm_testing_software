@@ -44,11 +44,9 @@ class VTSTestSKELETONTEST : public VTSTestImp
 
     private :
 
-        json m_test_data;
-        json m_base_fpga_config;
-        json m_base_vmm_config;
         struct TestStep
         {
+            std::string channel;
             std::string pulse_width;
             std::string dac_pulser;
         };
