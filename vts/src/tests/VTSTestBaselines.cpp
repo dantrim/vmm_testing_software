@@ -92,7 +92,6 @@ bool VTSTestBaselines::load()
 
 bool VTSTestBaselines::configure()
 {
-    //reset_vmm();
     TestStep t = m_test_steps.at(get_current_state() - 1);
 
     // configure the fpga
@@ -146,7 +145,7 @@ bool VTSTestBaselines::run()
     // reset the event counters for this new run
     reset_event_count();
 
-    comm()->sample_xadc(n_events_per_step(),500);
+    comm()->sample_xadc(n_events_per_step() /*, int sampling_delay */);
 
     // keep running until data processing has completed
     while(processing_events())
@@ -274,18 +273,6 @@ json VTSTestBaselines::get_results()
         {"RESULT",VTSTestResultToStr(VTSTestResult::SUCCESS)}
     };
     return jresults;
-}
-
-void VTSTestBaselines::check_status()
-{
-    float frac = event_fraction_processed();
-    //log->info("{0} - Check status: {1}",__VTFUNC__, frac);
-    emit signal_status_update(frac);
-}
-
-void VTSTestBaselines::reset_vmm()
-{
-    comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
 }
 
 } // namespace vts

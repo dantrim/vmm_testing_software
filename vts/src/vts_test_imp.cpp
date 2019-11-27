@@ -34,4 +34,15 @@ void VTSTestImp::stop_current_test()
     m_events_processed.store(2.0 * n_events_for_test());
 }
 
+void VTSTestImp::check_status()
+{
+    float frac = event_fraction_processed();
+    emit signal_status_update(frac);
+}
+
+void VTSTestImp::reset_vmm()
+{
+    comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
+}
+
 } // namespace vts

@@ -119,7 +119,6 @@ void VTSTestHandler::load_test_config(const json& test_cfg)
         test_msg << msg.str() << " " << i << ") " << m_test_names.at(i);
         log->info("{0} - {1}",__VTFUNC__, test_msg.str());
     }
-    //log->info("{0} - {1}",__VTFUNC__,msg.str());
 }
 
 void VTSTestHandler::start()

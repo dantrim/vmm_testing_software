@@ -77,7 +77,6 @@ bool VTSTestPassThrough::load()
 
 bool VTSTestPassThrough::configure()
 {
-    //reset_vmm();
     TestStep t = m_test_steps.at(get_current_state() - 1);
 
     // configure the fpga
@@ -219,17 +218,6 @@ json VTSTestPassThrough::get_results()
         {"RESULT",VTSTestResultToStr(VTSTestResult::SUCCESS)}
     };
     return jresults;
-}
-
-void VTSTestPassThrough::check_status()
-{
-    float frac = event_fraction_processed();
-    emit signal_status_update(frac);
-}
-
-void VTSTestPassThrough::reset_vmm()
-{
-    comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
 }
 
 } // namespace vts

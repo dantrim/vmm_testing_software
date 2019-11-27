@@ -50,9 +50,6 @@ class VTSTestBaselines : public VTSTestImp
 
     private :
 
-        void reset_vmm();
-        void check_status();
-
         json m_test_data;
         json m_base_fpga_config;
         json m_base_vmm_config;

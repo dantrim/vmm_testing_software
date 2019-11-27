@@ -89,6 +89,8 @@ class VTSTestImp : public QObject
         json m_test_config;
         json m_frontend_config;
 
+        virtual void check_status();
+        virtual void reset_vmm();
 
         int m_current_state;
         int m_n_states;
@@ -159,7 +161,6 @@ class VTSTestImp : public QObject
     signals :
         void finished();
         void signal_current_state(int, int);
-        //void signal_event_fraction_processed(float);
         void signal_status_update(float);
 
     public slots :
