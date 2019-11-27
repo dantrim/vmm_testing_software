@@ -55,7 +55,6 @@ def skeleton_include_dir() :
 
 def create_new_source_file(test_name = "", outname = "", skeleton = "") :
 
-    print("Creating {} from {}".format(outname, skeleton))
     with open(outname, "w") as ofile :
         with open(skeleton, "r") as ifile :
             for line in ifile :
