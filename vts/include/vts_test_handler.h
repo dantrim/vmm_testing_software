@@ -42,7 +42,7 @@ namespace vts
             void load_frontend_config(const json& frontend_cfg, const json& daq_cfg);
             void load_test_config(const json& test_cfg);
 
-            void start();
+            void run();
             bool is_running() { return m_is_running; }
             bool stop_all_tests()
             {

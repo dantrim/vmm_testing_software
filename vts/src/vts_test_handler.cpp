@@ -121,7 +121,7 @@ void VTSTestHandler::load_test_config(const json& test_cfg)
     }
 }
 
-void VTSTestHandler::start()
+void VTSTestHandler::run()
 {
     log->info("{0} - {1} {2}",__VTFUNC__,"Starting tests for VMM",m_vmm_serial_id);
     m_stop_all_tests.store(false);

@@ -289,7 +289,7 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
         if(ok)
         {
             m_thread = std::thread(
-                [this] { m_test_handler->start(); }
+                [this] { m_test_handler->run(); }
             );
         }
     }
