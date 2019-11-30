@@ -1,0 +1,7 @@
+{
+    "test_type": "BaselinesNeg",
+    "test_data": {
+        "base_config_global": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_16_200_neg.json",
+        "base_config_fpga": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/fpga_register_default.json"
+    }
+}

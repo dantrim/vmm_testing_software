@@ -148,7 +148,7 @@ vector<string> spi_global_register_vec(json jreg, bool reset)
     pos++;
 
     // stc
-    std::map<std::string, int> stc_map = {{"60",0},{"100",1},{"350",2},{"650",3}};
+    std::map<std::string, int> stc_map = {{"60",0},{"100",1},{"350",2},{"650",3},{"125",0},{"250",1},{"500",2},{"1000",3}};
     tmp = QString("%1").arg(stc_map.at(jreg.at("stc")),2,2,QChar('0'));
     spi1_0.replace(pos,tmp.size(),tmp);
     pos+=tmp.size();

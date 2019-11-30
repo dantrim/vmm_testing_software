@@ -278,20 +278,21 @@ bool CommunicatorFrontEnd::configure_vmm(std::string spi_filename, bool perform_
         return false;
 
     json spi_json;
+    bool status = true;
     try
     {
         std::ifstream ifs(spi_filename);
         spi_json = json::parse(ifs);
+        status = configure_vmm(spi_json, perform_reset);
     }
     catch(std::exception& e)
     {
         stringstream err;
         err << "Could not load VMM SPI json file: " << e.what();
         log->error("{0} - {1}",__VTFUNC__,err.str());
-        return false;
+        status = false;
     }
-
-    return configure_vmm(spi_json, perform_reset);
+    return status;
 }
 
 bool CommunicatorFrontEnd::configure_vmm(json spi_json, bool perform_reset)

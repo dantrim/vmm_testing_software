@@ -69,6 +69,21 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
         m_imp = std::make_shared<vts::VTSTestConfigurableVMM>();
         m_imp->load_test_config(config, frontend_cfg);
     }
+    else if(test_type == "BaselinesNeg")
+    {
+        m_imp = std::make_shared<vts::VTSTestBaselinesNeg>();
+        m_imp->load_test_config(config, frontend_cfg);
+    }
+    else if(test_type == "BaselinesPos")
+    {
+        m_imp = std::make_shared<vts::VTSTestBaselinesPos>();
+        m_imp->load_test_config(config, frontend_cfg);
+    }
+    else if(test_type == "ChannelsAliveNeg")
+    {
+        m_imp = std::make_shared<vts::VTSTestChannelsAliveNeg>();
+        m_imp->load_test_config(config, frontend_cfg);
+    }
     else
     {
         msg.str("");

@@ -1,6 +1,6 @@
 //vts
 #include "communicator_frontend.h"
-#include "tests/VTSTestConfigurableVMM.h"
+#include "tests/VTSTestBaselinesNeg.h"
 #include "helpers.h"
 #include "frontend_struct.h"
 #include "daq_defs.h"
@@ -10,11 +10,11 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <stdlib.h> // rand
 using namespace std;
 
 //logging
 #include "spdlog/spdlog.h"
+
 
 //ROOT
 #include "TH1F.h"
@@ -23,7 +23,7 @@ namespace vts
 {
 
 
-bool VTSTestConfigurableVMM::initialize(const json& config)
+bool VTSTestBaselinesNeg::initialize(const json& config)
 {
     stringstream msg;
     msg << "Initializing with config: " << config.dump();
@@ -49,65 +49,39 @@ bool VTSTestConfigurableVMM::initialize(const json& config)
     // initialize the test recipe here
     m_test_steps.clear();
     stringstream ch_id;
-    vector<int> channels;
-    int n_channels_to_sample = 10;
-    for(size_t i = 0; i < 2; i++)
+    for(size_t i = 0; i < 64; i++)
     {
-        bool configured = (i==0 ? false : true);
+        ch_id.str("");
+        ch_id << i;
+        TestStep t;
+        t.channel = ch_id.str();
+        m_test_steps.push_back(t);
+
+        // histograms
         stringstream hname;
         stringstream hax;
-        for(int j = 0; j < n_channels_to_sample; j++)
-        {
-
-            int chan = -1;
-            if(i==0)
-            {
-                // get a random channel
-                chan = rand() % 63;
-                auto it = std::find(channels.begin(), channels.end(), chan);
-                while(it != channels.end())
-                {
-                    chan = rand() % 63;
-                    it = std::find(channels.begin(), channels.end(), chan);
-                }
-                map_chan_to_idx[chan] = j;
-                channels.push_back(chan);
-            }
-            else
-            {
-                chan = channels.at(j);
-            }
-            
-            ch_id.str("");
-            ch_id << chan;
-            TestStep t;
-            t.is_configured = configured;
-            t.channel = ch_id.str();
-            m_test_steps.push_back(t);
-
-
-            // histos
-            hname.str("");
-            hax.str("");
-            hname << "h_baselines_" << (configured ? "" : "NOT") << "configured_ch" << ch_id.str();
-            hax << "Channel " << ch_id.str() << " " << (configured ? "" : "NOT") << " configured;xADC Samples [mV];Entries";
-            TH1F* h = new TH1F(hname.str().c_str(), hax.str().c_str(), 100, 0, -1);
-            h->SetLineColor(kBlack);
-            if(configured)
-            {
-                m_histos_baselines_configured.push_back(h);
-            }
-            else
-            {
-                m_histos_baselines_not_configured.push_back(h);
-            }
-        } // j
-    } // i
+        hname << "h_baselines_ch" << i;
+        hax << "VMM Channel Baseline Samples;xADC Samples [mV];Entries";
+        TH1F* h = new TH1F(hname.str().c_str(), hax.str().c_str(), 100, 0, -1);
+        h->SetLineColor(kBlack);
+        m_histos_baselines.push_back(h);
+        m_bad_baselines.push_back(0);
+    }
     stringstream hname;
     stringstream hax;
-    hname << "h_noise_ratio";
-    hax << "VMM Channel Noise Ratio;VMM Channel;Noise Not Configured / Noise Configured";
-    m_histo_noise_ratio = new TH1F(hname.str().c_str(), hax.str().c_str(), n_channels_to_sample, 0, n_channels_to_sample);
+    hname << "h_vmm_channel_baseline_summary";
+    hax << "VMM Channel Baseline Summary;VMM Channel;<Baseline> [mV]";
+    h_baseline_summary = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+    h_baseline_summary->SetLineColor(kBlack);
+
+    hname.str("");
+    hax.str("");
+    hname << "h_vmm_channel_noise_summary";
+    hax << "VMM Channel Noise Summary;VMM Channel;Noise [mV]";
+    h_noise_summary = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+    h_noise_summary->SetLineColor(kBlack);
+
+    n_bad_channels = 0;
 
     // initialize all counters
     set_current_state(0);
@@ -116,13 +90,13 @@ bool VTSTestConfigurableVMM::initialize(const json& config)
     return true;
 }
 
-bool VTSTestConfigurableVMM::load()
+bool VTSTestBaselinesNeg::load()
 {
     set_current_state( get_current_state() + 1);
     return true;
 }
 
-bool VTSTestConfigurableVMM::configure()
+bool VTSTestBaselinesNeg::configure()
 {
     TestStep t = m_test_steps.at(get_current_state() - 1);
 
@@ -163,19 +137,15 @@ bool VTSTestConfigurableVMM::configure()
     vmm_globals["sbmx"] = "ENABLED";
     vmm_globals["scmx"] = "ENABLED";
     vmm_globals["sbfm"] = "DISABLED";
-    vmm_globals["sdt_dac"] = "200";
-    vmm_globals["sdp_dac"] = "300";
-    vmm_globals["sg"] = "1.0";
     vmm_spi["global_registers"] = vmm_globals;
     vmm_config["vmm_spi"] = vmm_spi;
 
-    bool do_reset = (t.is_configured ? false : true);
     // send configuration SPI string
-    comm()->configure_vmm(vmm_config, /*perform reset*/ do_reset);
+    comm()->configure_vmm(vmm_config, /*perform reset*/ false);
     return true;
 }
 
-bool VTSTestConfigurableVMM::run()
+bool VTSTestBaselinesNeg::run()
 {
     // reset the event counters for this new test step
     reset_event_count();
@@ -192,7 +162,7 @@ bool VTSTestConfigurableVMM::run()
     return true;
 }
 
-bool VTSTestConfigurableVMM::process_event(vts::daq::DataFragment* fragment)
+bool VTSTestBaselinesNeg::process_event(vts::daq::DataFragment* fragment)
 {
     // return false to stop DAQ and move to next step in the testing
     if((n_events_processed() >= n_events_per_step()) || !processing_events())
@@ -202,7 +172,6 @@ bool VTSTestConfigurableVMM::process_event(vts::daq::DataFragment* fragment)
 
     // get the configuration for thist test step
     TestStep t = m_test_steps.at(get_current_state() - 1);
-    bool should_be_configured = t.is_configured;
     string current_channel = t.channel;
     int channel = std::stoi(current_channel);
 
@@ -214,16 +183,9 @@ bool VTSTestConfigurableVMM::process_event(vts::daq::DataFragment* fragment)
         if(n_events_processed() >= n_events_per_step()) break;
         // process the samples (fill histograms/etc)
 
-        float sample_mv = sample.sample() * 1.0;
+        float sample_mv = sample.sample();
         sample_mv = (sample_mv / pow(2,12)) * 1000.;
-        if(should_be_configured)
-        {
-            m_histos_baselines_configured.at(map_chan_to_idx[channel])->Fill(sample_mv);
-        }
-        else
-        {
-            m_histos_baselines_not_configured.at(map_chan_to_idx[channel])->Fill(sample_mv);
-        }
+        m_histos_baselines.at(channel)->Fill(sample_mv);
 
         // increment the counters since a single xADC sample is a single "event" (REQUIRED)
         event_processed();
@@ -235,61 +197,71 @@ bool VTSTestConfigurableVMM::process_event(vts::daq::DataFragment* fragment)
 }
 
 
-bool VTSTestConfigurableVMM::analyze()
+bool VTSTestBaselinesNeg::analyze()
 {
     TestStep t = m_test_steps.at(get_current_state() - 1);
-    return true;
-}
+    int channel = std::stoi(t.channel);
 
-bool VTSTestConfigurableVMM::analyze_test()
-{
-    size_t n_chan_configured = 0;
-    for(size_t i = 0; i < m_histos_baselines_not_configured.size(); i++)
+    auto h = m_histos_baselines.at(channel);
+    //store(h);
+    float channel_baseline_mean = h->GetMean();
+    bool lo_ok = (channel_baseline_mean >= LO_BASELINE_THRESHOLD);
+    bool hi_ok = (channel_baseline_mean <= HI_BASELINE_THRESHOLD);
+    if(lo_ok && hi_ok)
     {
-        auto hnot = m_histos_baselines_not_configured.at(i);
-        auto h = m_histos_baselines_configured.at(i);
-
-        float noise_not_configured = hnot->GetStdDev();
-        float noise_configured = h->GetStdDev();
-        float noise_ratio = (noise_not_configured / noise_configured);
-        m_histo_noise_ratio->SetBinContent(i+1, noise_ratio);
-
-        if(noise_ratio > 100)
-        {
-            n_chan_configured++;
-        }
-
-        delete hnot;
-        delete h;
-    }
-    store(m_histo_noise_ratio);
-    delete m_histo_noise_ratio;
-
-    // if any of the channels was configured, consider the VMM to be able to be
-    // configured
-    if(n_chan_configured > 0)
-    {
-        m_vmm_configurable = true;
+        m_bad_baselines.at(channel) = 0;
     }
     else
     {
-        m_vmm_configurable = false;
+        n_bad_channels++;
+        m_bad_baselines.at(channel) = 1;
     }
 
-    m_histos_baselines_not_configured.clear();
-    m_histos_baselines_configured.clear();
+    float channel_baseline_noise = h->GetStdDev();
+    m_channel_baseline_means.push_back(channel_baseline_mean);
+    m_channel_noise.push_back(channel_baseline_noise);
 
     return true;
 }
 
-bool VTSTestConfigurableVMM::finalize()
+bool VTSTestBaselinesNeg::analyze_test()
 {
+    for(size_t ichan = 0; ichan < m_channel_baseline_means.size(); ichan++)
+    {
+        h_baseline_summary->SetBinContent(ichan+1, m_channel_baseline_means.at(ichan));
+        h_noise_summary->SetBinContent(ichan+1, m_channel_noise.at(ichan));
+    }
+    store(h_baseline_summary);
+    store(h_noise_summary);
     return true;
 }
 
-json VTSTestConfigurableVMM::get_results()
+bool VTSTestBaselinesNeg::finalize()
 {
-    VTSTestResult result = (m_vmm_configurable ? VTSTestResult::SUCCESS : VTSTestResult::FAIL);
+    for(size_t ih = 0 ; ih < m_histos_baselines.size(); ih++)
+    {
+        auto h = m_histos_baselines.at(ih);
+        delete h;
+    }
+
+    return true;
+}
+
+json VTSTestBaselinesNeg::get_results()
+{
+    VTSTestResult result = VTSTestResult::TESTRESULTINVALID;
+    if(n_bad_channels>2)
+    {
+        result = VTSTestResult::FAIL;
+    }
+    else if(n_bad_channels>0 && n_bad_channels<=2)
+    {
+        result = VTSTestResult::PASS;
+    }
+    else if(n_bad_channels==0)
+    {
+        result = VTSTestResult::SUCCESS;
+    }
     json jresults = {
         {"RESULT",VTSTestResultToStr(result)}
     };
