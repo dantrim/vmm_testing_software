@@ -13,6 +13,7 @@ namespace vts
     {
         PassThrough=0
         ,Baselines
+        ,ConfigurableVMM
         ,VTSTESTTYPEINVALID
     };
     std::string VTSTestTypeToStr(const VTSTestType& t);    

@@ -1,6 +1,7 @@
 {
     "test_priority" : [
-        "Baselines"
+        "ConfigurableVMM"
+        ,"Baselines"
         ,"PassThrough"
     ]
 }
