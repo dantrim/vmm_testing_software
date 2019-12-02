@@ -84,6 +84,11 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
         m_imp = std::make_shared<vts::VTSTestChannelsAliveNeg>();
         m_imp->load_test_config(config, frontend_cfg);
     }
+    else if(test_type == "ChannelsAlivePos")
+    {
+        m_imp = std::make_shared<vts::VTSTestChannelsAlivePos>();
+        m_imp->load_test_config(config, frontend_cfg);
+    }
     else
     {
         msg.str("");

@@ -3,7 +3,7 @@
     {
         "trigger" :
         {
-            "latency" : "36",
+            "latency" : "40",
             "latency_extra_ckbc" : "88",
             "trigger_dead_time" : "65535",
             "ckbc_max_number" : "6",

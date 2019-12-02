@@ -2,6 +2,9 @@
     "test_type": "ChannelsAliveNeg",
     "test_data": {
         "base_config_global": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_16_200_neg.json",
-        "base_config_fpga": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/fpga_register_default.json"
+        "base_config_fpga": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/fpga_register_16_200_neg.json",
+        "n_cktp_per_cycle" : "50",
+        "n_cycles" : "10",
+        "time_per_cycle" : "100"
     }
 }

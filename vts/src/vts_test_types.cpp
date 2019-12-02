@@ -19,6 +19,7 @@ string VTSTestTypeToStr(const VTSTestType& t)
         case VTSTestType::BaselinesNeg : { out = "BaselinesNeg"; break; }
         case VTSTestType::BaselinesPos : { out = "BaselinesPos"; break; }
         case VTSTestType::ChannelsAliveNeg : { out = "ChannelsAliveNeg"; break; }
+        case VTSTestType::ChannelsAlivePos : { out = "ChannelsAlivePos"; break; }
         case VTSTestType::VTSTESTTYPEINVALID : { out = "VTSTESTTYPEINVALID"; break; }
     }
     return out;
@@ -33,6 +34,7 @@ VTSTestType StrToVTSTestType(const string& t)
     else if(t == "BaselinesNeg") { out = VTSTestType::BaselinesNeg; }
     else if(t == "BaselinesPos") { out = VTSTestType::BaselinesPos; }
     else if(t == "ChannelsAliveNeg") { out = VTSTestType::ChannelsAliveNeg; }
+    else if(t == "ChannelsAlivePos") { out = VTSTestType::ChannelsAlivePos; }
     else { out = VTSTestType::VTSTESTTYPEINVALID; }
     return out;
 }

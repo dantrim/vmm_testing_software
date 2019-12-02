@@ -7,5 +7,6 @@
 #include "tests/VTSTestBaselinesNeg.h"
 #include "tests/VTSTestBaselinesPos.h"
 #include "tests/VTSTestChannelsAliveNeg.h"
+#include "tests/VTSTestChannelsAlivePos.h"
 
 #endif

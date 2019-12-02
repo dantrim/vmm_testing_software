@@ -1,6 +1,6 @@
 //vts
 #include "communicator_frontend.h"
-#include "tests/VTSTestChannelsAliveNeg.h"
+#include "tests/VTSTestChannelsAlivePos.h"
 #include "helpers.h"
 #include "frontend_struct.h"
 #include "daq_defs.h"
@@ -23,7 +23,7 @@ namespace vts
 {
 
 
-bool VTSTestChannelsAliveNeg::initialize(const json& config)
+bool VTSTestChannelsAlivePos::initialize(const json& config)
 {
     n_cktp_per_cycle = 50;
     n_cycles = 10;
@@ -106,13 +106,13 @@ bool VTSTestChannelsAliveNeg::initialize(const json& config)
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::load()
+bool VTSTestChannelsAlivePos::load()
 {
     set_current_state( get_current_state() + 1);
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::configure()
+bool VTSTestChannelsAlivePos::configure()
 {
     comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -169,7 +169,7 @@ bool VTSTestChannelsAliveNeg::configure()
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::run()
+bool VTSTestChannelsAlivePos::run()
 {
     // reset the event counters for this new test step
     reset_event_count();
@@ -197,7 +197,7 @@ bool VTSTestChannelsAliveNeg::run()
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::process_event(vts::daq::DataFragment* fragment)
+bool VTSTestChannelsAlivePos::process_event(vts::daq::DataFragment* fragment)
 {
 
     // return false to stop DAQ and move to next step in the testing
@@ -226,12 +226,12 @@ bool VTSTestChannelsAliveNeg::process_event(vts::daq::DataFragment* fragment)
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::analyze()
+bool VTSTestChannelsAlivePos::analyze()
 {
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::analyze_test()
+bool VTSTestChannelsAlivePos::analyze_test()
 {
     int n_total_test_pulses_sent = (m_test_steps.size() * n_cktp_per_cycle);
     for(const auto & h : h_vec_channels_cycle)
@@ -273,12 +273,12 @@ bool VTSTestChannelsAliveNeg::analyze_test()
     return true;
 }
 
-bool VTSTestChannelsAliveNeg::finalize()
+bool VTSTestChannelsAlivePos::finalize()
 {
     return true;
 }
 
-json VTSTestChannelsAliveNeg::get_results()
+json VTSTestChannelsAlivePos::get_results()
 {
     VTSTestResult result = VTSTestResult::TESTRESULTINVALID;
     size_t n_dead = m_dead_channels.size();

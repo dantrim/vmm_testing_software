@@ -4,7 +4,7 @@
         "global_registers" :
         {
             "sdp_dac" : "320",
-            "sdt_dac" : "300",
+            "sdt_dac" : "200",
             "st" : "25",
             "sm5" : "0",
             "scmx" : "ENABLED",
