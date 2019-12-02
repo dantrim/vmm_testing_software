@@ -104,7 +104,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="pushButton">
+               <widget class="QPushButton" name="button_load_vts_config">
                 <property name="font">
                  <font>
                   <pointsize>10</pointsize>
@@ -113,27 +113,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Load</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="button_vts_config_check">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>OK</string>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>16</width>
-                  <height>16</height>
-                 </size>
+                 <string>   Load   </string>
                 </property>
                </widget>
               </item>
@@ -165,32 +145,17 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="button_start_vts_server">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
                 </property>
-                <property name="text">
-                 <string>Start</string>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="button_shutdown_vts_server">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Shutdown</string>
-                </property>
-               </widget>
+               </spacer>
               </item>
               <item>
                <widget class="QPushButton" name="button_ping_vts_server">
@@ -207,73 +172,20 @@
                </widget>
               </item>
               <item>
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+               <widget class="QPushButton" name="button_start_vts_server">
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
+                <property name="text">
+                 <string>   Start   </string>
                 </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QFrame" name="frame_3">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
+                <property name="checkable">
+                 <bool>true</bool>
                 </property>
-                <property name="styleSheet">
-                 <string notr="true">background-color: rgb(189, 189, 189);</string>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Plain</enum>
-                </property>
-                <property name="lineWidth">
-                 <number>1</number>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_6">
-                 <property name="leftMargin">
-                  <number>1</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>1</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>1</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>1</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_vts_server_status">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>10</pointsize>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Unknown</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
                </widget>
               </item>
              </layout>
@@ -329,18 +241,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="button_acquire_vmm_serial">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Acquire VMM Serial</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <widget class="QPushButton" name="button_ping_camera">
               <property name="font">
                <font>
@@ -349,6 +249,31 @@
               </property>
               <property name="text">
                <string>Camera Alive?</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="button_do_manual_vmm_sn">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Manual VMM SN</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_manual_vmm_sn">
+              <property name="maxLength">
+               <number>5</number>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
               </property>
              </widget>
             </item>
@@ -366,60 +291,15 @@
              </spacer>
             </item>
             <item>
-             <widget class="QFrame" name="frame_4">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
+             <widget class="QPushButton" name="button_acquire_vmm_serial">
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
               </property>
-              <property name="styleSheet">
-               <string notr="true">background-color: rgb(189, 189, 189);</string>
+              <property name="text">
+               <string>VMM SN</string>
               </property>
-              <property name="frameShape">
-               <enum>QFrame::Box</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Plain</enum>
-              </property>
-              <layout class="QGridLayout" name="gridLayout_7">
-               <property name="leftMargin">
-                <number>1</number>
-               </property>
-               <property name="topMargin">
-                <number>1</number>
-               </property>
-               <property name="rightMargin">
-                <number>1</number>
-               </property>
-               <property name="bottomMargin">
-                <number>1</number>
-               </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_vts_vmm_sn">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <pointsize>10</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>No VMM Acknowledged</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                 <property name="textInteractionFlags">
-                  <set>Qt::LinksAccessibleByMouse|Qt::TextEditable</set>
-                 </property>
-                </widget>
-               </item>
-              </layout>
              </widget>
             </item>
            </layout>
@@ -486,7 +366,7 @@
                  </font>
                 </property>
                 <property name="text">
-                 <string>Load</string>
+                 <string>   Load   </string>
                 </property>
                </widget>
               </item>
@@ -1236,7 +1116,7 @@
       <rect>
        <x>5</x>
        <y>5</y>
-       <width>152</width>
+       <width>151</width>
        <height>21</height>
       </rect>
      </property>
@@ -1249,6 +1129,30 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_vts_server_status">
+        <property name="text">
+         <string>none</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
     <widget class="QFrame" name="frame_9">
      <property name="geometry">
@@ -1293,7 +1197,7 @@
       <rect>
        <x>5</x>
        <y>30</y>
-       <width>75</width>
+       <width>151</width>
        <height>21</height>
       </rect>
      </property>
@@ -1306,25 +1210,30 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-    </widget>
-    <widget class="QFrame" name="frame_12">
-     <property name="geometry">
-      <rect>
-       <x>82</x>
-       <y>30</y>
-       <width>75</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(189, 189, 189);</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_vts_vmm_sn">
+        <property name="text">
+         <string>none</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
    <widget class="QFrame" name="frame_13">

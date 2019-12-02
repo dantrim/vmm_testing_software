@@ -252,11 +252,12 @@ class VTSClient(QtCore.QObject) :
 
 
     @Slot(str)
-    def load_test(self, test_names = [], test_config_files = []) :
+    def load_test(self, test_names = [], test_config_files = [], vmm_sn = "") :
 
         # first acquire the current VMM serial ID
-        camera = device_capture.PictureTaker()
-        vmm_sn = camera.get_serial_number()
+        if vmm_sn == "" :
+            camera = device_capture.PictureTaker()
+            vmm_sn = camera.get_serial_number()
         if not vmm_sn :
             print("ERROR Could not acquire VMM serial number - Cannot load tests!")
             return
@@ -278,9 +279,13 @@ class VTSClient(QtCore.QObject) :
     def stop_test(self) :
         self.test_cmd(cmd = "STOP")
 
-    def capture_vmm_serial(self) :
-        camera = device_capture.PictureTaker()
-        vmm_sn = camera.get_serial_number()
+    def capture_vmm_serial(self, manual = "") :
+        if manual == "" :
+            camera = device_capture.PictureTaker()
+            vmm_sn = camera.get_serial_number()
+        else :
+            vmm_sn = manual
+
         if not vmm_sn :
             print("ERROR Could not acquire VMM serial number")
         

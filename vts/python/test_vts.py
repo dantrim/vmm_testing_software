@@ -73,11 +73,12 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.ui.label_vts_server_status.setStyleSheet(bkg_color)
         self.ui.label_vts_server_status.setText(str(value))
 
-    def load_test_config_from_dir(self, value, send_to_server = True) :
+    def load_test_config_from_dir(self, test_config_dir = "", send_to_server = True, vmm_sn = "") :
 
         self.ui.progressBar_current_test_progress.setValue(0)
 
-        test_config_dir = str(value)
+
+        test_config_dir = str(test_config_dir)
         p_test_config_dir = Path(test_config_dir)
         exists_and_is_dir = p_test_config_dir.exists() and p_test_config_dir.is_dir()
         if not exists_and_is_dir :
@@ -114,14 +115,19 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
         # assumes that VTS server is running
         if server_running and send_to_server :
-            self.send_tests_to_vts()
+            self.send_tests_to_vts(vmm_sn = vmm_sn)
 
     @Slot()
     def load_test_config(self) :
 
+        # get vmm sn
+        vmm_sn = self.capture_vmm_serial()
+        if vmm_sn == "" :
+            return
+
         self.clear_tests()
         test_config_dir = self.ui.lineEdit_test_dir.text()
-        self.load_test_config_from_dir(str(test_config_dir))
+        self.load_test_config_from_dir(test_config_dir = str(test_config_dir), vmm_sn = vmm_sn)
 
 
     def get_loaded_tests(self) :
@@ -149,10 +155,10 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.ui.listWidget_loaded_tests.clear()
         self.new_test_started("", 0)
 
-    def send_tests_to_vts(self) :
+    def send_tests_to_vts(self, vmm_sn = "") :
 
         test_names, test_config_files = self.get_loaded_tests()
-        status = self.vts.load_test(test_names = test_names, test_config_files = test_config_files)
+        status = self.vts.load_test(test_names = test_names, test_config_files = test_config_files, vmm_sn = vmm_sn)
         if not status :
             self.set_background(obj = self.ui.lineEdit_test_dir
                                 ,obj_type_str = "QLineEdit"
@@ -171,6 +177,16 @@ class VTSWindow(QtWidgets.QMainWindow) :
     @Slot()
     def start_server(self) :
         status = self.vts.start_server(wait = 0.2)
+
+    @Slot()
+    def toggle_server(self) :
+        is_on = self.ui.button_start_vts_server.isChecked()
+        if is_on :
+            self.ui.button_start_vts_server.setText("Shutdown")
+            status = self.vts.start_server(wait = 0.2)
+        else :
+            self.vts.kill_server(wait = 0.1)
+            self.ui.button_start_vts_server.setText("Start")
 
     @Slot()
     def kill_server(self) :
@@ -209,6 +225,29 @@ class VTSWindow(QtWidgets.QMainWindow) :
         n_tests_exp = int(n_tests_exp)
         self.ui.button_tests_stop.click()
 
+    @Slot()
+    def capture_vmm_serial(self) :
+        do_manual =  self.ui.button_do_manual_vmm_sn.isChecked()
+        vmm_sn = ""
+        if do_manual :
+            vmm_sn_text = self.ui.lineEdit_manual_vmm_sn.text()
+            if vmm_sn_text.isdigit() :
+                vmm_sn = self.vts.capture_vmm_serial(manual = vmm_sn_text)
+            else :
+                print("ERROR Unable to acquire manual VMM serial number as it is not a number: {}".format(vmm_sn_text))
+                self.vmm_sn_updated("")
+                vmm_sn = ""
+        else :
+            vmm_sn = self.vts.capture_vmm_serial()
+        if vmm_sn == "" :
+            self.ui.button_tests_start.setEnabled(False)
+            self.ui.button_tests_stop.setEnabled(False)
+        else :
+            self.ui.button_tests_start.setEnabled(True)
+            self.ui.button_tests_stop.setEnabled(False)
+        return vmm_sn
+                
+
     ##
     ## VTS CONNECTIONS
     ##
@@ -218,8 +257,9 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ##
         ## VTS CONTROL
         ##
-        ui.button_start_vts_server.clicked.connect(self.start_server)
-        ui.button_shutdown_vts_server.clicked.connect(self.kill_server)
+        ui.button_start_vts_server.clicked.connect(self.toggle_server)
+        #ui.button_start_vts_server.clicked.connect(self.start_server)
+        #ui.button_shutdown_vts_server.clicked.connect(self.kill_server)
         ui.button_ping_vts_server.clicked.connect(self.vts.ping_server)
 
         self.vts.signal_vmm_sn_updated.connect(self.vmm_sn_updated)
@@ -228,7 +268,8 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ##
         ## DEVICE CONTROL
         ##
-        ui.button_acquire_vmm_serial.clicked.connect(self.vts.capture_vmm_serial)       
+        ui.button_acquire_vmm_serial.clicked.connect(self.capture_vmm_serial)
+        #ui.button_acquire_vmm_serial.clicked.connect(self.vts.capture_vmm_serial)       
 
         ##
         ## TESTS
