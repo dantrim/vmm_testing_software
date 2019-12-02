@@ -14,6 +14,7 @@ namespace vts {
 
 //std/stl
 #include <vector>
+#include <chrono>
 
 //ROOT
 class TH1F;
@@ -29,7 +30,7 @@ class VTSTestChannelsAliveNeg : public VTSTestImp
             log = spdlog::get("vts_logger");
             set_current_state(-1);
             set_n_states(1);
-            set_n_events_per_step(1000);
+            //set_n_events_per_step(50);
             m_total_events_processed.store(0);
             m_n_total_events.store(0);
         }
@@ -52,20 +53,19 @@ class VTSTestChannelsAliveNeg : public VTSTestImp
 
         struct TestStep
         {
-            int channel;
             int cycle;
         };
 
         std::vector<TestStep> m_test_steps;
 
         // put histograms/trees/any output here
-        TH1F* h_channel_occupancy;
-        TH1F* h_channel_eff;
-        std::vector<TH1F*> m_cycle_occ_histos;
-        std::vector<TH1F*> m_cycle_eff_histos;
+        int n_cktp_per_cycle;
+        std::chrono::system_clock::time_point m_start_time;
+        std::vector<TH1F*> h_vec_channels_cycle;
+        TH1F* h_channel_occ_total;
+        TH1F* h_channel_eff_total;
+
         std::vector<int> m_dead_channels;
-        int n_times;
-        TH1F* h_over_count;
 
 }; // class VTSTestChannelsAliveNeg
 

@@ -1,8 +1,8 @@
 {
     "test_priority" : [
         "ConfigurableVMM"
-        ,"BaselinesNeg"
         ,"BaselinesPos"
+        ,"BaselinesNeg"
         ,"ChannelsAliveNeg"
     ]
 }

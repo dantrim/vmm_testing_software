@@ -25,7 +25,8 @@ namespace vts
 
 bool VTSTestChannelsAliveNeg::initialize(const json& config)
 {
-    n_times = 0;
+    n_cktp_per_cycle = 50;
+    set_n_events_per_step(n_cktp_per_cycle);
 
     stringstream msg;
     msg << "Initializing with config: " << config.dump();
@@ -50,42 +51,36 @@ bool VTSTestChannelsAliveNeg::initialize(const json& config)
 
     // initialize the test recipe here
     m_test_steps.clear();
-    for(size_t i = 0; i < 1; i++)
+    h_vec_channels_cycle.clear();
+    for(size_t i = 0; i < 10; i++)
     {
         TestStep t;
         t.cycle = i;
         m_test_steps.push_back(t);
+
+        stringstream hname;
+        stringstream hax;
+        hname << "h_cycle_" << i << "_channels";
+        hax << "VMM Channel Occupancy for Cycle " << i << ";VMM Channel;Entries";
+        TH1F* h = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+        h->SetLineColor(kBlack);
+        h_vec_channels_cycle.push_back(h);
     } // i
-
-//    for(size_t i = 0; i < 1; i++)
-//    {
-//        TestStep t;
-//        t.channel = i;
-//        m_test_steps.push_back(t);
-//    }
-
-    h_over_count = new TH1F("h_over_count", ";VMM Channel;Over Count", 64, 0, 64);
-
-    // initialize histograms
-    m_dead_channels.clear();
 
     stringstream hname;
     stringstream hax;
-    hname << "h_channel_occupancy";
-    hax << "VMM Channel Occupancy;VMM Channel;Entries";
-    h_channel_occupancy = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
-    h_channel_occupancy->SetLineColor(kBlack);
-
-    hname.str("");
-    hax.str("");
-    hname << "h_channel_eff";
-    hax << "VMM Channel Efficiency;VMM Channel;Fracion";
-    h_channel_eff = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
-    h_channel_eff->SetLineColor(kBlack);
-    h_channel_eff->SetMaximum(3);
-    h_channel_eff->SetMinimum(0);
+    hname << "h_channel_occ_total";
+    hax << "VMM Channel Occupancy Over All Cycles;VMM Channel;Entries";
+    h_channel_occ_total = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+    h_channel_occ_total->SetLineColor(kBlack);
+    hname.str(""); hax.str("");
+    hname << "h_channel_eff_total";
+    hax << "VMM Channel Efficiency Over All Cycles;VMM Channel;Entries";
+    h_channel_eff_total = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+    h_channel_eff_total->SetLineColor(kBlack);
 
     // initialize all counters
+    m_dead_channels.clear();
     set_current_state(0);
     set_n_states(m_test_steps.size());
     set_n_events_for_test(m_test_steps.size() * n_events_per_step());
@@ -101,15 +96,19 @@ bool VTSTestChannelsAliveNeg::load()
 bool VTSTestChannelsAliveNeg::configure()
 {
     comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    TestStep t = m_test_steps.at(get_current_state() - 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    //TestStep t = m_test_steps.at(get_current_state() - 1);
 
     // configure the fpga
     json fpga_config = m_base_fpga_config;
     json fpga_registers = fpga_config.at("fpga_registers");
     json fpga_triggers = fpga_registers.at("trigger");
     json fpga_clocks = fpga_registers.at("clocks");
-    //fpga_clocks["cktp_max_number"] = "1";
+    stringstream cktp_max;
+    int tmp = (n_cktp_per_cycle - 1);
+    cktp_max << tmp;
+    fpga_clocks["cktp_max_number"] = cktp_max.str(); // the firmware adds 1
+    fpga_clocks["cktp_period"] = "5000";
     comm()->configure_fpga(fpga_triggers, fpga_clocks);
 
     // build the VMM config info for this step
@@ -143,9 +142,6 @@ bool VTSTestChannelsAliveNeg::configure()
     vmm_globals["sbmx"] = "ENABLED";
     vmm_globals["scmx"] = "ENABLED";
     vmm_globals["sbfm"] = "DISABLED";
-    //vmm_globals["sg"] = "1.0";
-    //vmm_globals["sdp_dac"] = "300";
-    //vmm_globals["sdt_dac"] = "200";
     vmm_spi["global_registers"] = vmm_globals;
     vmm_config["vmm_spi"] = vmm_spi;
 
@@ -160,12 +156,20 @@ bool VTSTestChannelsAliveNeg::run()
     reset_event_count();
 
     // start acq
+    m_start_time = std::chrono::system_clock::now();
     comm()->acq_toggle(true);
 
     // keep running until data processing has completed
     while(processing_events())
     {
         if(!processing_events()) break;
+        auto current_time = std::chrono::system_clock::now();
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - m_start_time).count();
+        if(diff >= 100)
+        {
+            processing(false);
+            break;
+        }
         continue;
     }
 
@@ -176,39 +180,12 @@ bool VTSTestChannelsAliveNeg::run()
 
 bool VTSTestChannelsAliveNeg::process_event(vts::daq::DataFragment* fragment)
 {
-    n_times++;
-    int n_chans_at_peak = 0;
-    for(int i = 0; i < 64; i++)
-    {
-        float bc = h_channel_occupancy->GetBinContent(i+1);
-        if(bc>=n_events_per_step())
-        {
-            n_chans_at_peak++;
-        }
-    }
-    //log->critical("{0} - N chans at peak = {1}",__VTFUNC__,n_chans_at_peak);
-    bool stop = (n_chans_at_peak==64);
-    float max_over = -1.0;
-    for(int i = 0; i < 64; i++)
-    {
-        auto bc = h_over_count->GetBinContent(i+1);
-        if(bc>max_over) max_over = bc;
-    }
-    if(max_over > 1.0 * n_events_per_step())
-    {
-        stop = true;
-    }
 
-    if(stop)
+    // return false to stop DAQ and move to next step in the testing
+    if((n_events_processed() >= n_events_per_step()) || !processing_events())
     {
         return false;
     }
-
-    //// return false to stop DAQ and move to next step in the testing
-    //if((n_events_processed() >= n_events_per_step()) || !processing_events())
-    //{
-    //    return false;
-    //}
 
     // get the configuration for thist test step
     TestStep t = m_test_steps.at(get_current_state() - 1);
@@ -216,59 +193,63 @@ bool VTSTestChannelsAliveNeg::process_event(vts::daq::DataFragment* fragment)
 
     // decode the data packet
     vector<vts::decode::vmm::Sample> samples = vts::decode::vmm::decode(fragment->packet);
-    //log->critical("{0} - Received event with {1} samples",__VTFUNC__,samples.size());
-    for(int i = 0; i < 64; i++)
-    {
-        if(h_channel_occupancy->GetBinContent(i+1)>=n_events_per_step())
-        {
-            h_over_count->Fill(i);
-        }
-    }
+
     for(const auto & sample : samples)
     {
-        if(stop) break;
-        //if(n_events_processed() >= n_events_per_step()) break;
-        // process the samples (fill histograms/etc)
-
-        //if(sample.channel()==4 || sample.channel()==19 || sample.channel()==24) continue;
-        h_channel_occupancy->Fill(sample.channel()+0.1);
-    }
+        h_vec_channels_cycle.at(cycle)->Fill(sample.channel());
+    } // sample
 
     // increment the event counter to move forward in the test (REQUIRED)
     event_processed();
     // signal the event processing status to anyone listing (e.g. progress bar)
     check_status();
+
     return true;
 }
 
-
 bool VTSTestChannelsAliveNeg::analyze()
 {
-    //TestStep t = m_test_steps.at(get_current_state() - 1);
     return true;
 }
 
 bool VTSTestChannelsAliveNeg::analyze_test()
 {
-    float expected_number = n_events_for_test() * 1.0;
-    for(size_t ichan = 0; ichan < 64; ichan++)
+    int n_total_test_pulses_sent = (m_test_steps.size() * n_cktp_per_cycle);
+    for(const auto & h : h_vec_channels_cycle)
     {
-        float eff = (h_channel_occupancy->GetBinContent(ichan+1) / expected_number);
-        if(eff == 0.0)
+        for(int ichan = 0; ichan < 64; ichan++)
         {
+            int ibin = ichan+1;
+            auto bc = h->GetBinContent(ibin);
+            auto current = h_channel_occ_total->GetBinContent(ibin);
+            h_channel_occ_total->SetBinContent(ibin, current+bc);
+        } // ichan
+        store(h);
+        delete h;
+    } // h
+
+    for(int ichan = 0; ichan < 64; ichan++)
+    {
+        int ibin = ichan+1;
+        auto bc = h_channel_occ_total->GetBinContent(ibin);
+        float eff = (bc / n_total_test_pulses_sent);
+        h_channel_eff_total->SetBinContent(ibin, eff);
+
+        if(eff==0)
+        {
+            log->info("{0} - Dead VMM channel found: {1}",__VTFUNC__, ichan);
             m_dead_channels.push_back(ichan);
         }
-        h_channel_eff->SetBinContent(ichan+1, eff);
-    } // ichan
-    store(h_channel_eff);
-    store(h_channel_occupancy);
+        if(eff <= 0.75)
+        {
+            log->info("{0} - Low efficiency channel found: channel={1} eff={2}",__VTFUNC__,ichan,eff);
+        }
+    }
 
-    delete h_channel_eff;
-    delete h_channel_occupancy;
-
-    store(h_over_count);
-    delete h_over_count;
-
+    store(h_channel_occ_total);
+    store(h_channel_eff_total);
+    delete h_channel_occ_total;
+    delete h_channel_eff_total;
 
     return true;
 }
@@ -294,7 +275,6 @@ json VTSTestChannelsAliveNeg::get_results()
     {
         result = VTSTestResult::SUCCESS;
     }
-
 
     json jresults = {
         {"RESULT",VTSTestResultToStr(result)}
