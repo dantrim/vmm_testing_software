@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <chrono>
 using namespace std;
 
 //logging
@@ -66,6 +67,8 @@ bool VTSTestBaselinesPos::initialize(const json& config)
         h->SetLineColor(kBlack);
         m_histos_baselines.push_back(h);
         m_bad_baselines.push_back(0);
+
+        m_retry_map[i] = 0;
     }
     stringstream hname;
     stringstream hax;
@@ -96,9 +99,48 @@ bool VTSTestBaselinesPos::load()
     return true;
 }
 
+bool VTSTestBaselinesPos::need_to_redo()
+{
+    if(get_current_state()>1)
+    {
+        int idx_step_current = get_current_state()-1;
+        int idx_step_previous = (idx_step_current-1);
+        TestStep t = m_test_steps.at(idx_step_previous);
+        int channel = std::stoi(t.channel);
+        auto h = m_histos_baselines.at(channel);
+        float mean = h->GetMean();
+        if(!(mean>0.0))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void VTSTestBaselinesPos::redo_last_step()
+{
+    int state_before_redo = (get_current_state());
+    int state_after_redo = (get_current_state() -1);
+    log->warn("{0} - Going back to previous state (state was={1}, now={2}) (channel was={3}, now={4})",__VTFUNC__, state_before_redo, state_after_redo, (state_before_redo-1), (state_after_redo-1));
+    set_current_state( get_current_state() -1);
+    return;
+}
+
 bool VTSTestBaselinesPos::configure()
 {
+    bool redo = need_to_redo();
+    if(redo)
+    {
+        log->warn("{0} - Re-doing last step",__VTFUNC__);
+        redo_last_step();
+    }
+    
     TestStep t = m_test_steps.at(get_current_state() - 1);
+    if(redo)
+    {
+        log->warn("{0} - Got step for channel {1}",__VTFUNC__, t.channel);
+    }
+    
 
     // configure the fpga
     json fpga_config = m_base_fpga_config;
@@ -141,6 +183,7 @@ bool VTSTestBaselinesPos::configure()
     vmm_config["vmm_spi"] = vmm_spi;
 
     // send configuration SPI string
+    comm()->configure_vmm(vmm_config, /*perform reset*/ true);
     comm()->configure_vmm(vmm_config, /*perform reset*/ false);
     return true;
 }
@@ -151,12 +194,14 @@ bool VTSTestBaselinesPos::run()
     reset_event_count();
 
     // start the initial xADC sampling, the rest will be done in process_event (if needed)
-    comm()->sample_xadc(n_events_per_step() /*, int sampling_delay*/);
+    comm()->sample_xadc(2.0 * n_events_per_step() /*, int sampling_delay*/);
 
     // keep running until data processing has completed
     while(processing_events())
     {
         if(!processing_events()) break;
+        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        //comm()->sample_xadc(2.0 * n_events_per_step() /*, int sampling_delay*/);
         continue;
     }
     return true;
@@ -188,7 +233,8 @@ bool VTSTestBaselinesPos::process_event(vts::daq::DataFragment* fragment)
         m_histos_baselines.at(channel)->Fill(sample_mv);
 
         // increment the counters since a single xADC sample is a single "event" (REQUIRED)
-        event_processed();
+        if(sample_mv>0.0)
+            event_processed();
     }
 
     // continue sampling events (loop will exit if we are already at the limit) (REQUIRED)
@@ -207,19 +253,32 @@ bool VTSTestBaselinesPos::analyze()
     float channel_baseline_mean = h->GetMean();
     bool lo_ok = (channel_baseline_mean >= LO_BASELINE_THRESHOLD);
     bool hi_ok = (channel_baseline_mean <= HI_BASELINE_THRESHOLD);
+    bool going_to_retry = false;
     if(lo_ok && hi_ok)
     {
         m_bad_baselines.at(channel) = 0;
     }
     else
     {
-        n_bad_channels++;
-        m_bad_baselines.at(channel) = 1;
+        if(m_retry_map.at(channel) >= N_RETRY_MAX)
+        {
+            n_bad_channels++;
+            m_bad_baselines.at(channel) = 1;
+        }
+        else
+        {
+            log->warn("{0} - Incrementing retry for channel {1} (mean was found to be {2} mV)",__VTFUNC__,channel, channel_baseline_mean);
+            going_to_retry = true;
+            m_retry_map.at(channel)++;
+        }
     }
 
-    float channel_baseline_noise = h->GetStdDev();
-    m_channel_baseline_means.push_back(channel_baseline_mean);
-    m_channel_noise.push_back(channel_baseline_noise);
+    if(!going_to_retry)
+    {
+        float channel_baseline_noise = h->GetStdDev();
+        m_channel_baseline_means.push_back(channel_baseline_mean);
+        m_channel_noise.push_back(channel_baseline_noise);
+    }
 
     return true;
 }

@@ -14,6 +14,7 @@ namespace vts {
 
 //std/stl
 #include <vector>
+#include <map>
 
 //ROOT
 class TH1F;
@@ -56,6 +57,9 @@ class VTSTestBaselinesPos : public VTSTestImp
         };
         std::vector<TestStep> m_test_steps;
 
+        bool need_to_redo();
+        void redo_last_step();
+
         // put histograms/trees/any output here
         const float LO_BASELINE_THRESHOLD = 150.0;
         const float HI_BASELINE_THRESHOLD = 210.0;
@@ -66,6 +70,9 @@ class VTSTestBaselinesPos : public VTSTestImp
         TH1F* h_baseline_summary;
         TH1F* h_noise_summary;
         int n_bad_channels;
+
+        const int N_RETRY_MAX = 3;
+        std::map<int, int> m_retry_map;
 
 }; // class VTSTestBaselinesPos
 

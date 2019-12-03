@@ -141,6 +141,7 @@ bool VTSTestBaselinesNeg::configure()
     vmm_config["vmm_spi"] = vmm_spi;
 
     // send configuration SPI string
+    comm()->configure_vmm(vmm_config, /*perform reset*/ true);
     comm()->configure_vmm(vmm_config, /*perform reset*/ false);
     return true;
 }
@@ -188,7 +189,8 @@ bool VTSTestBaselinesNeg::process_event(vts::daq::DataFragment* fragment)
         m_histos_baselines.at(channel)->Fill(sample_mv);
 
         // increment the counters since a single xADC sample is a single "event" (REQUIRED)
-        event_processed();
+        if(sample_mv>0.0)
+            event_processed();
     }
 
     // continue sampling events (loop will exit if we are already at the limit) (REQUIRED)

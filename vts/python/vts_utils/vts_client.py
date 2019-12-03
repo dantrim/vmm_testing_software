@@ -41,7 +41,7 @@ class VTSClient(QtCore.QObject) :
     signal_server_status_updated = Signal(str)
     signal_test_status_updated = Signal(str)
     signal_start_of_test = Signal(str, int)
-    signal_end_of_test = Signal(str, str, str, str)
+    signal_end_of_test = Signal(str)#, str, str, str)
 
     def check_for_vts(self, by_name = False) :
 
@@ -69,8 +69,8 @@ class VTSClient(QtCore.QObject) :
             if stop_func() :
                 break
             try :
-                data = str(sock.recv(1024), "utf-8")
-                data = json.loads(data)
+                data_str = str(sock.recv(1024), "utf-8")
+                data = json.loads(data_str)
                 monitor_type = data["TYPE"]
                 if monitor_type == "TEST_STATUS" :
                     self.signal_test_status_updated.emit(data["DATA"])
@@ -81,16 +81,9 @@ class VTSClient(QtCore.QObject) :
                     current_test_idx = msg["TEST_IDX"]
                     self.signal_start_of_test.emit(current_test, int(current_test_idx))
                 elif monitor_type == "END_OF_TEST" :
-                    print("EOT {}".format(data))
-                    msg = data["DATA"]
-                    test_completion_status = msg["TEST_COMPLETION"]
-                    n_tests_run = msg["N_TESTS_TOUCHED"]
-                    n_tests_exp = msg["N_TESTS_LOADED"]
-                    last_test_run = msg["LAST_TEST_TOUCHED"]
-                    self.signal_end_of_test.emit(test_completion_status, n_tests_run,  n_tests_exp, last_test_run)
+                    self.signal_end_of_test.emit(data_str)
             except socket.timeout :
                 continue
-            #self.signal_test_status_updated.emit(data)
 
     def pid_exists(self, pid_num) :
 

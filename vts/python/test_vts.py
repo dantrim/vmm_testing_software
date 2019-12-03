@@ -24,6 +24,7 @@ VTS_WHITE = "(255, 255, 255)"
 VTS_RED = "(233, 40, 56)"
 VTS_BLUE = "(84, 163, 252)"
 VTS_GREY = "(189, 189, 189)"
+VTS_YELLOW = "(244, 255, 122)"
 
 class VTSWindow(QtWidgets.QMainWindow) :
     def __init__(self, client = None) :
@@ -198,12 +199,24 @@ class VTSWindow(QtWidgets.QMainWindow) :
         if status :
             self.ui.button_tests_stop.setEnabled(True)
             self.ui.button_tests_start.setEnabled(False)
+    
+            # update ui
+            self.ui.label_test_status.setText("Testing")
+            self.set_background(obj = self.ui.label_test_status,
+                                    obj_type_str = "QLabel",
+                                    color = VTS_BLUE)
 
     @Slot()
     def stop_tests(self) :
         self.vts.stop_test()
         self.ui.button_tests_stop.setEnabled(False)
         self.ui.button_tests_start.setEnabled(True)
+
+        self.ui.label_test_status.setText("Testing Stopped")
+        self.set_background(obj = self.ui.label_test_status,
+                                    obj_type_str = "QLabel",
+                                    color = VTS_GREY)
+        
 
     def test_status_updated(self, status) :
 
@@ -219,11 +232,59 @@ class VTSWindow(QtWidgets.QMainWindow) :
         test_str = "{}/{}".format(str(test_idx), str(n_tests))
         self.ui.label_test_count.setText(test_str)
 
-    @Slot(str,str,str,str)
-    def test_ended(self, test_status_str, n_tests_run, n_tests_exp, last_test_run) :
-        n_tests_run = int(n_tests_run)
-        n_tests_exp = int(n_tests_exp)
+        if test_name != "" :
+            self.ui.label_current_test.setText(test_name)
+            self.set_background(obj = self.ui.label_current_test,
+                                    obj_type_str = "QLabel",
+                                    color = VTS_GREEN)
+
+    @Slot(str)
+    def test_ended(self, eot_message = "") :
+
+        print("test_ended: test_status_str = {}".format(eot_message))
+        eot_message = json.loads(eot_message)
+        msg = eot_message["DATA"]
+        test_completion_status = msg["TEST_COMPLETION"]
+        n_tests_run = int(msg["N_TESTS_TOUCHED"])
+        n_texts_exp = int(msg["N_TESTS_LOADED"])
+        last_test_run = msg["LAST_TEST_TOUCHED"]
+
         self.ui.button_tests_stop.click()
+
+        results = eot_message["TEST_RESULTS"]
+        final_test_result = "SUCCESS"
+        color = VTS_GREEN
+        tests_success = []
+        tests_pass = []
+        tests_fail = []
+        for test_name, test_result_data in results.items() :
+            test_result = test_result_data["RESULT"]
+            if test_result == "SUCCESS" :
+                tests_success.append({test_name:test_result_data})
+            elif test_result == "PASS" :
+                final_test_result = "PASS"
+                tests_pass.append({test_name:test_result_data})
+                color = VTS_YELLOW
+            elif test_result == "FAIL" :
+                final_test_result = "FAIL"
+                tests_fail.append({test_name:test_result_data})
+                color = VTS_RED
+
+        self.ui.label_test_status.setText(final_test_result)
+        self.set_background(obj = self.ui.label_test_status,
+                                obj_type_str = "QLabel",
+                                color = color)
+
+        print(55 * '-')
+        print("TESTS SUCCESS:")
+        for t in tests_success :
+            print("\t{}".format(t))
+        print("TESTS PASS:")
+        for t in tests_pass :
+            print("\t{}".format(t))
+        print("TESTS FAIL:")
+        for t in tests_fail :
+            print("\t{}".format(t))
 
     @Slot()
     def capture_vmm_serial(self) :
@@ -317,6 +378,13 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ##
         ## TESTING
         ##
+
+        # output location
+        with open(self.vts.config_file, "r") as cfg_file :
+            vts_cfg = json.load(cfg_file)["vts_config"]
+        output_cfg = vts_cfg["test_output"]
+        output_dir = output_cfg["output_directory"]
+        self.ui.label_test_output_location.setText(output_dir)
 
         # tests
         ui.lineEdit_test_dir.clear()

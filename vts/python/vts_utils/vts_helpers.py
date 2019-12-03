@@ -79,7 +79,6 @@ def tests_from_test_dir(p_test_config_dir = None) :
     if not exists_and_is_dir :
         return {}
     test_config_files = list(p_test_config_dir.glob("test_config*.json"))
-    print("Found {} test config files".format(len(test_config_files)))
     test_dict = {}
     for ptest in test_config_files :
         with open(ptest, "r") as testfile :
