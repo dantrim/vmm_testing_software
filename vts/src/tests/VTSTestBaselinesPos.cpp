@@ -140,7 +140,6 @@ bool VTSTestBaselinesPos::configure()
     {
         log->warn("{0} - Got step for channel {1}",__VTFUNC__, t.channel);
     }
-    
 
     // configure the fpga
     json fpga_config = m_base_fpga_config;
@@ -200,8 +199,6 @@ bool VTSTestBaselinesPos::run()
     while(processing_events())
     {
         if(!processing_events()) break;
-        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        //comm()->sample_xadc(2.0 * n_events_per_step() /*, int sampling_delay*/);
         continue;
     }
     return true;
