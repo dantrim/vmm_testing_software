@@ -15,7 +15,7 @@ import glob
 import socket
 
 # vts
-from vts_utils import vts_comm
+from vts_utils import vts_comm, vts_result_handler
 from peripherals import device_capture
 
 # constants
@@ -33,6 +33,7 @@ class VTSClient(QtCore.QObject) :
         self.server_process = None
         self.keep_monitor = False
         self.status_thread = None
+        self.result_handler = vts_result_handler.VTSResultHandler()
 
     ##
     ## SIGNALS
@@ -75,13 +76,9 @@ class VTSClient(QtCore.QObject) :
                 if monitor_type == "TEST_STATUS" :
                     self.signal_test_status_updated.emit(data["DATA"])
                 elif monitor_type == "START_OF_TEST" :
-                    #print("SOT {}".format(data))
-                    msg = data["DATA"]
-                    current_test = msg["TEST_NAME"]
-                    current_test_idx = msg["TEST_IDX"]
-                    self.signal_start_of_test.emit(current_test, int(current_test_idx))
+                    self.handle_start_of_test(data_str)
                 elif monitor_type == "END_OF_TEST" :
-                    self.signal_end_of_test.emit(data_str)
+                    self.handle_end_of_test(data_str)
             except socket.timeout :
                 continue
 
@@ -95,6 +92,29 @@ class VTSClient(QtCore.QObject) :
             except :
                 pass
         return False
+
+    def handle_start_of_test(self, sot_message = "") :
+
+        if sot_message == "" :
+            return
+
+        sot_data = json.loads(sot_message)
+        msg = sot_data["DATA"]
+        current_test = msg["TEST_NAME"]
+        current_test_idx = msg["TEST_IDX"]
+        self.signal_start_of_test.emit(current_test, int(current_test_idx))
+
+    def handle_end_of_test(self, eot_message = "") :
+
+        if eot_message == "" :
+            return
+
+        eot_data = json.loads(eot_message)
+        self.result_handler.load_results(eot_data)
+        self.result_handler.dump_results()
+        results_dict = self.result_handler.result_summary_dict()
+        print(json.dumps(results_dict, indent = 4))
+        self.signal_end_of_test.emit(self.result_handler.final_test_result())
 
     def start_server(self, wait = 1) :
 
@@ -247,6 +267,8 @@ class VTSClient(QtCore.QObject) :
     @Slot(str)
     def load_test(self, test_names = [], test_config_files = [], vmm_sn = "") :
 
+        self.result_handler.clear()
+
         # first acquire the current VMM serial ID
         if vmm_sn == "" :
             camera = device_capture.PictureTaker()
@@ -266,6 +288,7 @@ class VTSClient(QtCore.QObject) :
         return status
 
     def start_test(self) :
+        self.result_handler.clear()
         self.test_cmd(cmd = "START", expect_reply = False)
         return True
 

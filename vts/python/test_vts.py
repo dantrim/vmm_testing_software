@@ -236,52 +236,22 @@ class VTSWindow(QtWidgets.QMainWindow) :
                                     color = VTS_GREEN)
 
     @Slot(str)
-    def test_ended(self, eot_message = "") :
-
-        print("test_ended: test_status_str = {}".format(eot_message))
-        eot_message = json.loads(eot_message)
-        msg = eot_message["DATA"]
-        test_completion_status = msg["TEST_COMPLETION"]
-        n_tests_run = int(msg["N_TESTS_TOUCHED"])
-        n_texts_exp = int(msg["N_TESTS_LOADED"])
-        last_test_run = msg["LAST_TEST_TOUCHED"]
+    def test_ended(self, final_test_result = "") :
 
         self.ui.button_tests_stop.click()
 
-        results = eot_message["TEST_RESULTS"]
-        final_test_result = "SUCCESS"
         color = VTS_GREEN
-        tests_success = []
-        tests_pass = []
-        tests_fail = []
-        for test_name, test_result_data in results.items() :
-            test_result = test_result_data["RESULT"]
-            if test_result == "SUCCESS" :
-                tests_success.append({test_name:test_result_data})
-            elif test_result == "PASS" :
-                final_test_result = "PASS"
-                tests_pass.append({test_name:test_result_data})
-                color = VTS_YELLOW
-            elif test_result == "FAIL" :
-                final_test_result = "FAIL"
-                tests_fail.append({test_name:test_result_data})
-                color = VTS_RED
-
+        color = {
+            "SUCCESS" : VTS_GREEN
+            ,"PASS" : VTS_YELLOW
+            ,"FAIL" : VTS_RED
+            ,"" : VTS_GREY
+            ,"NONE" : VTS_GREY
+        }[final_test_result]
         self.ui.label_test_status.setText(final_test_result)
         self.set_background(obj = self.ui.label_test_status,
                                 obj_type_str = "QLabel",
                                 color = color)
-
-        print(55 * '-')
-        print("TESTS SUCCESS:")
-        for t in tests_success :
-            print("\t{}".format(t))
-        print("TESTS PASS:")
-        for t in tests_pass :
-            print("\t{}".format(t))
-        print("TESTS FAIL:")
-        for t in tests_fail :
-            print("\t{}".format(t))
 
     @Slot()
     def capture_vmm_serial(self) :

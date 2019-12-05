@@ -2,6 +2,7 @@
 
 import sys, os
 from pathlib import Path
+import json
 
 class VTSResultHandler :
     def __init__(self) :
@@ -23,7 +24,7 @@ class VTSResultHandler :
             return ""
 
         test_overview = self.test_info_dict["DATA"]
-        return test_overiew["TEST_COMPLETION"]
+        return test_overview["TEST_COMPLETION"]
 
     def get_test_overview(self) :
 
@@ -90,6 +91,8 @@ class VTSResultHandler :
             final_result = "PASS"
         if len(tests_fail) > 0 :
             final_result = "FAIL"
+        if n_total_tests == 0 :
+            final_result = "NONE"
         return final_result
 
     def result_summary_dict(self) :
@@ -102,6 +105,27 @@ class VTSResultHandler :
 
         vmm_sn = test_metadata["VMM_SERIAL_ID"]
         out_ext = test_metadata["TEST_OUTPUT_EXT"]
+
+        out = {}
+        result_summary = {}
+        result_summary["VMM_SERIAL_ID"] = vmm_sn
+        result_summary["OUTPUT_EXTENSION"] = out_ext
+        result_summary["TESTS_COMPLETED"] = str(self.tests_complete())
+        result_summary["FINAL_TEST_RESULT"] = str(self.final_test_result())
+
+        tests_succ, test_pass, test_fail = self.get_test_results()
+        all_tests_performed = tests_succ + test_pass + test_fail
+        result_summary["TESTS_PERFORMED"] = all_tests_performed
+        result_summary["TESTS_SUCCEEDED"] = tests_succ
+        result_summary["TESTS_PASSED"] = test_pass
+        result_summary["TESTS_FAILED"] = test_fail
+
+        out["result_summary"] = result_summary
+
+        # individual test data
+        out["test_results"] = test_result_info
+
+        return out
 
     def dump_results(self) :
 
@@ -118,9 +142,9 @@ class VTSResultHandler :
         output_dir = test_metadata["TEST_OUTPUT_DIR"]
         tested_vmm_id = test_metadata["VMM_SERIAL_ID"]
         output_ext = test_metadata["TEST_OUTPUT_EXT"]
-        output_filename = "vts_results_VMM%s"
+        output_filename = "vts_results_VMM%s" % tested_vmm_id
         if int(output_ext) > 0 :
-            output_filename += "_%4d" % int(output_ext)
+            output_filename += "_%04d" % int(output_ext)
         output_filename += ".json"
 
         p_output = Path(output_dir)
@@ -134,3 +158,5 @@ class VTSResultHandler :
         ## prepare the output result data
         ##
         result_data = self.result_summary_dict()
+        with open(p_output, "w") as ofile :
+            json.dump(result_data, ofile)
