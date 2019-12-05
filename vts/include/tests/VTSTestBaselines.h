@@ -1,7 +1,5 @@
-#ifndef VTS_TEST_BASELINES_H
-#define VTS_TEST_BASELINES_H
-
-//std/stl
+#ifndef VTS_TEST_Baselines_H
+#define VTS_TEST_Baselines_H
 
 //vts
 #include "vts_test_imp.h"
@@ -11,12 +9,15 @@ namespace vts {
     }
 }
 
-//ROOT
-class TTree;
-class TH1F;
-
 //logging
 #include "spdlog/spdlog.h"
+
+//std/stl
+#include <vector>
+#include <map>
+
+//ROOT
+class TH1F;
 
 namespace vts
 {
@@ -56,10 +57,22 @@ class VTSTestBaselines : public VTSTestImp
         };
         std::vector<TestStep> m_test_steps;
 
-        // test data
-        std::vector<TH1F*> m_channel_histos;
+        bool need_to_redo();
+        void redo_last_step();
+
+        // put histograms/trees/any output here
+        const float LO_BASELINE_THRESHOLD = 150.0;
+        const float HI_BASELINE_THRESHOLD = 210.0;
+        std::vector<TH1F*> m_histos_baselines;
         std::vector<float> m_channel_baseline_means;
-        std::vector<float> m_channel_baseline_errors;
+        std::vector<float> m_channel_noise;
+        std::vector<int> m_bad_baselines;
+        TH1F* h_baseline_summary;
+        TH1F* h_noise_summary;
+        int n_bad_channels;
+
+        const int N_RETRY_MAX = 3;
+        std::map<int, int> m_retry_map;
 
 }; // class VTSTestBaselines
 

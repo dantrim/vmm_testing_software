@@ -1,5 +1,5 @@
-#ifndef VTS_TEST_ChannelsAliveNeg_H
-#define VTS_TEST_ChannelsAliveNeg_H
+#ifndef VTS_TEST_ChannelsAlive_H
+#define VTS_TEST_ChannelsAlive_H
 
 //vts
 #include "vts_test_imp.h"
@@ -22,10 +22,10 @@ class TH1F;
 namespace vts
 {
 
-class VTSTestChannelsAliveNeg : public VTSTestImp
+class VTSTestChannelsAlive : public VTSTestImp
 {
     public :
-        explicit VTSTestChannelsAliveNeg()
+        explicit VTSTestChannelsAlive()
         {
             log = spdlog::get("vts_logger");
             set_current_state(-1);
@@ -33,7 +33,7 @@ class VTSTestChannelsAliveNeg : public VTSTestImp
             m_total_events_processed.store(0);
             m_n_total_events.store(0);
         }
-        ~VTSTestChannelsAliveNeg()
+        ~VTSTestChannelsAlive()
         {
         }
 
@@ -70,7 +70,7 @@ class VTSTestChannelsAliveNeg : public VTSTestImp
         // test results based on this
         std::vector<int> m_dead_channels;
 
-}; // class VTSTestChannelsAliveNeg
+}; // class VTSTestChannelsAlive
 
 } // namespace vts
 

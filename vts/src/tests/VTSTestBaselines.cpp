@@ -1,28 +1,23 @@
 //vts
-#include "communicator_frontend.h" // for sending commands to the frontend
+#include "communicator_frontend.h"
 #include "tests/VTSTestBaselines.h"
 #include "helpers.h"
 #include "frontend_struct.h"
 #include "daq_defs.h"
-//decoding
 #include "vts_decode.h"
 
 //std/stl
 #include <fstream>
 #include <sstream>
-#include <chrono>
 #include <vector>
-#include <math.h> // pow
 using namespace std;
 
 //logging
 #include "spdlog/spdlog.h"
 
+
 //ROOT
-#include "TTree.h"
 #include "TH1F.h"
-#include "TGraph.h"
-#include "TGraphErrors.h"
 
 namespace vts
 {
@@ -30,10 +25,9 @@ namespace vts
 
 bool VTSTestBaselines::initialize(const json& config)
 {
-
     stringstream msg;
     msg << "Initializing with config: " << config.dump();
-    log->info("{0} - {1}",__VTFUNC__,msg.str());
+    log->debug("{0} - {1}",__VTFUNC__,msg.str());
 
     m_test_data = m_test_config.at("test_data");
     // get the base configs for the fpga and VMM
@@ -52,31 +46,46 @@ bool VTSTestBaselines::initialize(const json& config)
     ifs_vmm >> vmm_data;
     m_base_vmm_config = vmm_data;
 
-    m_channel_histos.clear();
-    m_channel_baseline_means.clear();
-
+    // initialize the test recipe here
     m_test_steps.clear();
-    stringstream ch;
-    for(int i = 0; i < 64; i++)
+    stringstream ch_id;
+    for(size_t i = 0; i < 64; i++)
     {
-        ch.str("");
-        ch << i;
+        ch_id.str("");
+        ch_id << i;
         TestStep t;
-        t.channel = ch.str();
+        t.channel = ch_id.str();
         m_test_steps.push_back(t);
 
-        // histogram
+        // histograms
         stringstream hname;
-        stringstream axis;
-        hname << "baseline_samples_ch" << t.channel;
-        axis << ";xADC samples [counts];Entries";
-        TH1F* h = new TH1F(hname.str().c_str(), axis.str().c_str(),100,0,-1);
+        stringstream hax;
+        hname << "h_baselines_ch" << i;
+        hax << "VMM Channel Baseline Samples;xADC Samples [mV];Entries";
+        TH1F* h = new TH1F(hname.str().c_str(), hax.str().c_str(), 100, 0, -1);
         h->SetLineColor(kBlack);
-        m_channel_histos.push_back(h);
-        m_channel_baseline_means.push_back(0.0);
-        m_channel_baseline_errors.push_back(0.0);
+        m_histos_baselines.push_back(h);
+        m_bad_baselines.push_back(0);
+
+        m_retry_map[i] = 0;
     }
-    
+    stringstream hname;
+    stringstream hax;
+    hname << "h_vmm_channel_baseline_summary";
+    hax << "VMM Channel Baseline Summary;VMM Channel;<Baseline> [mV]";
+    h_baseline_summary = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+    h_baseline_summary->SetLineColor(kBlack);
+
+    hname.str("");
+    hax.str("");
+    hname << "h_vmm_channel_noise_summary";
+    hax << "VMM Channel Noise Summary;VMM Channel;Noise [mV]";
+    h_noise_summary = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
+    h_noise_summary->SetLineColor(kBlack);
+
+    n_bad_channels = 0;
+
+    // initialize all counters
     set_current_state(0);
     set_n_states(m_test_steps.size());
     set_n_events_for_test(m_test_steps.size() * n_events_per_step());
@@ -86,21 +95,57 @@ bool VTSTestBaselines::initialize(const json& config)
 bool VTSTestBaselines::load()
 {
     set_current_state( get_current_state() + 1);
-
     return true;
+}
+
+bool VTSTestBaselines::need_to_redo()
+{
+    if(get_current_state()>1)
+    {
+        int idx_step_current = get_current_state()-1;
+        int idx_step_previous = (idx_step_current-1);
+        TestStep t = m_test_steps.at(idx_step_previous);
+        int channel = std::stoi(t.channel);
+        auto h = m_histos_baselines.at(channel);
+        float mean = h->GetMean();
+        if(!(mean>0.0))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void VTSTestBaselines::redo_last_step()
+{
+    int state_before_redo = (get_current_state());
+    int state_after_redo = (get_current_state() -1);
+    log->warn("{0} - Going back to previous state (state was={1}, now={2}) (channel was={3}, now={4})",__VTFUNC__, state_before_redo, state_after_redo, (state_before_redo-1), (state_after_redo-1));
+    set_current_state( get_current_state() -1);
+    return;
 }
 
 bool VTSTestBaselines::configure()
 {
+    bool redo = need_to_redo();
+    if(redo)
+    {
+        log->warn("{0} - Re-doing last step",__VTFUNC__);
+        redo_last_step();
+    }
+    
     TestStep t = m_test_steps.at(get_current_state() - 1);
+    if(redo)
+    {
+        log->warn("{0} - Got step for channel {1}",__VTFUNC__, t.channel);
+    }
 
     // configure the fpga
     json fpga_config = m_base_fpga_config;
     json fpga_registers = fpga_config.at("fpga_registers");
     json fpga_triggers = fpga_registers.at("trigger");
     json fpga_clocks = fpga_registers.at("clocks");
-    fpga_triggers["latency"] = "0";
-
+    fpga_triggers["latency"] = "0"; // set the latency to zero for xADC sampling
     comm()->configure_fpga(fpga_triggers, fpga_clocks);
 
     // build the VMM config info for this step
@@ -109,43 +154,45 @@ bool VTSTestBaselines::configure()
     json vmm_globals = vmm_spi.at("global_registers");
     json vmm_channels = vmm_spi.at("channel_registers");
 
+    // default all channels
     vector<vts::vmm::Channel> channels; 
     for(size_t i = 0; i < 64; i++)
     {
-        bool st = false;
-        bool sm =  false; //(i==14) ? false : true;
-        bool smx = false; //(i==14) ? true : false;
-        json jch = {{"id",i},{"sc",false},{"sl",false},{"sth",false},{"st",st},{"sm",sm},{"smx",smx},{"sd",0}};
-        vmm::Channel ch; ch.load(jch);
+        json jch = {{"id",i},
+                    {"sc",false},
+                    {"sl",false},
+                    {"sth",false},
+                    {"st",false},
+                    {"sm",false},
+                    {"smx",false},
+                    {"sd",0}};
+        vmm::Channel ch;
+        ch.load(jch);
         channels.push_back(ch);
     }
-    auto chvec = vts::vmm::channel_vec_to_json_config(channels); 
-    auto channel_registers = chvec.at("channel_registers");
-    vmm_spi["channel_registers"] = channel_registers;
+    vmm_spi["channel_registers"] = vts::vmm::channel_vec_to_json_config(channels).at("channel_registers");
 
-    vmm_globals["sm5"] = t.channel;
+    // set global VMM configuration
+    vmm_globals["sm5"] = t.channel; // select the channel we want to measure from
     vmm_globals["sbmx"] = "ENABLED";
     vmm_globals["scmx"] = "ENABLED";
     vmm_globals["sbfm"] = "DISABLED";
-    vmm_globals["sdt_dac"] = "100";
-    vmm_globals["sdp_dac"] = "400";
-    vmm_globals["sg"] = "1.0";
     vmm_spi["global_registers"] = vmm_globals;
-
     vmm_config["vmm_spi"] = vmm_spi;
 
-    // send configuration
-    comm()->configure_vmm(vmm_config, false);
-
+    // send configuration SPI string
+    comm()->configure_vmm(vmm_config, /*perform reset*/ true);
+    comm()->configure_vmm(vmm_config, /*perform reset*/ false);
     return true;
 }
 
 bool VTSTestBaselines::run()
 {
-    // reset the event counters for this new run
+    // reset the event counters for this new test step
     reset_event_count();
 
-    comm()->sample_xadc(n_events_per_step() /*, int sampling_delay */);
+    // start the initial xADC sampling, the rest will be done in process_event (if needed)
+    comm()->sample_xadc(2.0 * n_events_per_step() /*, int sampling_delay*/);
 
     // keep running until data processing has completed
     while(processing_events())
@@ -158,24 +205,36 @@ bool VTSTestBaselines::run()
 
 bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
 {
+    // return false to stop DAQ and move to next step in the testing
     if((n_events_processed() >= n_events_per_step()) || !processing_events())
     {
-        //log->critical("{0} - Event count reached ({1},{2})",__VTFUNC__, n_events_processed(), processing_events());
         return false;
     }
+
+    // get the configuration for thist test step
     TestStep t = m_test_steps.at(get_current_state() - 1);
     string current_channel = t.channel;
     int channel = std::stoi(current_channel);
 
+    // decode the data packet
     vector<vts::decode::xadc::Sample> samples = vts::decode::xadc::decode(fragment->packet);
     for(const auto & sample : samples)
     {
-        check_status();
+        check_status(); // can do this inside or outside of this loop, here it will be on every single sample
         if(n_events_processed() >= n_events_per_step()) break;
-        m_channel_histos.at(channel)->Fill(sample.sample());
-        event_processed();
+        // process the samples (fill histograms/etc)
+
+        float sample_mv = sample.sample();
+        sample_mv = (sample_mv / pow(2,12)) * 1000.;
+        m_histos_baselines.at(channel)->Fill(sample_mv);
+
+        // increment the counters since a single xADC sample is a single "event" (REQUIRED)
+        if(sample_mv>0.0)
+            event_processed();
     }
-    comm()->sample_xadc(n_events_per_step(), 500);
+
+    // continue sampling events (loop will exit if we are already at the limit) (REQUIRED)
+    comm()->sample_xadc(n_events_per_step()/*, int sampling_delay*/);
     return true;
 }
 
@@ -185,92 +244,81 @@ bool VTSTestBaselines::analyze()
     TestStep t = m_test_steps.at(get_current_state() - 1);
     int channel = std::stoi(t.channel);
 
-    auto h = m_channel_histos.at(channel);
-    float mean_baseline_counts = h->GetMean();
-    float mean_baseline_mv = (mean_baseline_counts / pow(2,12)) * 1000.;
-    float mean_baseline_counts_err = h->GetStdDev();
-    float mean_baseline_mv_err = (mean_baseline_counts_err / pow(2,12)) * 1000.;
-    m_channel_baseline_means.at(channel) = mean_baseline_mv;
-    m_channel_baseline_errors.at(channel) = mean_baseline_mv_err;
+    auto h = m_histos_baselines.at(channel);
+    //store(h);
+    float channel_baseline_mean = h->GetMean();
+    bool lo_ok = (channel_baseline_mean >= LO_BASELINE_THRESHOLD);
+    bool hi_ok = (channel_baseline_mean <= HI_BASELINE_THRESHOLD);
+    bool going_to_retry = false;
+    if(lo_ok && hi_ok)
+    {
+        m_bad_baselines.at(channel) = 0;
+    }
+    else
+    {
+        if(m_retry_map.at(channel) >= N_RETRY_MAX)
+        {
+            n_bad_channels++;
+            m_bad_baselines.at(channel) = 1;
+        }
+        else
+        {
+            log->warn("{0} - Incrementing retry for channel {1} (mean was found to be {2} mV)",__VTFUNC__,channel, channel_baseline_mean);
+            going_to_retry = true;
+            m_retry_map.at(channel)++;
+        }
+    }
 
-//    stringstream msg;
-//    msg << "Average xADC sampling for channel " << channel << " = " << mean_baseline_mv << " +/- " << mean_baseline_mv_err << " [mV] (" <<  mean_baseline_counts << " +/- " << mean_baseline_counts_err << " [counts])";
-//    log->info("{0} - {1}",__VTFUNC__,msg.str());
+    if(!going_to_retry)
+    {
+        float channel_baseline_noise = h->GetStdDev();
+        m_channel_baseline_means.push_back(channel_baseline_mean);
+        m_channel_noise.push_back(channel_baseline_noise);
+    }
 
     return true;
 }
 
 bool VTSTestBaselines::analyze_test()
 {
-    TH1F* h = new TH1F("channel_baselines", ";VMM Channel;Baselines [mV]", 64,0,64);
-    h->SetMarkerStyle(20);
-    h->SetMarkerColor(kBlack);
-
-    float max_y = -1.0;
-    float min_y = 1e3;
-    for(size_t i = 0; i < m_channel_baseline_means.size(); i++)
+    for(size_t ichan = 0; ichan < m_channel_baseline_means.size(); ichan++)
     {
-        int ibin = i+1;
-        float val = m_channel_baseline_means.at(i);
-        if(val < min_y) min_y = val;
-        if(val > max_y) max_y = val;
-        h->SetBinContent(ibin,val);
+        h_baseline_summary->SetBinContent(ichan+1, m_channel_baseline_means.at(ichan));
+        h_noise_summary->SetBinContent(ichan+1, m_channel_noise.at(ichan));
     }
-    h->SetMinimum(0.9*min_y);
-    h->SetMaximum(1.1*max_y);
-
-    if(!store(h))
-    {
-        log->warn("{0} - Failed to store baseline summary histogram (name = \"{1}\")",__VTFUNC__,h->GetName());
-    }
-    delete h;
-
-    // graph it
-    TGraphErrors* g = new TGraphErrors(m_channel_baseline_means.size());
-    g->SetName("g_channel_baselines");
-    g->SetTitle("g_channel_baselines");
-    for(size_t i = 0; i < m_channel_baseline_means.size(); i++)
-    {
-        float val = m_channel_baseline_means.at(i);
-        float err = m_channel_baseline_errors.at(i);
-        g->SetPoint(i,i,val);
-        g->SetPointError(i, 0, err);
-    }
-    g->SetMarkerStyle(20);
-    g->SetMarkerColor(kBlack);
-    g->SetLineColor(kBlack);
-    if(!store(g))
-    {
-        log->warn("{0} - Failed to store baseline summary graph",__VTFUNC__);
-    }
-    delete g;
-    
-
+    store(h_baseline_summary);
+    store(h_noise_summary);
     return true;
 }
 
 bool VTSTestBaselines::finalize()
 {
-    for(size_t i = 0; i < m_channel_histos.size(); i++)
+    for(size_t ih = 0 ; ih < m_histos_baselines.size(); ih++)
     {
-        TH1* h = m_channel_histos.at(i);
-        if(!h) { h = 0; continue; }
-        if(!store(h))
-        {
-            log->warn("{0} - Failed to store xADC samples  histogram with name \"{1}\"",__VTFUNC__,h->GetName());
-            continue;
-        }
+        auto h = m_histos_baselines.at(ih);
         delete h;
     }
-    m_channel_histos.clear();
 
     return true;
 }
 
 json VTSTestBaselines::get_results()
 {
+    VTSTestResult result = VTSTestResult::TESTRESULTINVALID;
+    if(n_bad_channels>2)
+    {
+        result = VTSTestResult::FAIL;
+    }
+    else if(n_bad_channels>0 && n_bad_channels<=2)
+    {
+        result = VTSTestResult::PASS;
+    }
+    else if(n_bad_channels==0)
+    {
+        result = VTSTestResult::SUCCESS;
+    }
     json jresults = {
-        {"RESULT",VTSTestResultToStr(VTSTestResult::SUCCESS)}
+        {"RESULT",VTSTestResultToStr(result)}
     };
     return jresults;
 }

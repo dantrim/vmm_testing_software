@@ -14,7 +14,6 @@ string VTSTestTypeToStr(const VTSTestType& t)
     switch(t)
     {
         case VTSTestType::PassThrough : { out = "PassThrough"; break; }
-        case VTSTestType::Baselines : { out = "Baselines"; break; }
         case VTSTestType::ConfigurableVMM : { out = "ConfigurableVMM"; break; }
         case VTSTestType::BaselinesNeg : { out = "BaselinesNeg"; break; }
         case VTSTestType::BaselinesPos : { out = "BaselinesPos"; break; }
@@ -29,7 +28,6 @@ VTSTestType StrToVTSTestType(const string& t)
 {
     VTSTestType out = VTSTestType::VTSTESTTYPEINVALID;
     if(t == "PassThrough") { out = VTSTestType::PassThrough; }
-    else if(t == "Baselines") { out = VTSTestType::Baselines; }
     else if(t == "ConfigurableVMM") { out = VTSTestType::ConfigurableVMM; }
     else if(t == "BaselinesNeg") { out = VTSTestType::BaselinesNeg; }
     else if(t == "BaselinesPos") { out = VTSTestType::BaselinesPos; }

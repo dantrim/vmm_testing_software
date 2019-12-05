@@ -59,11 +59,6 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
         m_imp = std::make_shared<vts::VTSTestPassThrough>();
         m_imp->load_test_config(config, frontend_cfg);
     }
-    else if(test_type == "Baselines")
-    {
-        m_imp = std::make_shared<vts::VTSTestBaselines>();
-        m_imp->load_test_config(config, frontend_cfg);
-    }
     else if(test_type == "ConfigurableVMM")
     {
         m_imp = std::make_shared<vts::VTSTestConfigurableVMM>();
@@ -71,22 +66,22 @@ bool VTSTest::initialize(const json& config, const json& frontend_cfg, const jso
     }
     else if(test_type == "BaselinesNeg")
     {
-        m_imp = std::make_shared<vts::VTSTestBaselinesNeg>();
+        m_imp = std::make_shared<vts::VTSTestBaselines>();
         m_imp->load_test_config(config, frontend_cfg);
     }
     else if(test_type == "BaselinesPos")
     {
-        m_imp = std::make_shared<vts::VTSTestBaselinesPos>();
+        m_imp = std::make_shared<vts::VTSTestBaselines>();
         m_imp->load_test_config(config, frontend_cfg);
     }
     else if(test_type == "ChannelsAliveNeg")
     {
-        m_imp = std::make_shared<vts::VTSTestChannelsAliveNeg>();
+        m_imp = std::make_shared<vts::VTSTestChannelsAlive>();
         m_imp->load_test_config(config, frontend_cfg);
     }
     else if(test_type == "ChannelsAlivePos")
     {
-        m_imp = std::make_shared<vts::VTSTestChannelsAlivePos>();
+        m_imp = std::make_shared<vts::VTSTestChannelsAlive>();
         m_imp->load_test_config(config, frontend_cfg);
     }
     else

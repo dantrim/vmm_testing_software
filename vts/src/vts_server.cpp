@@ -360,8 +360,8 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
     else if(frontend_cmd == CMDFrontEnd::CONFIGUREVMM || frontend_cmd == CMDFrontEnd::RESETVMM)
     {
         log->critical("{0} - {1}",__VTFUNC__,"HARDCODING DEFAULT VMM SPI JSON FILE");
-        //std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_16_200_neg.json";
-        std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_1_25_pos.json";
+        std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_16_200_neg.json";
+        //std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_1_25_pos.json";
 
         bool perform_reset = (frontend_cmd == CMDFrontEnd::RESETVMM);
 

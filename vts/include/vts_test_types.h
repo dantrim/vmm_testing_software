@@ -12,7 +12,6 @@ namespace vts
     enum VTSTestType
     {
         PassThrough=0
-        ,Baselines
         ,ConfigurableVMM
         ,BaselinesNeg
         ,BaselinesPos
