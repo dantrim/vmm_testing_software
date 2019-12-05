@@ -4,9 +4,6 @@ import sys, os
 from pathlib import Path
 import argparse
 import json
-import subprocess
-import time
-import threading
 
 
 # VTS

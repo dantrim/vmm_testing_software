@@ -171,7 +171,9 @@ void VTSTestHandler::run()
             s << test_idx;
             json msg_data = {
                 {"TEST_NAME", test_name},
-                {"TEST_IDX", s.str()}
+                {"TEST_IDX", s.str()},
+                {"TEST_OUTPUT_DIR", fmg->output_directory()},
+                {"TEST_OUTPUT_EXT", fmg->file_extension()}
             };
             json status_msg = {
                 {"TYPE","START_OF_TEST"},
@@ -351,6 +353,9 @@ void VTSTestHandler::run()
         test_stat << n_total_tests;
         string n_tests_loaded = test_stat.str(); test_stat.str("");
         json msg_data = {
+            {"VMM_SERIAL_ID", m_vmm_serial_id},
+            {"TEST_OUTPUT_DIR", fmg->output_directory()},
+            {"TEST_OUTPUT_EXT", fmg->file_extension()},
             {"TEST_COMPLETION", s.str()},
             {"N_TESTS_TOUCHED", n_tests_touched},
             {"N_TESTS_LOADED", n_tests_loaded},

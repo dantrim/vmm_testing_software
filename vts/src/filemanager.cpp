@@ -34,6 +34,8 @@ FileManager::FileManager(std::string vmm_serial_id, const json& output_config)
 {
     log = spdlog::get("vts_logger");
     log->debug("{0} - VMM serial {1}, Received output_config {2}",__VTFUNC__,vmm_serial_id, output_config.dump());
+    m_file_ext = 0;
+    m_output_directory = "";
 
     m_vmm_serial_id = vmm_serial_id;
     m_output_config = output_config;
@@ -79,14 +81,18 @@ bool FileManager::create_output()
         if(!dir_exists(outdir.str()))
         {
             log->error("{0} - Test output directory (={1}) does not exist, failed to create it!",__VTFUNC__,outdir.str());
+            m_output_directory = "";
             return false;
         }
     }
+
+    m_output_directory = outdir.str();
 
     stringstream filename_no_ext;
     filename_no_ext << "vts_data_VMM";
     filename_no_ext << m_vmm_serial_id;
     int ext_no = existing_files(outdir.str(), filename_no_ext.str());
+    m_file_ext = ext_no;
     bool need_to_add_extension = (ext_no>0);
 
     stringstream outputfile;

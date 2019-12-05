@@ -39,6 +39,8 @@ class FileManager
         static bool dir_exists(std::string dir);
         bool create_output();
         bool setup_output(std::vector<std::string> test_names);
+        int file_extension() const { return m_file_ext; }
+        std::string output_directory() const { return m_output_directory; }
 
         TFile* file() { return m_rfile; }
         bool test_dir_exists(std::string test_name = "");
@@ -52,6 +54,8 @@ class FileManager
     private :
         std::shared_ptr<spdlog::logger> log;
         TFile* m_rfile;
+        int m_file_ext;
+        std::string m_output_directory;
 
         TDirectory* m_current_test_dir;
         TDirectory* m_current_hist_dir;
