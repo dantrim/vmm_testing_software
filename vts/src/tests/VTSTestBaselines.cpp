@@ -100,7 +100,7 @@ bool VTSTestBaselines::load()
 
 bool VTSTestBaselines::need_to_redo()
 {
-    if(get_current_state()>1)
+    if(get_current_state()>1) // states, or steps, start counting at 1
     {
         int idx_step_current = get_current_state()-1;
         int idx_step_previous = (idx_step_current-1);
