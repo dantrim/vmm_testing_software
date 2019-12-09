@@ -4,6 +4,7 @@
 //std/stl
 #include <cstdint>
 #include <vector>
+#include <functional> // std::unary_function
 
 namespace vts
 {

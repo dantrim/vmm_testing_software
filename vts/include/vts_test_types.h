@@ -17,6 +17,7 @@ namespace vts
         ,BaselinesPos
         ,ChannelsAliveNeg
         ,ChannelsAlivePos
+        ,ChannelsAliveSingle
         ,VTSTESTTYPEINVALID
     };
     std::string VTSTestTypeToStr(const VTSTestType& t);    
