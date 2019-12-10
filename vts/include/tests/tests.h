@@ -5,6 +5,5 @@
 #include "tests/VTSTestBaselines.h"
 #include "tests/VTSTestConfigurableVMM.h"
 #include "tests/VTSTestChannelsAlive.h"
-#include "tests/VTSTestChannelsAliveSingle.h"
 
 #endif
