@@ -4,6 +4,7 @@
 
 //std/stl
 #include <sstream>
+#include <iomanip>
 #include <iostream>
 using namespace std;
 
@@ -33,7 +34,18 @@ namespace vts
 FileManager::FileManager(std::string vmm_serial_id, const json& output_config)
 {
     log = spdlog::get("vts_logger");
-    log->debug("{0} - VMM serial {1}, Received output_config {2}",__VTFUNC__,vmm_serial_id, output_config.dump());
+
+    log->info("{0} - Filemanager initialized with configuration:",__VTFUNC__);
+    stringstream msg;
+    msg << "\t" << std::left << std::setw(20) << "VMM serial id" << ":" << vmm_serial_id;
+    log->info("{0} - {1}",__VTFUNC__, msg.str()); 
+    for(auto it = output_config.begin(); it != output_config.end(); it++)
+    {
+        msg.str("");
+        msg << "\t" << std::left << std::setw(20) << it.key() << ": " << it.value();
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+    }
+
     m_file_ext = 0;
     m_output_directory = "";
 

@@ -1,6 +1,11 @@
 {
     "vts_config" :
     {
+        "configuration" :
+        {
+            "frontend" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend",
+            "tests" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/tests"
+        },
         "vts_server" :
         {
             "binary_location" : "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/build",

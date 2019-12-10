@@ -23,16 +23,16 @@ namespace vts
 {
 
 
-bool VTSTestBaselines::initialize(const json& config)
+bool VTSTestBaselines::initialize(const json& /*config*/)
 {
-    stringstream msg;
-    msg << "Initializing with config: " << config.dump();
-    log->debug("{0} - {1}",__VTFUNC__,msg.str());
-
     m_test_data = m_test_config.at("test_data");
     // get the base configs for the fpga and VMM
+    //stringstream fpga_file;
+    string config_dir = m_configuration_dirs.at("frontend").get<std::string>();
     string fpga_file = m_test_data.at("base_config_fpga").get<std::string>();
     string vmm_file = m_test_data.at("base_config_global").get<std::string>();
+    fpga_file = config_dir + "/" + fpga_file;
+    vmm_file = config_dir + "/" + vmm_file;
 
     // load FPGA base config
     std::ifstream ifs_fpga(fpga_file);
@@ -98,7 +98,7 @@ bool VTSTestBaselines::load()
     return true;
 }
 
-bool VTSTestBaselines::need_to_redo()
+bool VTSTestBaselines::need_to_redo_last_step()
 {
     if(get_current_state()>1) // states, or steps, start counting at 1
     {
@@ -118,27 +118,20 @@ bool VTSTestBaselines::need_to_redo()
 
 void VTSTestBaselines::redo_last_step()
 {
-    int state_before_redo = (get_current_state());
-    int state_after_redo = (get_current_state() -1);
-    log->warn("{0} - Going back to previous state (state was={1}, now={2}) (channel was={3}, now={4})",__VTFUNC__, state_before_redo, state_after_redo, (state_before_redo-1), (state_after_redo-1));
-    set_current_state( get_current_state() -1);
+    set_current_state(get_current_state()-1);
     return;
 }
 
 bool VTSTestBaselines::configure()
 {
-    bool redo = need_to_redo();
+    bool redo = need_to_redo_last_step();
     if(redo)
     {
-        log->warn("{0} - Re-doing last step",__VTFUNC__);
+        log->debug("{0} - Re-doing last step",__VTFUNC__);
         redo_last_step();
     }
     
     TestStep t = m_test_steps.at(get_current_state() - 1);
-    if(redo)
-    {
-        log->warn("{0} - Got step for channel {1}",__VTFUNC__, t.channel);
-    }
 
     // configure the fpga
     json fpga_config = m_base_fpga_config;
@@ -263,7 +256,6 @@ bool VTSTestBaselines::analyze()
         }
         else
         {
-            log->warn("{0} - Incrementing retry for channel {1} (mean was found to be {2} mV)",__VTFUNC__,channel, channel_baseline_mean);
             going_to_retry = true;
             m_retry_map.at(channel)++;
         }

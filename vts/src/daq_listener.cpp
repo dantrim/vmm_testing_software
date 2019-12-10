@@ -65,6 +65,8 @@ bool DataListener::connect()
 
 void DataListener::start()
 {
+    m_start_time = std::chrono::system_clock::now();
+    n_total_bytes = 0;
     m_thread = std::thread( [this] ()
             {
                 m_io_service->run();
@@ -103,6 +105,17 @@ void DataListener::stop()
 
 void DataListener::listen()
 {
+    auto current_time = std::chrono::system_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - m_start_time).count();
+    int time_ms = 1;
+    if(diff > time_ms)
+    {
+        float rate = (n_total_bytes / diff); // kB/s
+        //rate *= 1000; // B/s
+        n_total_bytes = 0;
+        m_start_time = std::chrono::system_clock::now();
+    }
+
     if(continue_listening())
     {
         m_socket->async_receive(boost::asio::buffer(m_in_buffer),
@@ -119,6 +132,8 @@ void DataListener::handle_receive(const boost::system::error_code& /*error*/, si
     {
         listen();
     }
+    n_total_bytes += n_bytes;
+
 
     size_t n32 = n_bytes / 4;
     m_data_in.clear();

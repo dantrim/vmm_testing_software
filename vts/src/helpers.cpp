@@ -9,9 +9,9 @@ std::string computeMethodName(const std::string& function, const std::string& pr
     size_t begin = prettyFunction.rfind(" ",locFunName) + 1;
     size_t end = prettyFunction.find("(",locFunName + function.length()); //Adding function.length() make this faster and also allows to handle operator parenthesys!
     if (prettyFunction[end + 1] == ')')
-        return (prettyFunction.substr(begin,end - begin) + "()");
+        return (prettyFunction.substr(begin,end - begin));// + "()");
     else
-        return (prettyFunction.substr(begin,end - begin) + "(...)");
+        return (prettyFunction.substr(begin,end - begin));// + "(...)");
 }
 
 std::string int_ip_to_string(uint32_t ip)

@@ -247,6 +247,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
             ,"FAIL" : VTS_RED
             ,"" : VTS_GREY
             ,"NONE" : VTS_GREY
+            ,"INCOMPLETE" : VTS_GREY
         }[final_test_result]
         self.ui.label_test_status.setText(final_test_result)
         self.set_background(obj = self.ui.label_test_status,

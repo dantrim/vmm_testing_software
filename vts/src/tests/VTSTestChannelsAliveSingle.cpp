@@ -24,16 +24,15 @@ namespace vts
 {
 
 
-bool VTSTestChannelsAliveSingle::initialize(const json& config)
+bool VTSTestChannelsAliveSingle::initialize(const json& /*config*/)
 {
-    stringstream msg;
-    msg << "Initializing with config: " << config.dump();
-    log->debug("{0} - {1}",__VTFUNC__,msg.str());
-
     m_test_data = m_test_config.at("test_data");
     // get the base configs for the fpga and VMM
+    string config_dir = m_configuration_dirs.at("frontend").get<std::string>();
     string fpga_file = m_test_data.at("base_config_fpga").get<std::string>();
     string vmm_file = m_test_data.at("base_config_global").get<std::string>();
+    fpga_file = config_dir + "/" + fpga_file;
+    vmm_file = config_dir + "/" + vmm_file;
 
     n_cktp_per_cycle = 50;
     n_cycles = 1;
@@ -54,7 +53,7 @@ bool VTSTestChannelsAliveSingle::initialize(const json& config)
         log->warn("{0} - Failed to load test parameters: {1}",__VTFUNC__,e.what());
         n_cktp_per_cycle = 50;
         n_cycles = 10;
-        m_time_per_cycle = 50;
+        m_time_per_cycle = 100;
     }
     set_n_events_per_step(n_cktp_per_cycle);
 
@@ -106,6 +105,7 @@ bool VTSTestChannelsAliveSingle::load()
 bool VTSTestChannelsAliveSingle::configure()
 {
     TestStep t = m_test_steps.at(get_current_state() - 1);
+    comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
 
     // configure the fpga
     json fpga_config = m_base_fpga_config;
@@ -150,9 +150,6 @@ bool VTSTestChannelsAliveSingle::configure()
     vmm_globals["sbmx"] = "ENABLED";
     vmm_globals["scmx"] = "ENABLED";
     vmm_globals["sbfm"] = "DISABLED";
-//    vmm_globals["sdt_dac"] = "200"; // fix the threshold
-//    vmm_globals["sdp_dac"] = t.dac_pulser;
-//    vmm_globals["sg"] = "1.0";
     vmm_spi["global_registers"] = vmm_globals;
     vmm_config["vmm_spi"] = vmm_spi;
 

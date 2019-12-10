@@ -50,9 +50,9 @@ class VTSResultHandler :
 
         test_results = self.get_result_info_dict()
         if not test_results :
-            return None, None, None
+            return None, None, None, None
 
-        tests_succ, tests_pass, tests_fail = [], [], []
+        tests_succ, tests_pass, tests_fail, tests_incomplete = [], [], [], []
 
         for test_name, test_result_data in test_results.items() :
             test_result = test_result_data["RESULT"]
@@ -62,8 +62,10 @@ class VTSResultHandler :
                 tests_pass.append(test_name)
             elif test_result == "FAIL" :
                 tests_fail.append(test_name)
+            elif test_result == "INCOMPLETE" :
+                tests_incomplete.append(test_name)
 
-        return tests_succ, tests_pass, tests_fail
+        return tests_succ, tests_pass, tests_fail, tests_incomplete
 
     def get_result_data_for_test(self, test_name = "") :
 
@@ -83,14 +85,16 @@ class VTSResultHandler :
         if not test_results :
             return None, None
 
-        tests_success, tests_pass, tests_fail = self.get_test_results()
+        tests_success, tests_pass, tests_fail, tests_incomplete = self.get_test_results()
 
-        n_total_tests = len(tests_success) + len(tests_pass) + len(tests_fail)
+        n_total_tests = len(tests_success) + len(tests_pass) + len(tests_fail) + len(tests_incomplete)
         final_result = "SUCCESS"
         if len(tests_pass) > 0 :
             final_result = "PASS"
         if len(tests_fail) > 0 :
             final_result = "FAIL"
+        if len(tests_incomplete) > 0 :
+            final_result = "INCOMPLETE"
         if n_total_tests == 0 :
             final_result = "NONE"
         return final_result
@@ -111,14 +115,18 @@ class VTSResultHandler :
         result_summary["VMM_SERIAL_ID"] = vmm_sn
         result_summary["OUTPUT_EXTENSION"] = out_ext
         result_summary["TESTS_COMPLETED"] = str(self.tests_complete())
+        final_result = self.final_test_result()
+        if not self.tests_complete() :
+            final_result = "INCOMPLETE"
         result_summary["FINAL_TEST_RESULT"] = str(self.final_test_result())
 
-        tests_succ, test_pass, test_fail = self.get_test_results()
+        tests_succ, test_pass, test_fail, tests_incomplete = self.get_test_results()
         all_tests_performed = tests_succ + test_pass + test_fail
         result_summary["TESTS_PERFORMED"] = all_tests_performed
         result_summary["TESTS_SUCCEEDED"] = tests_succ
         result_summary["TESTS_PASSED"] = test_pass
         result_summary["TESTS_FAILED"] = test_fail
+        result_summary["TESTS_INCOMPLETE"] = tests_incomplete
 
         out["result_summary"] = result_summary
 

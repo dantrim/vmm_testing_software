@@ -40,8 +40,9 @@ class VTSTestImp : public QObject
 
     public :
 
-        void load_test_config(const json& test_config, const json& frontend_config)
+        void load_test_config(const json& test_config, const json& frontend_config, const json& config_dirs)
         {
+            m_configuration_dirs = config_dirs;
             m_test_config = test_config;
             m_frontend_config = frontend_config;
         }
@@ -86,6 +87,7 @@ class VTSTestImp : public QObject
 
         vts::FileManager* m_file_manager;
 
+        json m_configuration_dirs;
         json m_test_config;
         json m_frontend_config;
 

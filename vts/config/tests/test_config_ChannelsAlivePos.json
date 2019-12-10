@@ -1,10 +1,10 @@
 {
     "test_type": "ChannelsAlivePos",
     "test_data": {
-        "base_config_global": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_1_25_pos.json",
-        "base_config_fpga": "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/fpga_register_1_25_pos.json",
-        "n_cktp_per_cycle" : "50",
+        "base_config_global": "vmm_spi_1_25_pos.json",
+        "base_config_fpga": "fpga_register_1_25_pos.json",
+        "n_cktp_per_cycle" : "100",
         "n_cycles" : "10",
-        "time_per_cycle" : "200"
+        "time_per_cycle" : "60"
     }
 }

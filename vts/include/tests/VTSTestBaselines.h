@@ -57,7 +57,7 @@ class VTSTestBaselines : public VTSTestImp
         };
         std::vector<TestStep> m_test_steps;
 
-        bool need_to_redo();
+        bool need_to_redo_last_step();
         void redo_last_step();
 
         // put histograms/trees/any output here

@@ -72,15 +72,12 @@ bool VTSTestHandler::is_valid_test(string test_type)
     return(!(StrToVTSTestType(test_type) == VTSTestType::VTSTESTTYPEINVALID));
 }
 
-void VTSTestHandler::load_output_config(const json& output_cfg)
+void VTSTestHandler::load_config(const json& top_lvl_config)
 {
-    m_output_cfg = output_cfg;
-}
-
-void VTSTestHandler::load_frontend_config(const json& frontend_cfg, const json& daq_cfg)
-{
-    m_frontend_cfg = frontend_cfg;
-    m_daq_cfg = daq_cfg;
+    m_output_cfg = top_lvl_config.at("test_output");
+    m_frontend_cfg = top_lvl_config.at("frontend");
+    m_daq_cfg = top_lvl_config.at("daq");
+    m_configuration_dirs = top_lvl_config.at("configuration");
 }
 
 void VTSTestHandler::load_test_config(const json& test_cfg)
@@ -188,9 +185,6 @@ void VTSTestHandler::run()
         json jtest;
         input_file >> jtest;
 
-        msg << "Moving to next test: " << test_name;
-        log->debug("{0} - {1}",__VTFUNC__,msg.str());
-
         if(m_test.get() != nullptr)
         {
             // just reset it for now -- should take care to close it first
@@ -208,7 +202,7 @@ void VTSTestHandler::run()
         /////////////////////////////////////////////////////////////////
         // INITIALIZE
         /////////////////////////////////////////////////////////////////
-        bool initialize_ok = m_test->initialize(jtest, m_frontend_cfg, m_daq_cfg);
+        bool initialize_ok = m_test->initialize(jtest, m_frontend_cfg, m_daq_cfg, m_configuration_dirs);
         initialize_ok &= (m_test->current_state() == vts::VTSTestState::INITIAL);
         if(!initialize_ok)
         {
@@ -220,13 +214,7 @@ void VTSTestHandler::run()
 
         bool status = true;
         stringstream msg;
-        msg << "====================================";
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
-        msg.str("");
         msg << "STARTING TEST [" << test_name << "]";
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
-        msg.str("");
-        msg << "====================================";
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
 
@@ -287,8 +275,6 @@ void VTSTestHandler::run()
             m_test->analyze_test();
 
         msg.str();
-        msg << "====================================";
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
         if(stop_all_tests())
         {
@@ -300,8 +286,6 @@ void VTSTestHandler::run()
         }
         log->info("{0} - {1}",__VTFUNC__,msg.str());
         msg.str("");
-        msg << "====================================";
-        log->info("{0} - {1}",__VTFUNC__,msg.str());
 
         VTSTestResult result = VTSTestResult::TESTRESULTINVALID;
         try
@@ -367,14 +351,12 @@ void VTSTestHandler::run()
         {
             if(i>=(test_results.size()))
             {
-                log->warn("{0} - More test names than test results encountered",__VTFUNC__);
-                json tmp = {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)};
-                jr[m_test_names.at(i)] = tmp;
+                json tmp = {
+                    {"RESULT",VTSTestResultToStr(VTSTestResult::INCOMPLETE)}
+                };
+                test_results.push_back(tmp);
             }
-            else
-            {
-                jr[m_test_names.at(i)] = test_results.at(i);
-            }
+            jr[m_test_names.at(i)] = test_results.at(i);
         }
         s.str("");
         json status_msg = {

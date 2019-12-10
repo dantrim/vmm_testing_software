@@ -70,7 +70,7 @@ bool VTSServer::start()
 
 bool VTSServer::stop()
 {
-    log->info("Closing VTS server...");
+    log->info("{0} - Closing VTS server...",__VTFUNC__);
     //for(auto & conx : m_sockets)
     //    delete conx;
     m_server.close();
@@ -162,7 +162,6 @@ void VTSServer::onReadyRead()
         data_string = data.toStdString();
     }
 
-    log->debug("{0} - DATA RECEIVED : {1}", __VTFUNC__, data_string);
     try
     {
         auto raw_message = json::parse(data_string);
@@ -215,7 +214,7 @@ void VTSServer::onReadyRead()
 void VTSServer::handle_server_command(const vts::VTSMessage& message,
                     vts::VTSReply& /*reply*/)
 {
-    log->info("{0} - {1}",__VTFUNC__,message.str());
+    log->debug("{0} - {1}",__VTFUNC__,message.str());
 
     auto msg_data = message.data();
     string server_command = "";
@@ -270,8 +269,7 @@ void VTSServer::handle_test_command(const vts::VTSMessage& message,
         if(ok)
         {
             m_test_handler = std::make_shared<vts::VTSTestHandler>();
-            m_test_handler->load_output_config(m_server_config.at("test_output"));
-            m_test_handler->load_frontend_config(m_server_config.at("frontend"), m_server_config.at("daq"));
+            m_test_handler->load_config(m_server_config);
             m_test_handler->load_test_config(test_data);
             connect(this, SIGNAL(signal_stop_all_tests()),
                     m_test_handler.get(), SLOT(stop()), Qt::DirectConnection);
@@ -326,11 +324,7 @@ void VTSServer::tests_finished()
         m_test_handler->stop();
     }
     stringstream msg;
-    msg << "====================================";
-    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
     msg << "ALL TESTS COMPLETED";
-    log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
-    msg << "====================================";
     log->info("{0} - {1}",__VTFUNC__,msg.str()); msg.str("");
 }
 

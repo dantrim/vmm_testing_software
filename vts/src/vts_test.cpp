@@ -10,6 +10,7 @@
 #include <vector>
 #include <iostream>
 #include <future>
+#include <iomanip>
 using namespace std;
 
 //logging
@@ -43,51 +44,62 @@ void VTSTest::load_file_manager(vts::FileManager* mgr)
     m_imp->load_file_manager(mgr);
 }
 
-bool VTSTest::initialize(const json& config, const json& frontend_cfg, const json& daq_cfg)
+bool VTSTest::initialize(const json& config, const json& frontend_cfg, const json& daq_cfg, const json& config_dirs)
 {
     update_fsm(VTSTestState::NONE);
 
     // status update socket
 
     stringstream msg;
-    msg << "Initializing test: " << config.dump();
-    log->debug("{0} - {1}",__VTFUNC__,msg.str());
-
     string test_type = config.at("test_type").get<std::string>();
+    msg << "Initializing test \"" << test_type << "\" with configuration:";
+    log->info("{0} - {1}",__VTFUNC__,msg.str());
+    auto test_data = config.at("test_data");
+    size_t conf_idx = 0;
+    for(auto it = test_data.begin(); it != test_data.end(); it++)
+    {
+        msg.str("");
+        msg << "\t" << "(" << conf_idx << ") " << std::left << std::setw(20) << it.key() << ": " << it.value();
+        //msg << "\t(" << conf_idx << ") " << it.key() << std::left << std::setw(20) << ": " << it.value();
+        log->info("{0} - {1}",__VTFUNC__,msg.str());
+        conf_idx++;
+    }
+
+
     if(test_type == "PassThrough")
     {
         m_imp = std::make_shared<vts::VTSTestPassThrough>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else if(test_type == "ConfigurableVMM")
     {
         m_imp = std::make_shared<vts::VTSTestConfigurableVMM>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else if(test_type == "BaselinesNeg")
     {
         m_imp = std::make_shared<vts::VTSTestBaselines>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else if(test_type == "BaselinesPos")
     {
         m_imp = std::make_shared<vts::VTSTestBaselines>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else if(test_type == "ChannelsAliveNeg")
     {
         m_imp = std::make_shared<vts::VTSTestChannelsAlive>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else if(test_type == "ChannelsAlivePos")
     {
         m_imp = std::make_shared<vts::VTSTestChannelsAlive>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else if(test_type == "ChannelsAliveSingle")
     {
         m_imp = std::make_shared<vts::VTSTestChannelsAliveSingle>();
-        m_imp->load_test_config(config, frontend_cfg);
+        m_imp->load_test_config(config, frontend_cfg, config_dirs);
     }
     else
     {

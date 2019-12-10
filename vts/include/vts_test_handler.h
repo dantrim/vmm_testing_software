@@ -38,8 +38,7 @@ namespace vts
             static bool tests_are_ok(std::vector<std::string> test_config_files);
             static bool is_valid_test(std::string test_type);
 
-            void load_output_config(const json& output_cfg);
-            void load_frontend_config(const json& frontend_cfg, const json& daq_cfg);
+            void load_config(const json& top_lvl_config);
             void load_test_config(const json& test_cfg);
 
             void run();
@@ -56,6 +55,7 @@ namespace vts
             json m_output_cfg;
             json m_frontend_cfg;
             json m_daq_cfg;
+            json m_configuration_dirs;
             std::vector<std::string> m_test_names;
             std::vector<std::string> m_test_configs;
             std::shared_ptr<vts::VTSTest> m_test;

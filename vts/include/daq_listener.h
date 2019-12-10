@@ -9,6 +9,7 @@
 #include <string>
 #include <thread>
 #include <atomic>
+#include <chrono>
 
 //boost
 #include <boost/asio.hpp>
@@ -47,6 +48,9 @@ namespace daq
             bool m_active;
             std::shared_ptr<spdlog::logger> log;
             std::atomic<bool>* m_listen_flag;
+
+            std::chrono::system_clock::time_point m_start_time;
+            int n_total_bytes;
 
             uint32_t m_listen_ip;
             uint32_t m_listen_port;

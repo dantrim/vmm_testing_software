@@ -42,7 +42,7 @@ class VTSTest : public QObject
         ~VTSTest();
         void load_file_manager(vts::FileManager* mgr);
 
-        bool initialize(const json& test_config, const json& frontend_cfg, const json& daq_cfg);
+        bool initialize(const json& test_config, const json& frontend_cfg, const json& daq_cfg, const json& config_dirs);
         bool load();
         bool configure();
         bool run();

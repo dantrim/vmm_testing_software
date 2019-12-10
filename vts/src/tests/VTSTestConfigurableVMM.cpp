@@ -23,16 +23,17 @@ namespace vts
 {
 
 
-bool VTSTestConfigurableVMM::initialize(const json& config)
+bool VTSTestConfigurableVMM::initialize(const json& /*config*/)
 {
-    stringstream msg;
-    msg << "Initializing with config: " << config.dump();
-    log->debug("{0} - {1}",__VTFUNC__,msg.str());
-
     m_test_data = m_test_config.at("test_data");
     // get the base configs for the fpga and VMM
+    string config_dir = m_configuration_dirs.at("frontend").get<std::string>();
     string fpga_file = m_test_data.at("base_config_fpga").get<std::string>();
     string vmm_file = m_test_data.at("base_config_global").get<std::string>();
+    fpga_file = config_dir + "/" + fpga_file;
+    vmm_file = config_dir + "/" + vmm_file;
+    //string fpga_file = m_test_data.at("base_config_fpga").get<std::string>();
+    //string vmm_file = m_test_data.at("base_config_global").get<std::string>();
 
     // load FPGA base config
     std::ifstream ifs_fpga(fpga_file);
