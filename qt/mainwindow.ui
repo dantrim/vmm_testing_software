@@ -6,9 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>883</width>
-    <height>459</height>
+    <width>871</width>
+    <height>371</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Helvetica</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -19,9 +24,14 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>691</width>
-      <height>421</height>
+      <width>681</width>
+      <height>355</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Helvetica</family>
+     </font>
     </property>
     <property name="currentIndex">
      <number>0</number>
@@ -30,472 +40,602 @@
      <attribute name="title">
       <string>VTS Control</string>
      </attribute>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
-        <x>3</x>
+        <x>6</x>
         <y>10</y>
-        <width>681</width>
-        <height>371</height>
+        <width>661</width>
+        <height>311</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-           <weight>50</weight>
-           <bold>false</bold>
-          </font>
+      <layout class="QGridLayout" name="gridLayout_5" rowstretch="2,0,0,0,0,0,0,0" columnstretch="0">
+       <property name="horizontalSpacing">
+        <number>2</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>4</number>
+       </property>
+       <item row="1" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>4</number>
          </property>
-         <property name="title">
-          <string>VTS Control</string>
-         </property>
-         <property name="flat">
-          <bool>false</bool>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_5" rowstretch="0">
-          <property name="leftMargin">
-           <number>1</number>
-          </property>
-          <property name="topMargin">
-           <number>1</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <property name="bottomMargin">
-           <number>1</number>
-          </property>
-          <item row="0" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <property name="spacing">
-               <number>1</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="label_11">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>VTS Config  </string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="lineEdit_vts_config_file">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="button_load_vts_config">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>   Load   </string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <property name="spacing">
-               <number>4</number>
-              </property>
-              <property name="sizeConstraint">
-               <enum>QLayout::SetFixedSize</enum>
-              </property>
-              <item>
-               <widget class="QLabel" name="label_13">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>VTS Server</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QPushButton" name="button_ping_vts_server">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Server Alive?</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="button_start_vts_server">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                  <weight>50</weight>
-                  <bold>false</bold>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>   Start   </string>
-                </property>
-                <property name="checkable">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
+         <item>
+          <widget class="QLabel" name="label_13">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>VTS Server</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>37</width>
+             <height>17</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_ping_vts_server">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Alive?</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_start_vts_server">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>   Start   </string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_3">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="title">
-          <string>Device Capture</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_8">
-          <property name="leftMargin">
-           <number>1</number>
-          </property>
-          <property name="topMargin">
-           <number>1</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <property name="bottomMargin">
-           <number>1</number>
-          </property>
-          <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="label_18">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>50</weight>
-                <bold>false</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Camera  </string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="button_ping_camera">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Camera Alive?</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="button_do_manual_vmm_sn">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>Manual VMM SN</string>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="lineEdit_manual_vmm_sn">
-              <property name="maxLength">
-               <number>5</number>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_2">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>37</width>
-                <height>17</height>
-               </size>
-              </property>
-             </spacer>
-            </item>
-            <item>
-             <widget class="QPushButton" name="button_acquire_vmm_serial">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>VMM SN</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="font">
-          <font>
-           <pointsize>10</pointsize>
-          </font>
-         </property>
-         <property name="title">
-          <string>Testing</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_14">
-          <property name="leftMargin">
-           <number>1</number>
-          </property>
-          <property name="topMargin">
-           <number>1</number>
-          </property>
-          <property name="rightMargin">
-           <number>1</number>
-          </property>
-          <property name="bottomMargin">
-           <number>1</number>
-          </property>
-          <item row="0" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_10">
-            <property name="spacing">
-             <number>4</number>
-            </property>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_9">
-              <item>
-               <widget class="QLabel" name="label_14">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Test Dir  </string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="lineEdit_test_dir">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="button_tests_load">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>   Load   </string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_10">
-              <item>
-               <widget class="QListWidget" name="listWidget_loaded_tests">
-                <property name="font">
-                 <font>
-                  <pointsize>10</pointsize>
-                 </font>
-                </property>
-                <property name="dragEnabled">
-                 <bool>true</bool>
-                </property>
-                <property name="defaultDropAction">
-                 <enum>Qt::MoveAction</enum>
-                </property>
-                <property name="alternatingRowColors">
-                 <bool>true</bool>
-                </property>
-                <property name="selectionMode">
-                 <enum>QAbstractItemView::ExtendedSelection</enum>
-                </property>
-                <property name="movement">
-                 <enum>QListView::Snap</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <layout class="QVBoxLayout" name="verticalLayout_8">
-                <property name="spacing">
-                 <number>6</number>
-                </property>
-                <property name="leftMargin">
-                 <number>1</number>
-                </property>
-                <property name="topMargin">
-                 <number>1</number>
-                </property>
-                <property name="rightMargin">
-                 <number>1</number>
-                </property>
-                <property name="bottomMargin">
-                 <number>1</number>
-                </property>
-                <item>
-                 <widget class="QPushButton" name="button_tests_start">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>START</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="button_tests_stop">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="text">
-                   <string>STOP</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
+       <item row="6" column="0">
         <layout class="QHBoxLayout" name="horizontalLayout_11">
          <property name="spacing">
           <number>4</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_test_count">
-           <property name="text">
-            <string>N/M     </string>
+          <widget class="QLabel" name="label_4">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
            </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
+           <property name="text">
+            <string>Out. Dir  </string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QProgressBar" name="progressBar_current_test_progress">
+          <widget class="QLineEdit" name="lineEdit_test_output_location">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_9">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>84</width>
+             <height>19</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_13">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_11">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>VTS Config  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_vts_config_file">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_load_vts_config">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>   Load   </string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_14">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Test Dir  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_test_dir">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_tests_load">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Load Tests</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_15">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Tests      </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QListWidget" name="listWidget_loaded_tests">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="dragEnabled">
+            <bool>true</bool>
+           </property>
+           <property name="defaultDropAction">
+            <enum>Qt::MoveAction</enum>
+           </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
+           </property>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="movement">
+            <enum>QListView::Snap</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="button_tests_start">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <horstretch>5</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <family>Helvetica</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>START</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="button_tests_stop">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <family>Helvetica</family>
+               <pointsize>10</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>STOP</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_21">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>FPGA </string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>37</width>
+             <height>17</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_22">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>IP </string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_manual_vmm_sn_2">
+           <property name="maxLength">
+            <number>5</number>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_ping_fpga">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="sizeIncrement">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
            </property>
-           <property name="baseSize">
-            <size>
-             <width>0</width>
-             <height>4</height>
-            </size>
+           <property name="text">
+            <string>Alive?</string>
            </property>
-           <property name="value">
-            <number>24</number>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_power_fpga">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>      ON       </string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_23">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>VMM  </string>
            </property>
            <property name="alignment">
-            <set>Qt::AlignCenter</set>
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
            </property>
-           <property name="invertedAppearance">
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>34</width>
+             <height>14</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_ping_vmm">
+           <property name="enabled">
             <bool>false</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Alive?</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_power_vmm">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>      ON       </string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_18">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="text">
+            <string>Camera  </string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_do_manual_vmm_sn">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Manual VMM SN</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="lineEdit_manual_vmm_sn">
+           <property name="maxLength">
+            <number>5</number>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_ping_camera">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Alive?</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_acquire_vmm_serial">
+           <property name="font">
+            <font>
+             <family>Helvetica</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>   Get SN   </string>
            </property>
           </widget>
          </item>
@@ -508,35 +648,27 @@
      <attribute name="title">
       <string>Frontend Control</string>
      </attribute>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="">
       <property name="geometry">
        <rect>
-        <x>3</x>
-        <y>0</y>
-        <width>681</width>
-        <height>261</height>
+        <x>0</x>
+        <y>10</y>
+        <width>671</width>
+        <height>241</height>
        </rect>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_7">
-       <property name="spacing">
-        <number>1</number>
-       </property>
+      <layout class="QGridLayout" name="gridLayout_8">
        <property name="leftMargin">
-        <number>2</number>
+        <number>4</number>
        </property>
-       <property name="topMargin">
-        <number>2</number>
+       <property name="spacing">
+        <number>4</number>
        </property>
-       <property name="rightMargin">
-        <number>2</number>
-       </property>
-       <property name="bottomMargin">
-        <number>2</number>
-       </property>
-       <item>
+       <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_4">
          <property name="font">
           <font>
+           <family>Helvetica</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -573,6 +705,7 @@
                <widget class="QLabel" name="label_16">
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
@@ -586,8 +719,12 @@
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_6">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
@@ -598,8 +735,12 @@
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_15">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
@@ -619,6 +760,7 @@
                <widget class="QPushButton" name="button_fpga_configure">
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
@@ -628,9 +770,10 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="button_fpga_ping">
+               <widget class="QPushButton" name="button_ping_fpga2">
                 <property name="font">
                  <font>
+                  <family>Helvetica</family>
                   <pointsize>10</pointsize>
                  </font>
                 </property>
@@ -710,10 +853,11 @@
          </layout>
         </widget>
        </item>
-       <item>
+       <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="font">
           <font>
+           <family>Helvetica</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -738,10 +882,14 @@
           </property>
           <item row="0" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <property name="spacing">
+             <number>4</number>
+            </property>
             <item>
              <widget class="QLabel" name="label_19">
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -755,8 +903,12 @@
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_12">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -767,8 +919,12 @@
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_16">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -788,6 +944,7 @@
              <widget class="QPushButton" name="button_vmm_configure">
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -800,6 +957,7 @@
              <widget class="QPushButton" name="button_vmm_reset">
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -877,10 +1035,11 @@
          </layout>
         </widget>
        </item>
-       <item>
+       <item row="2" column="0">
         <widget class="QGroupBox" name="groupBox_6">
          <property name="font">
           <font>
+           <family>Helvetica</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -889,18 +1048,18 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
           <property name="leftMargin">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="topMargin">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="rightMargin">
-           <number>1</number>
+           <number>0</number>
           </property>
           <property name="bottomMargin">
-           <number>1</number>
+           <number>0</number>
           </property>
-          <property name="verticalSpacing">
+          <property name="spacing">
            <number>0</number>
           </property>
           <item row="0" column="0">
@@ -912,6 +1071,7 @@
              <widget class="QPushButton" name="button_acq_on">
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -924,6 +1084,7 @@
              <widget class="QPushButton" name="button_acq_off">
               <property name="font">
                <font>
+                <family>Helvetica</family>
                 <pointsize>10</pointsize>
                </font>
               </property>
@@ -953,17 +1114,12 @@
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab3">
-     <attribute name="title">
-      <string>Misc</string>
-     </attribute>
-    </widget>
    </widget>
    <widget class="QFrame" name="frame">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>80</y>
+      <x>690</x>
+      <y>470</y>
       <width>162</width>
       <height>181</height>
      </rect>
@@ -1050,8 +1206,8 @@
    <widget class="QFrame" name="frame_2">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>10</y>
+      <x>700</x>
+      <y>34</y>
       <width>162</width>
       <height>61</height>
      </rect>
@@ -1096,10 +1252,10 @@
    <widget class="QFrame" name="frame_8">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>270</y>
+      <x>700</x>
+      <y>142</y>
       <width>162</width>
-      <height>110</height>
+      <height>221</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -1259,128 +1415,162 @@
       </item>
      </layout>
     </widget>
-   </widget>
-   <widget class="QFrame" name="frame_13">
-    <property name="geometry">
-     <rect>
-      <x>710</x>
-      <y>390</y>
-      <width>162</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::Box</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
-    </property>
-    <property name="lineWidth">
-     <number>2</number>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_7">
-     <property name="leftMargin">
-      <number>0</number>
+    <widget class="QProgressBar" name="progressBar_current_test_progress">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>148</y>
+       <width>152</width>
+       <height>20</height>
+      </rect>
      </property>
-     <property name="topMargin">
-      <number>0</number>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="rightMargin">
-      <number>0</number>
+     <property name="sizeIncrement">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
      </property>
-     <property name="bottomMargin">
-      <number>0</number>
+     <property name="baseSize">
+      <size>
+       <width>0</width>
+       <height>4</height>
+      </size>
      </property>
-     <item row="0" column="0">
-      <widget class="QFrame" name="frame_14">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(244, 255, 122)</string>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="lineWidth">
-        <number>0</number>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_6">
-        <property name="leftMargin">
+     <property name="value">
+      <number>24</number>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QFrame" name="frame_13">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>174</y>
+       <width>152</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <property name="lineWidth">
+      <number>2</number>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QFrame" name="frame_14">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(244, 255, 122)</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Plain</enum>
+        </property>
+        <property name="lineWidth">
          <number>0</number>
         </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_test_status">
-          <property name="font">
-           <font>
-            <pointsize>13</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">colo</string>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>435</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Test output:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_test_output_location">
-    <property name="geometry">
-     <rect>
-      <x>96</x>
-      <y>435</y>
-      <width>601</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_test_status">
+           <property name="font">
+            <font>
+             <pointsize>13</pointsize>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">colo</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QLabel" name="label_test_count">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>129</y>
+       <width>42</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>N/M</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QFrame" name="frame_15">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>105</y>
+       <width>152</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(189, 189, 189);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1388,7 +1578,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>883</width>
+     <width>871</width>
      <height>22</height>
     </rect>
    </property>

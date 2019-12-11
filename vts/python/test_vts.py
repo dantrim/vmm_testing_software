@@ -32,6 +32,8 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.setup_vts_connections(ui = self.ui)
         self.setup_defaults(ui = self.ui)
 
+        #self.ui.button_dummy.setVisible(False)
+
     def set_background(self, obj = None, obj_type_str = "", color = VTS_WHITE, reset = False) :
 
         if reset :
@@ -311,7 +313,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ## FPGA
         ##
         ui.button_fpga_configure.clicked.connect(self.vts.configure_fpga)
-        ui.button_fpga_ping.clicked.connect(self.vts.ping_fpga)
+        ui.button_ping_fpga.clicked.connect(self.vts.ping_fpga)
 
         ##
         ## VMM
@@ -352,7 +354,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
             vts_cfg = json.load(cfg_file)["vts_config"]
         output_cfg = vts_cfg["test_output"]
         output_dir = output_cfg["output_directory"]
-        self.ui.label_test_output_location.setText(output_dir)
+        self.ui.lineEdit_test_output_location.setText(output_dir)
 
         # tests
         ui.lineEdit_test_dir.clear()
