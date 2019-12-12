@@ -331,7 +331,7 @@ void VTSServer::tests_finished()
 void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
                 vts::VTSReply& reply)
 {
-    log->info("{0} - {1}",__VTFUNC__,message.str());
+    log->debug("{0} - {1}",__VTFUNC__,message.str());
     auto msg_data = message.data();
 
     vts::CommunicatorFrontEnd* comm = new vts::CommunicatorFrontEnd();//m_server_config.at("frontend"));
@@ -342,7 +342,7 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
         bool status = comm->ping_fpga();
         stringstream status_str;
         status_str << "Ping status? " << (status ? "GOOD" : "BAD");
-        log->info("{0} - {1}",__VTFUNC__,status_str.str());
+        log->debug("{0} - {1}",__VTFUNC__,status_str.str());
 
         status_str.str("");
         status_str << (status ? "OK" : "ERROR");

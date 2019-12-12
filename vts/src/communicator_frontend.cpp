@@ -72,8 +72,13 @@ bool CommunicatorFrontEnd::power_board_toggle(bool turn_on)
 bool CommunicatorFrontEnd::ping_fpga()
 {
     stringstream cmd;
-    cmd << "ping " << m_board_ip << " -c 1 -W 10 > /dev/null";
-    int status_code = system(cmd.str().c_str());
+    cmd << "ping " << m_board_ip << " -c 1 -W 1 > /dev/null";// -W 10 > /dev/null";
+    int status_code = 1;
+    for(int i = 0; i < 3; i++)
+    {
+        status_code = system(cmd.str().c_str());
+        if(status_code==0) break;
+    }
     if(status_code != 0)
         return false;
     return true;

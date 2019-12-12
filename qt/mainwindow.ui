@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>871</width>
-    <height>371</height>
+    <height>372</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="font">
    <font>
@@ -16,7 +22,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>VMM Testing Software</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -40,13 +46,13 @@
      <attribute name="title">
       <string>VTS Control</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>6</x>
         <y>10</y>
         <width>661</width>
-        <height>311</height>
+        <height>301</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5" rowstretch="2,0,0,0,0,0,0,0" columnstretch="0">
@@ -155,6 +161,9 @@
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_test_output_location">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
              <family>Helvetica</family>
@@ -203,6 +212,9 @@
          </item>
          <item>
           <widget class="QLineEdit" name="lineEdit_vts_config_file">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="font">
             <font>
              <family>Helvetica</family>
@@ -326,6 +338,9 @@
            </property>
            <item>
             <widget class="QPushButton" name="button_tests_start">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
                <horstretch>5</horstretch>
@@ -430,9 +445,17 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="lineEdit_manual_vmm_sn_2">
+          <widget class="QLineEdit" name="lineEdit_fpga_ip">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
            <property name="maxLength">
-            <number>5</number>
+            <number>15</number>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -582,6 +605,21 @@
           </widget>
          </item>
          <item>
+          <widget class="QLineEdit" name="lineEdit_manual_vmm_sn">
+           <property name="font">
+            <font>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+           <property name="maxLength">
+            <number>5</number>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="button_do_manual_vmm_sn">
            <property name="font">
             <font>
@@ -594,16 +632,6 @@
            </property>
            <property name="checkable">
             <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="lineEdit_manual_vmm_sn">
-           <property name="maxLength">
-            <number>5</number>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
@@ -648,13 +676,13 @@
      <attribute name="title">
       <string>Frontend Control</string>
      </attribute>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>0</x>
         <y>10</y>
         <width>671</width>
-        <height>241</height>
+        <height>211</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_8">
@@ -1048,19 +1076,16 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
           <property name="leftMargin">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="topMargin">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="rightMargin">
-           <number>0</number>
+           <number>1</number>
           </property>
           <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <property name="spacing">
-           <number>0</number>
+           <number>1</number>
           </property>
           <item row="0" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -1160,7 +1185,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="vts_resources.qrc">:/python/uci.png</pixmap>
+          <pixmap>:/python/uci.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -1176,7 +1201,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="vts_resources.qrc">:/python/ntua.png</pixmap>
+          <pixmap>:/python/ntua.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -1192,7 +1217,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap resource="vts_resources.qrc">:/python/brookhaven.png</pixmap>
+          <pixmap>:/python/brookhaven.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -1240,7 +1265,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="vts_resources.qrc">:/python/vts_logo.png</pixmap>
+        <pixmap>:/python/vts_logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -1300,111 +1325,6 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_vts_server_status">
-        <property name="text">
-         <string>none</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QFrame" name="frame_10">
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>80</y>
-       <width>152</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(189, 189, 189);</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-    </widget>
-    <widget class="QFrame" name="frame_11">
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>30</y>
-       <width>151</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(189, 189, 189);</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_vts_vmm_sn">
-        <property name="text">
-         <string>none</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QFrame" name="frame_12">
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>55</y>
-       <width>151</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(189, 189, 189);</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Box</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_15">
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="rightMargin">
-       <number>0</number>
-      </property>
-      <property name="bottomMargin">
-       <number>0</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_current_test">
         <property name="text">
          <string>none</string>
         </property>
@@ -1552,12 +1472,12 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
-    <widget class="QFrame" name="frame_15">
+    <widget class="QFrame" name="frame_16">
      <property name="geometry">
       <rect>
        <x>5</x>
-       <y>105</y>
-       <width>152</width>
+       <y>30</y>
+       <width>151</width>
        <height>21</height>
       </rect>
      </property>
@@ -1570,6 +1490,159 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
+     <layout class="QGridLayout" name="gridLayout_16">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_fpga_status">
+        <property name="text">
+         <string>none</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QFrame" name="frame_17">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>55</y>
+       <width>151</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(189, 189, 189);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_17">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_vmm_status">
+        <property name="text">
+         <string>none</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QFrame" name="frame_12">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>105</y>
+       <width>151</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(189, 189, 189);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_15">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_current_test">
+        <property name="text">
+         <string>none</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QFrame" name="frame_11">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>80</y>
+       <width>151</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(189, 189, 189);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_vts_vmm_sn">
+        <property name="text">
+         <string>none</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </widget>
   </widget>
@@ -1590,8 +1663,6 @@
    <addaction name="menuVMM_Testing_Software"/>
   </widget>
  </widget>
- <resources>
-  <include location="vts_resources.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

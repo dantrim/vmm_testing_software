@@ -32,7 +32,8 @@ void help()
 
 void setup_logging(json& logging_config)
 {
-    std::string log_pattern = "[%D %H:%M:%S] [%t] [%^%L%$] %v";
+    //std::string log_pattern = "[%D %H:%M:%S] [%t] [%^%L%$] %v";
+    std::string log_pattern = "[%D %H:%M:%S] [%^%L%$] %v";
     auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink->set_level(spdlog::level::debug);
     console_sink->set_pattern(log_pattern);

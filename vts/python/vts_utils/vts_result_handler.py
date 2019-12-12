@@ -153,6 +153,8 @@ class VTSResultHandler :
         output_filename = "vts_results_VMM%s" % tested_vmm_id
         if int(output_ext) > 0 :
             output_filename += "_%04d" % int(output_ext)
+        else :
+            output_filename += "_0000"
         output_filename += ".json"
 
         p_output = Path(output_dir)
@@ -167,4 +169,4 @@ class VTSResultHandler :
         ##
         result_data = self.result_summary_dict()
         with open(p_output, "w") as ofile :
-            json.dump(result_data, ofile)
+            json.dump(result_data, ofile, indent=4)

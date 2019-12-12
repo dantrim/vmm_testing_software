@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>python/uci.png</file>
-        <file>python/brookhaven.png</file>
-        <file>python/ntua.png</file>
-        <file>python/vts_logo.png</file>
-    </qresource>
-</RCC>

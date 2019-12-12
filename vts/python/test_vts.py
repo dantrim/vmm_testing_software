@@ -28,6 +28,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         super(VTSWindow, self).__init__()
         self.vts = client
         self.ui = vts_mainwindow.Ui_MainWindow()
+        self.setFixedSize(871,372)
         self.ui.setupUi(self)
         self.setup_vts_connections(ui = self.ui)
         self.setup_defaults(ui = self.ui)
@@ -46,6 +47,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
     ## VTS SIGNALS
     ##
     signal_vts_config_updated = Signal()
+    signal_vmm_status = Signal(str)
 
     ##
     ## VTS SLOTS
@@ -60,7 +62,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
             bkg_color = "rgb{};".format(VTS_GREEN)
         bkg_color = "QLabel {background-color: %s}" % bkg_color
         self.ui.label_vts_vmm_sn.setStyleSheet(bkg_color)
-        self.ui.label_vts_vmm_sn.setText(str(value))
+        self.ui.label_vts_vmm_sn.setText("VMM# " + str(value))
 
     @Slot(str)
     def server_status_updated(self, value) :
@@ -71,12 +73,12 @@ class VTSWindow(QtWidgets.QMainWindow) :
             bkg_color = "rgb{};".format(bkg_color)
         bkg_color = "QLabel {background-color: %s}" % bkg_color
         self.ui.label_vts_server_status.setStyleSheet(bkg_color)
-        self.ui.label_vts_server_status.setText(str(value))
+        text = "SERVER " + str(value).upper()
+        self.ui.label_vts_server_status.setText(text)
 
     def load_test_config_from_dir(self, test_config_dir = "", send_to_server = True, vmm_sn = "") :
 
         self.ui.progressBar_current_test_progress.setValue(0)
-
 
         test_config_dir = str(test_config_dir)
         p_test_config_dir = Path(test_config_dir)
@@ -113,9 +115,14 @@ class VTSWindow(QtWidgets.QMainWindow) :
         for test_name, test_config_file in test_dict.items() :
             self.ui.listWidget_loaded_tests.addItem(test_name)
 
+        self.ui.label_current_test.setText("TESTS LOADED")
+        self.set_background(obj = self.ui.label_current_test, obj_type_str = "QLabel", color = VTS_GREY)
+
         # assumes that VTS server is running
         if server_running and send_to_server :
             self.send_tests_to_vts(vmm_sn = vmm_sn)
+            self.ui.label_current_test.setText("TESTS LOADED")
+            self.set_background(obj = self.ui.label_current_test, obj_type_str = "QLabel", color = VTS_BLUE)
 
     @Slot()
     def load_test_config(self) :
@@ -184,9 +191,27 @@ class VTSWindow(QtWidgets.QMainWindow) :
         if is_on :
             self.ui.button_start_vts_server.setText("Shutdown")
             status = self.vts.start_server(wait = 0.2)
+            self.ui.button_tests_start.setEnabled(False)
+            self.ui.button_tests_stop.setEnabled(False)
         else :
             self.vts.kill_server(wait = 0.1)
             self.ui.button_start_vts_server.setText("Start")
+            self.ui.button_tests_start.setEnabled(False)
+            self.ui.button_tests_stop.setEnabled(False)
+            self.reset_status()
+
+    def reset_status(self) :
+        labels = [self.ui.label_fpga_status,
+                    self.ui.label_vmm_status,
+                    self.ui.label_vts_vmm_sn,
+                    self.ui.label_current_test,]
+        for label in labels :
+            label.setText("none")
+            self.set_background(obj = label, obj_type_str = "QLabel", color = VTS_GREY)
+        self.ui.progressBar_current_test_progress.setValue(0)
+        self.set_background(obj = self.ui.label_test_status, obj_type_str = "QLabel", color = VTS_GREY)
+        self.ui.label_test_status.setText("none")
+        
 
     @Slot()
     def kill_server(self) :
@@ -200,7 +225,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
             self.ui.button_tests_start.setEnabled(False)
     
             # update ui
-            self.ui.label_test_status.setText("Testing")
+            self.ui.label_test_status.setText("TESTING")
             self.set_background(obj = self.ui.label_test_status,
                                     obj_type_str = "QLabel",
                                     color = VTS_BLUE)
@@ -211,7 +236,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.ui.button_tests_stop.setEnabled(False)
         self.ui.button_tests_start.setEnabled(True)
 
-        self.ui.label_test_status.setText("Testing Stopped")
+        self.ui.label_test_status.setText("TESTING STOPPED")
         self.set_background(obj = self.ui.label_test_status,
                                     obj_type_str = "QLabel",
                                     color = VTS_GREY)
@@ -277,7 +302,37 @@ class VTSWindow(QtWidgets.QMainWindow) :
             self.ui.button_tests_start.setEnabled(True)
             self.ui.button_tests_stop.setEnabled(False)
         return vmm_sn
-                
+
+    @Slot()
+    def ping_fpga(self) :
+        server_running = self.ui.button_start_vts_server.isChecked()
+        reply_status = False
+        if server_running :
+            reply_status = self.vts.ping_fpga()
+        text_str, color = { True : ["FPGA ALIVE",VTS_GREEN]
+                    ,False : ["FPGA DEAD",VTS_RED] }[reply_status]
+        if not server_running :
+            text_str = "none"
+            color = VTS_GREY
+        self.ui.label_fpga_status.setText(text_str)
+        self.set_background(obj = self.ui.label_fpga_status, obj_type_str = "QLabel", color = color)
+
+        # for now just assume that VMM is OK
+        if reply_status :
+            self.signal_vmm_status.emit("ON")
+        else :
+            if server_running :
+                self.signal_vmm_status.emit("OFF")
+            else :
+                self.signal_vmm_status.emit("NONE")
+
+    @Slot(str)
+    def update_vmm_status(self, status_str) :
+        text_str, color = { "ON" : ["VMM ON",VTS_GREEN]
+                    ,"OFF" : ["VMM OFF",VTS_RED]
+                    ,"NONE" : ["none",VTS_GREY] } [status_str]
+        self.ui.label_vmm_status.setText(text_str)
+        self.set_background(obj = self.ui.label_vmm_status, obj_type_str = "QLabel", color = color)
 
     ##
     ## VTS CONNECTIONS
@@ -295,6 +350,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
         self.vts.signal_vmm_sn_updated.connect(self.vmm_sn_updated)
         self.vts.signal_server_status_updated.connect(self.server_status_updated)
+        self.signal_vmm_status.connect(self.update_vmm_status)
 
         ##
         ## DEVICE CONTROL
@@ -305,7 +361,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ##
         ## TESTS
         ##
-        ui.button_tests_load.clicked.connect(self.load_test_config) #vts.load_test)
+        ui.button_tests_load.clicked.connect(self.load_test_config)
         ui.button_tests_start.clicked.connect(self.start_tests)
         ui.button_tests_stop.clicked.connect(self.stop_tests)
 
@@ -313,7 +369,8 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ## FPGA
         ##
         ui.button_fpga_configure.clicked.connect(self.vts.configure_fpga)
-        ui.button_ping_fpga.clicked.connect(self.vts.ping_fpga)
+        ui.button_ping_fpga.clicked.connect(self.ping_fpga)
+        ui.button_ping_fpga2.clicked.connect(self.ping_fpga)
 
         ##
         ## VMM
@@ -345,13 +402,21 @@ class VTSWindow(QtWidgets.QMainWindow) :
         default_vts_config = vts_helpers.default_vts_config()
         ui.lineEdit_vts_config_file.setText(str(default_vts_config))
 
+        with open(self.vts.config_file, "r") as cfg_file :
+            vts_cfg = json.load(cfg_file)["vts_config"]
+
+        ##
+        ## FPGA
+        ##
+        frontend_cfg = vts_cfg["frontend"]
+        board_ip = frontend_cfg["board_ip"]
+        ui.lineEdit_fpga_ip.setText(board_ip)
+
         ##
         ## TESTING
         ##
 
         # output location
-        with open(self.vts.config_file, "r") as cfg_file :
-            vts_cfg = json.load(cfg_file)["vts_config"]
         output_cfg = vts_cfg["test_output"]
         output_dir = output_cfg["output_directory"]
         self.ui.lineEdit_test_output_location.setText(output_dir)

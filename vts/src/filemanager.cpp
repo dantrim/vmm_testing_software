@@ -125,6 +125,7 @@ bool FileManager::create_output()
     }
     else
     {
+        outputfile << "_0000";
         outputfile << ".root";
     }
 
@@ -180,22 +181,25 @@ int FileManager::existing_files(string dirname, string filename_no_ext)
             QString number = fname.split("_").last();
             number.replace(".root","");
 
-            // if there is an extension, the file will be vts_data_VMMXXXXX_NNNN.root
-            // with NNNN a number
-            if(listOfFiles.size()==1 && number.contains("VMM"))
-            {
-                // no extension added already, this is the first time we're replicating
-                max_ext_found = 0;
-            }
-            else if(listOfFiles.size()>1)
-            {
-                int ext = number.toInt(&ok,10);
-                if(ext > max_ext_found) max_ext_found = ext;
-            }
-            else
-            {
-                throw std::runtime_error("Unknown filename format encountered");
-            }
+            int ext = number.toInt(&ok,10);
+            if(ext > max_ext_found) max_ext_found = ext;
+
+            //// if there is an extension, the file will be vts_data_VMMXXXXX_NNNN.root
+            //// with NNNN a number
+            //if(listOfFiles.size()==1 && number.contains("VMM"))
+            //{
+            //    // no extension added already, this is the first time we're replicating
+            //    max_ext_found = 0;
+            //}
+            //else if(listOfFiles.size()>1)
+            //{
+            //    int ext = number.toInt(&ok,10);
+            //    if(ext > max_ext_found) max_ext_found = ext;
+            //}
+            //else
+            //{
+            //    throw std::runtime_error("Unknown filename format encountered");
+            //}
         } // i
     }
 

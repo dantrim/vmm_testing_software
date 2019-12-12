@@ -144,6 +144,8 @@ class VTSClient(QtCore.QObject) :
         self.status_thread = threading.Thread(target = self.monitor, args = (lambda : self.keep_monitor,))
         self.status_thread.start()
 
+        return found_server
+
     def kill_server(self, wait = 1) :
 
         ##
@@ -211,13 +213,14 @@ class VTSClient(QtCore.QObject) :
             "CMD" : cmd
         }
         address = (self.config["server_ip"], int(self.config["server_port"]))
-        reply = self.comms.send_message_socket(address = address,
+        reply, cmd_id = self.comms.send_message_socket(address = address,
                     message_data = data,
                     expect_reply = True,
                     cmd_type = "FRONTEND",
                     wait = wait
         )
-        print("reply? {}".format(reply))
+        if expect_reply :
+            return reply
 
     def board_on(self) :
         self.frontend_cmd(cmd = "POWERON")
@@ -226,7 +229,8 @@ class VTSClient(QtCore.QObject) :
         self.frontend_cmd(cmd = "POWEROFF")
 
     def ping_fpga(self) :
-        self.frontend_cmd(cmd = "PINGFPGA")
+        reply = self.frontend_cmd(cmd = "PINGFPGA")
+        return reply["STATUS"] == "OK"
 
     def configure_fpga(self) :
         self.frontend_cmd(cmd = "CONFIGUREFPGA")
@@ -260,7 +264,6 @@ class VTSClient(QtCore.QObject) :
                     cmd_type = "VMMTEST",
                     wait = wait
         )
-        print("reply? {}".format(reply))
         return reply
 
 
