@@ -249,8 +249,6 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
         // process the samples (fill histograms/etc)
 
         float sample_mv = sample.sample();
-        //dummy
-        if(channel==63) sample_mv = 0.0;
         sample_mv = (sample_mv / pow(2,12)) * 1000.;
         m_histos_baselines.at(channel)->Fill(sample_mv);
 
@@ -270,8 +268,8 @@ bool VTSTestBaselines::analyze()
     bool redo = need_to_redo_last_step();
     if(redo)
     {
-        log->debug("{0} - Re-doing last step",__VTFUNC__);
         redo_last_step();
+        log->debug("{0} - Re-doing step {1}",__VTFUNC__,get_current_state());
     }
     if(redo) return true;
 
