@@ -193,12 +193,19 @@ class VTSWindow(QtWidgets.QMainWindow) :
             status = self.vts.start_server(wait = 0.2)
             self.ui.button_tests_start.setEnabled(False)
             self.ui.button_tests_stop.setEnabled(False)
+            self.ui.button_tests_load.setEnabled(True)
+            self.ui.button_ping_fpga.setEnabled(True)
+            self.ui.button_ping_fpga2.setEnabled(True)
         else :
             self.vts.kill_server(wait = 0.1)
             self.ui.button_start_vts_server.setText("Start")
             self.ui.button_tests_start.setEnabled(False)
             self.ui.button_tests_stop.setEnabled(False)
+            self.ui.button_tests_load.setEnabled(False)
+            self.ui.button_ping_fpga.setEnabled(False)
+            self.ui.button_ping_fpga2.setEnabled(False)
             self.reset_status()
+        self.ui.button_ping_vts_server.click()
 
     def reset_status(self) :
         labels = [self.ui.label_fpga_status,
@@ -211,6 +218,8 @@ class VTSWindow(QtWidgets.QMainWindow) :
         self.ui.progressBar_current_test_progress.setValue(0)
         self.set_background(obj = self.ui.label_test_status, obj_type_str = "QLabel", color = VTS_GREY)
         self.ui.label_test_status.setText("none")
+
+        self.ui.button_tests_load.setEnabled(False)
         
 
     @Slot()
@@ -411,10 +420,15 @@ class VTSWindow(QtWidgets.QMainWindow) :
         frontend_cfg = vts_cfg["frontend"]
         board_ip = frontend_cfg["board_ip"]
         ui.lineEdit_fpga_ip.setText(board_ip)
+        self.ui.button_ping_fpga.setEnabled(False)
+        self.ui.button_ping_fpga2.setEnabled(False)
 
         ##
         ## TESTING
         ##
+
+        # loading
+        self.ui.button_tests_load.setEnabled(False)
 
         # output location
         output_cfg = vts_cfg["test_output"]

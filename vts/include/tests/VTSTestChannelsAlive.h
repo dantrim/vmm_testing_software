@@ -59,6 +59,7 @@ class VTSTestChannelsAlive : public VTSTestImp
 
         std::vector<TestStep> m_test_steps;
 
+        bool m_is_positive;
         int n_cktp_per_cycle;
         int m_time_per_cycle; // milliseconds
         std::chrono::system_clock::time_point m_start_time;
@@ -69,10 +70,14 @@ class VTSTestChannelsAlive : public VTSTestImp
         TH2F* h2_channel_art;
         TH1F* h_art_diff;
         TH1F* h_bad_art;
+        TH2F* h2_channel_pdo;
 
         // test results based on this
         std::vector<int> m_bad_channels;
         std::vector<int> m_dead_channels;
+        std::vector<int> m_bad_pdo_channels;
+        const int LO_PDO_THRESHOLD = 350;
+        const int HI_PDO_THRESHOLD = 750;
         std::vector<int> m_bad_art_channels;
 
         bool need_to_redo_last_step();

@@ -28,7 +28,7 @@ class VTSCommunicator :
         reply = {}
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s :
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
-            s.settimeout(2) # set the timeout for 1 second of no activity
+            s.settimeout(0.5) # set the timeout for 1 second of no activity
             result = s.connect_ex(address)
             connected_ok = not result
             if not connected_ok :

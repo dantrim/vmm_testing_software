@@ -22,16 +22,16 @@ vector<string> spi_string_vec(json vmm_spi)
     vector<string> channel_registers =
             spi_channel_register_vec(channel_registers_json);
 
-//    cout << "============== GLOBAL REGISTERS ===============" << endl;
-//    for(size_t i = 0; i < global_registers.size(); i++)
-//    {
-//        cout << "["<<i<<"] " << global_registers.at(i) << endl;
-//    }
-//    cout << "============== CHANNEL REGISTERS ===============" << endl;
-//    for(size_t i = 0; i < channel_registers.size(); i++)
-//    {
-//        cout << "["<<i<<"] " << channel_registers.at(i) << endl;
-//    }
+    //cout << "============== GLOBAL REGISTERS ===============" << endl;
+    //for(size_t i = 0; i < global_registers.size(); i++)
+    //{
+    //    cout << "["<<i<<"] " << global_registers.at(i) << endl;
+    //}
+    //cout << "============== CHANNEL REGISTERS ===============" << endl;
+    //for(size_t i = 0; i < channel_registers.size(); i++)
+    //{
+    //    cout << "["<<i<<"] " << channel_registers.at(i) << endl;
+    //}
 
     return global_registers;
 }
@@ -422,6 +422,12 @@ vector<string> spi_global_register_vec(json jreg, bool reset)
     out.push_back(spi2_0.toStdString());
     out.push_back(spi2_1.toStdString());
     out.push_back(spi2_2.toStdString());
+
+    //cout << "============== GLOBAL REGISTERS ===============" << endl;
+    //for(size_t i = 0; i < out.size(); i++)
+    //{
+    //    cout << "["<<i<<"] " << out.at(i) << endl;
+    //}
     return out;
 }
 

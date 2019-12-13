@@ -145,7 +145,7 @@ namespace vmm
             
     };
 
-    std::vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t>& data);
+    std::vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t> data);
     
 
 } // namespace vmm
@@ -175,7 +175,7 @@ namespace xadc
             uint32_t m_sample;
     }; // class Sample
 
-    std::vector<vts::decode::xadc::Sample> decode(std::vector<uint32_t>& data);
+    std::vector<vts::decode::xadc::Sample> decode(std::vector<uint32_t> data);
 
 } // namespace xadc
 

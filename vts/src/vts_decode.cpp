@@ -2,6 +2,7 @@
 #include "vts_decode.h"
 
 //std/stl
+#include <bitset>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -18,7 +19,7 @@ namespace decode
 namespace vmm
 {
 
-vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t>& datagram)
+vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t> datagram)
 {
     vector<Sample> out;
     std::vector<uint32_t> data;
@@ -89,7 +90,7 @@ vector<vts::decode::vmm::Sample> decode(std::vector<uint32_t>& datagram)
 namespace xadc
 {
 
-vector<vts::decode::xadc::Sample> decode(vector<uint32_t>& data)
+vector<vts::decode::xadc::Sample> decode(vector<uint32_t> data)
 {
     vector<vts::decode::xadc::Sample> out;
     for(size_t i = 0; i < data.size(); i+=2)

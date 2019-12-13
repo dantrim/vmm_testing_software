@@ -331,7 +331,7 @@ void VTSServer::tests_finished()
 void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
                 vts::VTSReply& reply)
 {
-    log->debug("{0} - {1}",__VTFUNC__,message.str());
+    //log->debug("{0} - {1}",__VTFUNC__,message.str());
     auto msg_data = message.data();
 
     vts::CommunicatorFrontEnd* comm = new vts::CommunicatorFrontEnd();//m_server_config.at("frontend"));
@@ -342,7 +342,7 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
         bool status = comm->ping_fpga();
         stringstream status_str;
         status_str << "Ping status? " << (status ? "GOOD" : "BAD");
-        log->debug("{0} - {1}",__VTFUNC__,status_str.str());
+        //log->debug("{0} - {1}",__VTFUNC__,status_str.str());
 
         status_str.str("");
         status_str << (status ? "OK" : "ERROR");
@@ -354,8 +354,8 @@ void VTSServer::handle_frontend_command(const vts::VTSMessage& message,
     else if(frontend_cmd == CMDFrontEnd::CONFIGUREVMM || frontend_cmd == CMDFrontEnd::RESETVMM)
     {
         log->critical("{0} - {1}",__VTFUNC__,"HARDCODING DEFAULT VMM SPI JSON FILE");
-        std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_16_200_neg.json";
-        //std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_1_25_pos.json";
+        //std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_16_200_neg.json";
+        std::string vmm_file = "/Users/dantrim/workarea/NSW/vmm_testing/vmm_testing_software/vts/config/frontend/vmm_spi_1_25_pos.json";
 
         bool perform_reset = (frontend_cmd == CMDFrontEnd::RESETVMM);
 

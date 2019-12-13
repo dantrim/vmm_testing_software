@@ -370,7 +370,8 @@ void CommunicatorFrontEnd::construct_spi(QDataStream& stream,
     QString h3 = "bb00";
     stream << (quint16)h1.toUInt(&ok,16)
         << (quint16)h2.toUInt(&ok,16)
-        << (quint16)vmm_mask
+        << (quint8)(0)
+        << (quint8)vmm_mask
         << (quint16)h3.toUInt(&ok,16);
 
     // write global (first block)

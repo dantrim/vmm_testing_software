@@ -28,6 +28,7 @@ bool VTSTestChannelsAlive::initialize(const json& /*config*/)
 {
     n_cktp_per_cycle = 50;
     m_time_per_cycle = 100;
+    m_is_positive = false;
 
     m_test_data = m_test_config.at("test_data");
     // get the base configs for the fpga and VMM
@@ -36,6 +37,9 @@ bool VTSTestChannelsAlive::initialize(const json& /*config*/)
     string vmm_file = m_test_data.at("base_config_global").get<std::string>();
     fpga_file = config_dir + "/" + fpga_file;
     vmm_file = config_dir + "/" + vmm_file;
+
+    string sub = "pos";
+    m_is_positive = !(vmm_file.find(sub) == std::string::npos);
 
     try
     {
@@ -87,6 +91,8 @@ bool VTSTestChannelsAlive::initialize(const json& /*config*/)
     h_channel_eff_total = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
     h_channel_eff_total->SetLineColor(kBlack);
 
+    h2_channel_pdo = new TH2F("h2_channel_pdo", "Channel PDO; VMM Channel;PDO [counts]", 64,0,64,100,0,1023);
+
     // art dif
     h_art_diff = new TH1F("h_art_diff", "ART Diff", 100, 0, -1);
     h_bad_art = new TH1F("h_bad_art", "Bad ART Occurrences;VMM Channel;Entries", 64, 0, 64);
@@ -97,6 +103,7 @@ bool VTSTestChannelsAlive::initialize(const json& /*config*/)
     m_bad_channels.clear();
     m_dead_channels.clear();
     m_bad_art_channels.clear();
+    m_bad_pdo_channels.clear();
     set_current_state(0);
     set_n_states(m_test_steps.size());
     set_n_events_for_test(m_test_steps.size() * n_events_per_step());
@@ -165,6 +172,7 @@ bool VTSTestChannelsAlive::configure()
     json fpga_clocks = fpga_registers.at("clocks");
     stringstream cktp_max;
     int tmp = (n_cktp_per_cycle - 1);
+    tmp = -1;
     cktp_max << tmp;
     fpga_clocks["cktp_max_number"] = cktp_max.str(); // the firmware adds 1
     //fpga_clocks["cktp_period"] = "5000";
@@ -180,14 +188,12 @@ bool VTSTestChannelsAlive::configure()
     vector<vts::vmm::Channel> channels; 
     for(int i = 0; i < 64; i++)
     {
-        bool pulse = (i==t.channel ? true : false);
-        bool mask = (i==t.channel ? false : true);
-
+        bool mask = (i!=t.channel);
         json jch = {{"id",i},
                     {"sc",false},
                     {"sl",false},
-                    {"sth",false},
-                    {"st",pulse},
+                    {"sth",m_is_positive},
+                    {"st",true},
                     {"sm",mask},
                     {"smx",false},
                     {"sd",0}};
@@ -198,12 +204,6 @@ bool VTSTestChannelsAlive::configure()
     vmm_spi["channel_registers"] = vts::vmm::channel_vec_to_json_config(channels).at("channel_registers");
 
     // set global VMM configuration
-    stringstream chan_str;
-    chan_str << "0";
-    vmm_globals["sm5"] = chan_str.str(); // monitor channel 0
-    vmm_globals["sbmx"] = "ENABLED";
-    vmm_globals["scmx"] = "ENABLED";
-    vmm_globals["sbfm"] = "DISABLED";
     vmm_spi["global_registers"] = vmm_globals;
     vmm_config["vmm_spi"] = vmm_spi;
 
@@ -266,6 +266,7 @@ bool VTSTestChannelsAlive::process_event(vts::daq::DataFragment* fragment)
         h_channel_occ_total->Fill(sample.channel());
         h_art_diff->Fill(diff);
         h2_channel_art->Fill(sample.channel(), art);
+        h2_channel_pdo->Fill(sample.channel(), sample.pdo());
     } // sample
 
     // increment the event counter to move forward in the test (REQUIRED)
@@ -318,6 +319,22 @@ bool VTSTestChannelsAlive::analyze_test()
             m_bad_art_channels.push_back(ichan);
         }
 
+        // check the PDO values
+        stringstream hname;
+        hname << "hpdo_" << ichan;
+        int bin_number = (ichan+1);
+        TH1F* hpdo = (TH1F*)h2_channel_pdo->ProjectionY(hname.str().c_str(), bin_number, bin_number);
+        float mean_pdo = hpdo->GetMean();
+        delete hpdo;
+        bool lo_pdo_ok = (mean_pdo >= LO_PDO_THRESHOLD);
+        bool hi_pdo_ok = (mean_pdo <= HI_PDO_THRESHOLD);
+        bool pdo_within_bounds = (lo_pdo_ok && hi_pdo_ok);
+        if(!pdo_within_bounds)
+        {
+            m_bad_pdo_channels.push_back(ichan);
+            chan_marked_bad = true;
+        }
+
         if(chan_marked_bad)
         {
             m_bad_channels.push_back(ichan);
@@ -329,11 +346,13 @@ bool VTSTestChannelsAlive::analyze_test()
     store(h_art_diff);
     store(h2_channel_art);
     store(h_bad_art);
+    store(h2_channel_pdo);
     delete h_channel_occ_total;
     delete h_channel_eff_total;
     delete h_art_diff;
     delete h2_channel_art;
     delete h_bad_art;
+    delete h2_channel_pdo;
 
     return true;
 }
@@ -369,7 +388,8 @@ json VTSTestChannelsAlive::get_results()
     {
         json jreason = {
             {"DEAD_CHANNELS",m_dead_channels},
-            {"BAD_ART_CHANNELS",m_bad_art_channels}
+            {"BAD_ART_CHANNELS",m_bad_art_channels},
+            {"BAD_PDO_CHANNELS",m_bad_pdo_channels}
         };
         jresults["REASON"] = jreason;
     }

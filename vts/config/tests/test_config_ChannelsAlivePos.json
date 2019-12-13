@@ -5,5 +5,6 @@
         "base_config_fpga": "fpga_register_1_25_pos.json",
         "n_cktp_per_cycle" : "100",
         "time_per_cycle" : "60"
-    }
+    },
+    "exit_on_fail" : "YES"
 }

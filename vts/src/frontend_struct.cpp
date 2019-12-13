@@ -85,6 +85,13 @@ json channel_vec_to_json_config(const vector<Channel>& channels)
     jchreg["smx"] = smx.str();
     jchreg["channel_trims"] = chtrims;
 
+    //cout << "SC  STR = " << sc.str() << endl;
+    //cout << "SL  STR = " << sl.str() << endl;
+    //cout << "STH STR = " << sth.str() << endl;
+    //cout << "ST  STR = " << st.str() << endl;
+    //cout << "SM  STR = " << sm.str() << endl;
+    //cout << "SMX STR = " << smx.str() << endl;
+
     jout["channel_registers"] = jchreg;
 
     return jout;

@@ -229,8 +229,12 @@ class VTSClient(QtCore.QObject) :
         self.frontend_cmd(cmd = "POWEROFF")
 
     def ping_fpga(self) :
-        reply = self.frontend_cmd(cmd = "PINGFPGA")
-        return reply["STATUS"] == "OK"
+        reply = self.frontend_cmd(cmd = "PINGFPGA", wait = 100)
+        print("reply: {}".format(reply))
+        if "STATUS" in reply :
+            return reply["STATUS"] == "OK"
+        else :
+            return False
 
     def configure_fpga(self) :
         self.frontend_cmd(cmd = "CONFIGUREFPGA")
