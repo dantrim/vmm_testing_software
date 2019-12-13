@@ -2,7 +2,7 @@
     "test_type": "BaselinesPos",
     "test_data": {
         "base_config_global": "vmm_spi_1_25_pos.json",
-        "base_config_fpga": "fpga_register_default.json"
-    },
-    "exit_on_fail" : "YES"
+        "base_config_fpga": "fpga_register_default.json",
+        "exit_on_fail" : "YES"
+    }
 }

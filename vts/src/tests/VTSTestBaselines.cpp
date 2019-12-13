@@ -26,6 +26,25 @@ namespace vts
 bool VTSTestBaselines::initialize(const json& /*config*/)
 {
     m_test_data = m_test_config.at("test_data");
+    m_finished_early = false;
+    try
+    {
+        std::string exit_str = m_test_data.at("exit_on_fail").get<std::string>();
+        if(exit_str == "YES")
+        {
+            m_exit_on_fail = true;
+        }
+        else
+        {
+            m_exit_on_fail = false;
+        }
+    }
+    catch(std::exception& e)
+    {
+        m_exit_on_fail = false;
+    }
+
+
     // get the base configs for the fpga and VMM
     //stringstream fpga_file;
     string config_dir = m_configuration_dirs.at("frontend").get<std::string>();
@@ -65,7 +84,6 @@ bool VTSTestBaselines::initialize(const json& /*config*/)
         TH1F* h = new TH1F(hname.str().c_str(), hax.str().c_str(), 100, 0, -1);
         h->SetLineColor(kBlack);
         m_histos_baselines.push_back(h);
-        m_bad_baselines.push_back(0);
 
         m_retry_map[i] = 0;
     }
@@ -83,7 +101,7 @@ bool VTSTestBaselines::initialize(const json& /*config*/)
     h_noise_summary = new TH1F(hname.str().c_str(), hax.str().c_str(), 64, 0, 64);
     h_noise_summary->SetLineColor(kBlack);
 
-    n_bad_channels = 0;
+    m_bad_baselines.clear();
 
     // initialize all counters
     set_current_state(0);
@@ -100,20 +118,33 @@ bool VTSTestBaselines::load()
 
 bool VTSTestBaselines::need_to_redo_last_step()
 {
-    if(get_current_state()>1) // states, or steps, start counting at 1
+    bool redo = false;
+    m_current_retry = -1;
+    if(get_current_state()>0) // states, or steps, start counting at 1
     {
         int idx_step_current = get_current_state()-1;
         int idx_step_previous = (idx_step_current-1);
-        TestStep t = m_test_steps.at(idx_step_previous);
+        TestStep t = m_test_steps.at(get_current_state()-1);
         int channel = std::stoi(t.channel);
         auto h = m_histos_baselines.at(channel);
         float mean = h->GetMean();
-        if(!(mean>0.0))
+        if(mean<10)
         {
-            return true;
+            if(m_retry_map.at(channel)>=N_RETRY_MAX)
+            {
+                redo = false;
+                m_current_retry = -1;
+            }
+            else
+            {
+                redo = true;
+                m_retry_map.at(channel)++;
+                m_current_retry = channel;
+                set_n_events_for_test(m_test_steps.size() * n_events_per_step() + n_events_per_step());
+            }
         }
     }
-    return false;
+    return redo;
 }
 
 void VTSTestBaselines::redo_last_step()
@@ -124,12 +155,12 @@ void VTSTestBaselines::redo_last_step()
 
 bool VTSTestBaselines::configure()
 {
-    bool redo = need_to_redo_last_step();
-    if(redo)
-    {
-        log->debug("{0} - Re-doing last step",__VTFUNC__);
-        redo_last_step();
-    }
+//    bool redo = need_to_redo_last_step();
+//    if(redo)
+//    {
+//        log->debug("{0} - Re-doing last step",__VTFUNC__);
+//        redo_last_step();
+//    }
     
     TestStep t = m_test_steps.at(get_current_state() - 1);
 
@@ -174,7 +205,7 @@ bool VTSTestBaselines::configure()
     vmm_config["vmm_spi"] = vmm_spi;
 
     // send configuration SPI string
-    comm()->configure_vmm(vmm_config, /*perform reset*/ true);
+    //comm()->configure_vmm(vmm_config, /*perform reset*/ true);
     comm()->configure_vmm(vmm_config, /*perform reset*/ false);
     return true;
 }
@@ -218,11 +249,13 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
         // process the samples (fill histograms/etc)
 
         float sample_mv = sample.sample();
+        //dummy
+        if(channel==63) sample_mv = 0.0;
         sample_mv = (sample_mv / pow(2,12)) * 1000.;
         m_histos_baselines.at(channel)->Fill(sample_mv);
 
         // increment the counters since a single xADC sample is a single "event" (REQUIRED)
-        if(sample_mv>0.0)
+        //if(sample_mv>0.0)
             event_processed();
     }
 
@@ -234,30 +267,43 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
 
 bool VTSTestBaselines::analyze()
 {
+    bool redo = need_to_redo_last_step();
+    if(redo)
+    {
+        log->debug("{0} - Re-doing last step",__VTFUNC__);
+        redo_last_step();
+    }
+    if(redo) return true;
+
     TestStep t = m_test_steps.at(get_current_state() - 1);
     int channel = std::stoi(t.channel);
 
+
     auto h = m_histos_baselines.at(channel);
-    //store(h);
     float channel_baseline_mean = h->GetMean();
     bool lo_ok = (channel_baseline_mean >= LO_BASELINE_THRESHOLD);
     bool hi_ok = (channel_baseline_mean <= HI_BASELINE_THRESHOLD);
+    bool baseline_within_bound = (lo_ok && hi_ok);
     bool going_to_retry = false;
-    if(lo_ok && hi_ok)
+
+    if(!baseline_within_bound)
     {
-        m_bad_baselines.at(channel) = 0;
-    }
-    else
-    {
-        if(m_retry_map.at(channel) >= N_RETRY_MAX)
+        if(!(m_current_retry>0))
         {
-            n_bad_channels++;
-            m_bad_baselines.at(channel) = 1;
+            m_bad_baselines.push_back(channel);
+
+            // short-circuit
+            if(m_exit_on_fail && m_bad_baselines.size()>2)
+            {
+                log->info("{0} - Finishing test early, more than 2 failed channels encountered",__VTFUNC__);
+                set_current_state(m_test_steps.size());            
+                m_finished_early = true;
+            }
         }
         else
         {
             going_to_retry = true;
-            m_retry_map.at(channel)++;
+            log->info("{0} - Potential bad channel: {1} {2}",__VTFUNC__, channel, m_retry_map.at(channel));
         }
     }
 
@@ -297,6 +343,7 @@ bool VTSTestBaselines::finalize()
 json VTSTestBaselines::get_results()
 {
     VTSTestResult result = VTSTestResult::TESTRESULTINVALID;
+    size_t n_bad_channels = m_bad_baselines.size();
     if(n_bad_channels>2)
     {
         result = VTSTestResult::FAIL;
@@ -312,6 +359,16 @@ json VTSTestBaselines::get_results()
     json jresults = {
         {"RESULT",VTSTestResultToStr(result)}
     };
+
+    if(result != VTSTestResult::SUCCESS)
+    {
+        json jreason = {
+            {"FINISHED_EARLY",m_finished_early},
+            {"BAD_BASELINES",m_bad_baselines}
+        };
+        jresults["REASON"] = jreason;
+    }
+
     return jresults;
 }
 

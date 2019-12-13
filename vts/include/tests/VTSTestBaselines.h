@@ -33,6 +33,9 @@ class VTSTestBaselines : public VTSTestImp
             set_n_events_per_step(50);
             m_total_events_processed.store(0);
             m_n_total_events.store(0);
+            m_exit_on_fail = false;
+            m_finished_early = false;
+            m_current_retry = -1;
         }
         ~VTSTestBaselines()
         {
@@ -57,6 +60,8 @@ class VTSTestBaselines : public VTSTestImp
         };
         std::vector<TestStep> m_test_steps;
 
+        bool m_exit_on_fail;
+        bool m_finished_early;
         bool need_to_redo_last_step();
         void redo_last_step();
 
@@ -69,9 +74,9 @@ class VTSTestBaselines : public VTSTestImp
         std::vector<int> m_bad_baselines;
         TH1F* h_baseline_summary;
         TH1F* h_noise_summary;
-        int n_bad_channels;
 
         const int N_RETRY_MAX = 3;
+        int m_current_retry;
         std::map<int, int> m_retry_map;
 
 }; // class VTSTestBaselines

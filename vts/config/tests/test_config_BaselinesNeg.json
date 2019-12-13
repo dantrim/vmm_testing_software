@@ -2,7 +2,7 @@
     "test_type": "BaselinesNeg",
     "test_data": {
         "base_config_global": "vmm_spi_16_200_neg.json",
-        "base_config_fpga": "fpga_register_default.json"
-    },
-    "exit_on_fail" : "YES"
+        "base_config_fpga": "fpga_register_default.json",
+        "exit_on_fail" : "YES"
+    }
 }

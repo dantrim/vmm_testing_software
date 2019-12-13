@@ -34,6 +34,9 @@ class VTSTestChannelsAlive : public VTSTestImp
             set_n_states(1);
             m_total_events_processed.store(0);
             m_n_total_events.store(0);
+            m_exit_on_fail = false;
+            m_finished_early = false;
+            m_current_retry = -1;
         }
         ~VTSTestChannelsAlive()
         {
@@ -62,6 +65,9 @@ class VTSTestChannelsAlive : public VTSTestImp
         bool m_is_positive;
         int n_cktp_per_cycle;
         int m_time_per_cycle; // milliseconds
+        bool m_exit_on_fail;
+        int m_current_retry;
+        bool m_finished_early;
         std::chrono::system_clock::time_point m_start_time;
 
         // put histograms/trees/any output here
