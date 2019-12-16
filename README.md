@@ -57,7 +57,7 @@ $ cd vmm_testing_software/
 $ cd vts/
 $ python3 -m venv vtsenv
 (vtsenv) $ source vtsenv/bin/activate
-(vtsenv) $ pip3 install -r requirements.tx
+(vtsenv) $ pip3 install -r requirements.txt
 (vtsenv) $ deactivate
 $
 ```
