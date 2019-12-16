@@ -140,7 +140,6 @@ bool VTSTestBaselines::need_to_redo_last_step()
                 redo = true;
                 m_retry_map.at(channel)++;
                 m_current_retry = channel;
-                set_n_events_for_test(m_test_steps.size() * n_events_per_step() + n_events_per_step());
             }
         }
     }
@@ -150,7 +149,7 @@ bool VTSTestBaselines::need_to_redo_last_step()
 void VTSTestBaselines::redo_last_step()
 {
     set_current_state(get_current_state()-1);
-    return;
+    set_n_events_for_test( n_events_for_test() + n_events_per_step() );
 }
 
 bool VTSTestBaselines::configure()
@@ -205,7 +204,6 @@ bool VTSTestBaselines::configure()
     vmm_config["vmm_spi"] = vmm_spi;
 
     // send configuration SPI string
-    //comm()->configure_vmm(vmm_config, /*perform reset*/ true);
     comm()->configure_vmm(vmm_config, /*perform reset*/ false);
     return true;
 }
@@ -253,8 +251,7 @@ bool VTSTestBaselines::process_event(vts::daq::DataFragment* fragment)
         m_histos_baselines.at(channel)->Fill(sample_mv);
 
         // increment the counters since a single xADC sample is a single "event" (REQUIRED)
-        //if(sample_mv>0.0)
-            event_processed();
+        event_processed();
     }
 
     // continue sampling events (loop will exit if we are already at the limit) (REQUIRED)

@@ -30,6 +30,7 @@ namespace spdlog {
 //std/stl
 #include <atomic>
 #include <memory>
+#include <iostream>
 
 namespace vts
 {

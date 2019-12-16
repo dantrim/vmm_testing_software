@@ -1,5 +1,8 @@
 {
     "test_priority" : [
-        "BaselinesPos"
+        "BaselinesNeg"
+        ,"BaselinesPos"
+        ,"ChannelsAliveNeg"
+        ,"ChannelsAlivePos"
     ]
 }

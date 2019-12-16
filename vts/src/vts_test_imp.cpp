@@ -29,7 +29,6 @@ bool VTSTestImp::store(TObject* obj)
 void VTSTestImp::stop_current_test()
 {
     m_processing_flag.store(false);
-    cout << "VTSTestImp::stop_current_test  BLAH" << endl;
     emit signal_status_update(event_fraction_processed());
     m_events_processed.store(2.0 * n_events_for_test());
 }

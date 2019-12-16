@@ -161,20 +161,12 @@ bool VTSTestChannelsAlive::need_to_redo_last_step()
 void VTSTestChannelsAlive::redo_last_step()
 {
     set_current_state(get_current_state()-1);
+    set_n_events_for_test( n_events_for_test() + n_events_per_step() );
 }
 
 bool VTSTestChannelsAlive::configure()
 {
-    bool do_redo = need_to_redo_last_step();
-    if(do_redo)
-    {
-        redo_last_step();
-    }
     TestStep t = m_test_steps.at(get_current_state() - 1);
-    if(do_redo)
-    {
-        log->debug("{0} - Re-doing step {1}",__VTFUNC__, get_current_state());
-    }
 
     //comm()->configure_vmm(m_base_vmm_config, /*perform reset*/ true);
     //std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -294,10 +286,17 @@ bool VTSTestChannelsAlive::process_event(vts::daq::DataFragment* fragment)
 
 bool VTSTestChannelsAlive::analyze()
 {
+    bool do_redo = need_to_redo_last_step();
+    if(do_redo)
+    {
+        redo_last_step();
+        log->debug("{0} - Re-doing step {1}",__VTFUNC__, get_current_state());
+    }
+    if(do_redo) return true;
+
     int n_total_test_pulses_sent = n_cktp_per_cycle;
     TestStep t = m_test_steps.at(get_current_state() - 1);
     int current_channel = t.channel;
-//    bool chan_marked_bad = false;
 
     int ibin = (current_channel+1);
     auto bc = h_channel_occ_total->GetBinContent(ibin);
@@ -313,13 +312,8 @@ bool VTSTestChannelsAlive::analyze()
 
     if(eff==0)
     {
-        //log->info("{0} - Dead VMM channel found: {1}",__VTFUNC__, current_channel);
         bad_eff = true;
     }
-    //else if(eff <= 0.75)
-    //{
-    //    //log->info("{0} - Low efficiency channel found: channel = {1}, eff = {2}",__VTFUNC__, current_channel, eff);
-    //}
 
     float art_threshold = 0.98;
     if((art_eff < art_threshold) && (eff>0))
