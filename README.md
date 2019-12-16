@@ -54,6 +54,7 @@ Next, we obtain the python dependencies for running the user interface and top-l
 
 ```bash
 $ cd vmm_testing_software/
+$ cd vts/
 $ python3 -m venv vtsenv
 (vtsenv) $ source vtsenv/bin/activate
 (vtsenv) $ pip3 install -r requirements.tx
@@ -63,6 +64,7 @@ $
 Once this succeeds you should be able to, for example, run the following command without fail, in a new shell:
 ```bash
 $ cd vmm_testing_software/
+$ cd vts/
 $ source vtsenv/bin/activate
 (vtsenv) $ python
 (vtsenv) $ >>> from PySide2 import QtCore
@@ -83,9 +85,10 @@ That's it!
 Each time you want to run VTS, you must return to the virtual environment:
 
 ```bash
-$ cd vmm_testing_software/
+$ cd vmm_testing_software/vts/
 $ source vtsenv/bin/activate
-(vtsenv) $ python vts/python/vts.py --gui
+(vtsenv) $ cd python/
+(vtsenv) $ python vts.py --gui
 ```
 At which point the VTS user interface will appear on your screen.
 
