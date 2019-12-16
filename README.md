@@ -41,13 +41,14 @@ Edit [vts.pro](vts/vts.pro), specifically the lines with `boostinclude` and `boo
 Next, we compile the VTS source code:
 
 ```bash
-cd vmm_testing_software
+cd vmm_testing_software/
+cd vts/
 mkdir build
 cd build/
 qmake ../vts.pro
 make 2>&1 |tee compile.log
 ```
-If this compilation succeeds, a binary named `vts_server` should be located in `vmm_testing_software/build/`.
+If this compilation succeeds, a binary named `vts_server` should be located in `vmm_testing_software/vts/build/`.
 
 #### VTS user interface and python virtual env
 Next, we obtain the python dependencies for running the user interface and top-level VTS interface, which is all written in python. The python implementation of Qt, *PySide2* is used for this. We grab all of the dependencies by setting up a virtual environment.
