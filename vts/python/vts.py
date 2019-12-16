@@ -4,11 +4,14 @@ import sys, os
 from pathlib import Path
 import argparse
 import json
+import time
 
 
 # VTS
 from interface import vts_mainwindow
 from vts_utils import vts_helpers, vts_client
+import socket
+
 
 # Qt
 from PySide2 import QtCore, QtGui, QtWidgets, QtNetwork
@@ -304,19 +307,46 @@ class VTSWindow(QtWidgets.QMainWindow) :
                                 color = color)
 
     @Slot()
+    def ping_visor_camera(self) :
+        is_alive = True
+
+        camera_ip = self.ui.lineEdit_camera_ip.text()
+        try :
+            socket.inet_aton(camera_ip)
+        except socket.error :
+            print("ERROR VISOR IPv4 (={}) is invalid".format(camera_ip))
+            is_alive = False
+            self.set_background(obj = self.ui.lineEdit_camera_ip, obj_type_str = "QLineEdit", color = VTS_RED)
+
+        if is_alive :
+            is_alive = self.vts.ping_visor_camera(camera_ip = camera_ip)
+            color = { True : VTS_GREEN,
+                    False : VTS_RED }[is_alive]
+            self.set_background(obj = self.ui.lineEdit_camera_ip, obj_type_str = "QLineEdit", color = color)
+
+    @Slot()
     def capture_vmm_serial(self) :
         do_manual =  self.ui.button_do_manual_vmm_sn.isChecked()
+
+        # get and check the camera IP address
+        camera_ip = self.ui.lineEdit_camera_ip.text()
+        try :
+            socket.inet_aton(camera_ip)
+        except socket.error :
+            print("ERROR VISOR IPv4 (={}) is invalid".format(camera_ip))
+            return
+
         vmm_sn = ""
         if do_manual :
             vmm_sn_text = self.ui.lineEdit_manual_vmm_sn.text()
             if vmm_sn_text.isdigit() :
-                vmm_sn = self.vts.capture_vmm_serial(manual = vmm_sn_text)
+                vmm_sn = self.vts.capture_vmm_serial(manual = vmm_sn_text, camera_ip = camera_ip)
             else :
                 print("ERROR Unable to acquire manual VMM serial number as it is not a number: {}".format(vmm_sn_text))
                 self.vmm_sn_updated("")
                 vmm_sn = ""
         else :
-            vmm_sn = self.vts.capture_vmm_serial()
+            vmm_sn = self.vts.capture_vmm_serial(camera_ip = camera_ip)
         if vmm_sn == "" :
             self.ui.button_tests_start.setEnabled(False)
             self.ui.button_tests_stop.setEnabled(False)
@@ -380,6 +410,7 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ## DEVICE CONTROL
         ##
         ui.button_acquire_vmm_serial.clicked.connect(self.capture_vmm_serial)
+        ui.button_ping_camera.clicked.connect(self.ping_visor_camera)
 
         ##
         ## TESTS
@@ -436,6 +467,19 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ui.lineEdit_fpga_ip.setText(board_ip)
         self.ui.button_ping_fpga.setEnabled(False)
         self.ui.button_ping_fpga2.setEnabled(False)
+
+        ##
+        ## peripherals
+        ##
+        if "peripherals" in vts_cfg :
+            peripherals_cfg = vts_cfg["peripherals"]
+
+        ## visor camera
+
+            if "visor_camera" in peripherals_cfg :
+                camera_cfg = peripherals_cfg["visor_camera"]
+                camera_ip = camera_cfg["ip_address"]
+                ui.lineEdit_camera_ip.setText(camera_ip)
 
         ##
         ## TESTING

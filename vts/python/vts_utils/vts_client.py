@@ -302,10 +302,10 @@ class VTSClient(QtCore.QObject) :
     def stop_test(self) :
         self.test_cmd(cmd = "STOP")
 
-    def capture_vmm_serial(self, manual = "") :
+    def capture_vmm_serial(self, manual = "", camera_ip = "") :
         if manual == "" :
             camera = device_capture.PictureTaker()
-            vmm_sn = camera.get_serial_number()
+            vmm_sn = camera.get_serial_number(camera_ip = camera_ip)
         else :
             vmm_sn = manual
 
@@ -314,3 +314,8 @@ class VTSClient(QtCore.QObject) :
         
         self.signal_vmm_sn_updated.emit(str(vmm_sn))
         return vmm_sn
+
+    def ping_visor_camera(self, camera_ip = "") :
+        return device_capture.ping_visor_camera(ip = camera_ip)
+
+        

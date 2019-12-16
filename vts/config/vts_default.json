@@ -33,6 +33,13 @@
         "daq" :
         {
             "recv_port" : "6008"
+        },
+        "peripherals" :
+        {
+            "visor_camera" :
+            {
+                "ip_address" : "128.141.214.238"
+            }
         }
     }
 }

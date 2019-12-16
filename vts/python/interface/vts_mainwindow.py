@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mainwindow.ui',
 # licensing of 'mainwindow.ui' applies.
 #
-# Created: Mon Dec 16 11:53:02 2019
+# Created: Mon Dec 16 14:07:24 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -322,6 +322,34 @@ class Ui_MainWindow(object):
         self.label_18.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
         self.label_18.setObjectName("label_18")
         self.horizontalLayout_9.addWidget(self.label_18)
+        self.label_24 = QtWidgets.QLabel(self.layoutWidget)
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setPointSize(10)
+        font.setWeight(50)
+        font.setBold(False)
+        self.label_24.setFont(font)
+        self.label_24.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_24.setObjectName("label_24")
+        self.horizontalLayout_9.addWidget(self.label_24)
+        self.lineEdit_camera_ip = QtWidgets.QLineEdit(self.layoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.lineEdit_camera_ip.setFont(font)
+        self.lineEdit_camera_ip.setMaxLength(15)
+        self.lineEdit_camera_ip.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.lineEdit_camera_ip.setObjectName("lineEdit_camera_ip")
+        self.horizontalLayout_9.addWidget(self.lineEdit_camera_ip)
+        self.label_25 = QtWidgets.QLabel(self.layoutWidget)
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setPointSize(10)
+        font.setWeight(50)
+        font.setBold(False)
+        self.label_25.setFont(font)
+        self.label_25.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_25.setObjectName("label_25")
+        self.horizontalLayout_9.addWidget(self.label_25)
         self.lineEdit_manual_vmm_sn = QtWidgets.QLineEdit(self.layoutWidget)
         font = QtGui.QFont()
         font.setPointSize(10)
@@ -773,6 +801,8 @@ class Ui_MainWindow(object):
         self.button_ping_vmm.setText(QtWidgets.QApplication.translate("MainWindow", "Alive?", None, -1))
         self.button_power_vmm.setText(QtWidgets.QApplication.translate("MainWindow", "      ON       ", None, -1))
         self.label_18.setText(QtWidgets.QApplication.translate("MainWindow", "Camera  ", None, -1))
+        self.label_24.setText(QtWidgets.QApplication.translate("MainWindow", "IP ", None, -1))
+        self.label_25.setText(QtWidgets.QApplication.translate("MainWindow", "SN", None, -1))
         self.button_do_manual_vmm_sn.setText(QtWidgets.QApplication.translate("MainWindow", "Manual VMM SN", None, -1))
         self.button_ping_camera.setText(QtWidgets.QApplication.translate("MainWindow", "Alive?", None, -1))
         self.button_acquire_vmm_serial.setText(QtWidgets.QApplication.translate("MainWindow", "   Get SN   ", None, -1))

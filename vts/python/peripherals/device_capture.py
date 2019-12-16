@@ -6,6 +6,23 @@ import re
 from collections import defaultdict
 from .device import CAM_IP, CMD_PORT, SER_PORT, close_socket, send
 
+def ping_visor_camera(ip = "") :
+
+    try :
+        s0 = socket.socket(socket.AF_INET, socket.sock_STREAM)
+        s0.settimeout(2)
+        s0.connect((ip,SER_PORT))
+
+        s1 = socket.socket(socket.AF_INET, socket.sock_STREAM)
+        s1.settimeout(2)
+        s1.connect((ip,CMD_PORT))
+
+    except :
+        return False
+
+    return True
+    
+
 class PictureTaker() :
     def __init__(self) :
 
@@ -16,23 +33,25 @@ class PictureTaker() :
     def shutoff_camera(self) :
         self.request(cmd = "X")
 
-    def get_serial_number(self) :
+    def get_serial_number(self, camera_ip = "127.0.0.1") :
 
         try :
-            self.request(cmd = "TRG")
+            self.request(cmd = "TRG", camera_ip = camera_ip)
             return self.serial_number
         except :
             return ""
 
-    def request(self, cmd = "TRG", attempts = 5) :
+    def request(self, cmd = "TRG", attempts = 5, camera_ip = "") :
 
         cmd = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         cmd.settimeout(2)
-        cmd.connect(("128.141.214.238", 2006))
+        cmd.connect((camera_ip, SER_PORT))
+        #cmd.connect(("128.141.214.238", 2006))
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(2)
-        sock.connect(("128.141.214.238", 2005))
+        sock.connect((camera_ip, CMD_PORT))
+        #sock.connect(("128.141.214.238", 2005))
 
         results = []
         for _ in range(attempts):
