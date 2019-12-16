@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>871</width>
-    <height>372</height>
+    <height>429</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -52,7 +52,7 @@
         <x>6</x>
         <y>10</y>
         <width>661</width>
-        <height>301</height>
+        <height>311</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_5" rowstretch="2,0,0,0,0,0,0,0" columnstretch="0">
@@ -682,7 +682,7 @@
         <x>0</x>
         <y>10</y>
         <width>671</width>
-        <height>211</height>
+        <height>238</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout_8">
@@ -743,7 +743,11 @@
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="lineEdit"/>
+               <widget class="QLineEdit" name="lineEdit_frontend_control_fpga_config">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+               </widget>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_6">
@@ -927,7 +931,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_2"/>
+             <widget class="QLineEdit" name="lineEdit_frontend_controm_vmm_spi">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton_12">

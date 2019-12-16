@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mainwindow.ui',
 # licensing of 'mainwindow.ui' applies.
 #
-# Created: Thu Dec 12 11:18:25 2019
+# Created: Mon Dec 16 10:24:36 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(871, 372)
+        MainWindow.resize(871, 429)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -33,7 +33,7 @@ class Ui_MainWindow(object):
         self.tab0 = QtWidgets.QWidget()
         self.tab0.setObjectName("tab0")
         self.layoutWidget = QtWidgets.QWidget(self.tab0)
-        self.layoutWidget.setGeometry(QtCore.QRect(6, 10, 661, 301))
+        self.layoutWidget.setGeometry(QtCore.QRect(6, 10, 661, 311))
         self.layoutWidget.setObjectName("layoutWidget")
         self.gridLayout_5 = QtWidgets.QGridLayout(self.layoutWidget)
         self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
@@ -363,7 +363,7 @@ class Ui_MainWindow(object):
         self.tab1 = QtWidgets.QWidget()
         self.tab1.setObjectName("tab1")
         self.layoutWidget1 = QtWidgets.QWidget(self.tab1)
-        self.layoutWidget1.setGeometry(QtCore.QRect(0, 10, 671, 211))
+        self.layoutWidget1.setGeometry(QtCore.QRect(0, 10, 671, 238))
         self.layoutWidget1.setObjectName("layoutWidget1")
         self.gridLayout_8 = QtWidgets.QGridLayout(self.layoutWidget1)
         self.gridLayout_8.setSpacing(4)
@@ -393,9 +393,10 @@ class Ui_MainWindow(object):
         self.label_16.setFont(font)
         self.label_16.setObjectName("label_16")
         self.horizontalLayout_4.addWidget(self.label_16)
-        self.lineEdit = QtWidgets.QLineEdit(self.groupBox_4)
-        self.lineEdit.setObjectName("lineEdit")
-        self.horizontalLayout_4.addWidget(self.lineEdit)
+        self.lineEdit_frontend_control_fpga_config = QtWidgets.QLineEdit(self.groupBox_4)
+        self.lineEdit_frontend_control_fpga_config.setEnabled(False)
+        self.lineEdit_frontend_control_fpga_config.setObjectName("lineEdit_frontend_control_fpga_config")
+        self.horizontalLayout_4.addWidget(self.lineEdit_frontend_control_fpga_config)
         self.pushButton_6 = QtWidgets.QPushButton(self.groupBox_4)
         self.pushButton_6.setEnabled(False)
         font = QtGui.QFont()
@@ -477,9 +478,10 @@ class Ui_MainWindow(object):
         self.label_19.setFont(font)
         self.label_19.setObjectName("label_19")
         self.horizontalLayout_6.addWidget(self.label_19)
-        self.lineEdit_2 = QtWidgets.QLineEdit(self.groupBox_5)
-        self.lineEdit_2.setObjectName("lineEdit_2")
-        self.horizontalLayout_6.addWidget(self.lineEdit_2)
+        self.lineEdit_frontend_controm_vmm_spi = QtWidgets.QLineEdit(self.groupBox_5)
+        self.lineEdit_frontend_controm_vmm_spi.setEnabled(False)
+        self.lineEdit_frontend_controm_vmm_spi.setObjectName("lineEdit_frontend_controm_vmm_spi")
+        self.horizontalLayout_6.addWidget(self.lineEdit_frontend_controm_vmm_spi)
         self.pushButton_12 = QtWidgets.QPushButton(self.groupBox_5)
         self.pushButton_12.setEnabled(False)
         font = QtGui.QFont()
@@ -586,21 +588,21 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel(self.frame)
         self.label.setFrameShape(QtWidgets.QFrame.Box)
         self.label.setText("")
-        self.label.setPixmap(QtGui.QPixmap("interface/resources/uci.png"))
+        self.label.setPixmap(QtGui.QPixmap(":/python/uci.png"))
         self.label.setScaledContents(True)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
         self.label_2 = QtWidgets.QLabel(self.frame)
         self.label_2.setFrameShape(QtWidgets.QFrame.Box)
         self.label_2.setText("")
-        self.label_2.setPixmap(QtGui.QPixmap("interface/resources/ntua.png"))
+        self.label_2.setPixmap(QtGui.QPixmap(":/python/ntua.png"))
         self.label_2.setScaledContents(True)
         self.label_2.setObjectName("label_2")
         self.verticalLayout.addWidget(self.label_2)
         self.label_3 = QtWidgets.QLabel(self.frame)
         self.label_3.setFrameShape(QtWidgets.QFrame.Box)
         self.label_3.setText("")
-        self.label_3.setPixmap(QtGui.QPixmap("interface/resources/brookhaven.png"))
+        self.label_3.setPixmap(QtGui.QPixmap(":/python/brookhaven.png"))
         self.label_3.setScaledContents(True)
         self.label_3.setObjectName("label_3")
         self.verticalLayout.addWidget(self.label_3)

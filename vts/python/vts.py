@@ -56,13 +56,16 @@ class VTSWindow(QtWidgets.QMainWindow) :
     @Slot(str)
     def vmm_sn_updated(self, value) :
         bkg_color = "rgb{};".format(VTS_GREY)
+        text = "none"
         if value == "" :
             bkg_color = "rgb{};".format(VTS_RED)
+            text = "none"
         else :
             bkg_color = "rgb{};".format(VTS_GREEN)
+            text = "VMM# {}".format(str(value))
         bkg_color = "QLabel {background-color: %s}" % bkg_color
         self.ui.label_vts_vmm_sn.setStyleSheet(bkg_color)
-        self.ui.label_vts_vmm_sn.setText("VMM# " + str(value))
+        self.ui.label_vts_vmm_sn.setText(text)
 
     @Slot(str)
     def server_status_updated(self, value) :
@@ -127,10 +130,13 @@ class VTSWindow(QtWidgets.QMainWindow) :
     @Slot()
     def load_test_config(self) :
 
-        # get vmm sn
-        vmm_sn = self.capture_vmm_serial()
-        if vmm_sn == "" :
+        # don't continue unless we have acquired VMM serial number
+        vmm_sn_text = self.ui.label_vts_vmm_sn.text()
+        if vmm_sn_text.lower() == "none" :
+            print("ERROR No VMM serial number acquired, cannot load tests")
             return
+
+        vmm_sn = self.ui.lineEdit_manual_vmm_sn.text()
 
         self.clear_tests()
         test_config_dir = self.ui.lineEdit_test_dir.text()
@@ -228,6 +234,13 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
     @Slot()
     def start_tests(self) :
+
+        # don't let us start if there is no VMM sn
+        vmm_sn_text = self.ui.label_vts_vmm_sn.text()
+        if vmm_sn_text.lower() == "none" :
+            print("ERROR No VMM serial number acquired, cannot start tests")
+            return
+
         status = self.vts.start_test()
         if status :
             self.ui.button_tests_stop.setEnabled(True)
@@ -310,6 +323,8 @@ class VTSWindow(QtWidgets.QMainWindow) :
         else :
             self.ui.button_tests_start.setEnabled(True)
             self.ui.button_tests_stop.setEnabled(False)
+
+        self.ui.lineEdit_manual_vmm_sn.setText(vmm_sn)
         return vmm_sn
 
     @Slot()
@@ -365,7 +380,6 @@ class VTSWindow(QtWidgets.QMainWindow) :
         ## DEVICE CONTROL
         ##
         ui.button_acquire_vmm_serial.clicked.connect(self.capture_vmm_serial)
-        #ui.button_acquire_vmm_serial.clicked.connect(self.vts.capture_vmm_serial)       
 
         ##
         ## TESTS
