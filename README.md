@@ -89,4 +89,10 @@ $ source vtsenv/bin/activate
 ```
 At which point the VTS user interface will appear on your screen.
 
+Once done with VTS, to exit the virtual environment simply do:
+```bash
+(vtsenv) $ deactivate
+$
+```
+
 
