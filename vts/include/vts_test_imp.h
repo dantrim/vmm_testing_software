@@ -1,6 +1,19 @@
 #ifndef VTS_TEST_IMP_H
 #define VTS_TEST_IMP_H
 
+/////////////////////////////////////////////////////
+//
+// vts_test_imp.h
+//
+// implementation of a VTS test that all user tests
+// must derive from
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //vts
 #include "vts_result.h"
 namespace vts {

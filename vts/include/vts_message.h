@@ -1,6 +1,19 @@
 #ifndef VTS_MESSAGE_H
 #define VTS_MESSAGE_H
 
+/////////////////////////////////////////////////////
+//
+// vts_message.h
+//
+// enum to hold the types of commands that the VTS
+// server will handle
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 // std/stl
 #include <string>
 #include <sstream>

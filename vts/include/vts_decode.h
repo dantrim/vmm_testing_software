@@ -1,6 +1,20 @@
 #ifndef VTS_DECODE_H
 #define VTS_DECODE_H
 
+/////////////////////////////////////////////////////
+//
+// vts_decode.h
+//
+// functions to decode the VMM hit data as well
+// as xADC data
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
+
 //std/stl
 #include <cstdint>
 #include <vector>

@@ -1,6 +1,19 @@
 #ifndef VTS_SERVER_H
 #define VTS_SERVER_H
 
+/////////////////////////////////////////////////////
+//
+// vts_server.h
+//
+// top level VTS server listening for commands from
+// VTS user
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //vts
 #include "vts_test_handler.h"
 

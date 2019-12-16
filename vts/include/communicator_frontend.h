@@ -1,6 +1,19 @@
 #ifndef VTS_COMMUNICATOR_FRONTEND_H
 #define VTS_COMMUNICATOR_FRONTEND_H
 
+/////////////////////////////////////////////////////
+//
+// communicator_frontend.h
+//
+// structure to build frontend commands and send them
+// via UDP to the fpga
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 // std/stl
 #include <memory>
 #include <vector>

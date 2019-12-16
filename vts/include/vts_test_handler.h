@@ -1,6 +1,19 @@
 #ifndef VTS_TEST_HANDLER_H
 #define VTS_TEST_HANDLER_H
 
+/////////////////////////////////////////////////////
+//
+// vts_test_handler.h
+//
+// structure that orchestrates the loaded suite of
+// tests
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //vts
 #include "vts_test.h"
 

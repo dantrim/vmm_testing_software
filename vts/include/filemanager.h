@@ -1,6 +1,18 @@
 #ifndef VTS_FILEMANAGER_H
 #define VTS_FILEMANAGER_H
 
+/////////////////////////////////////////////////////
+//
+// filemanager.h
+//
+// structure to handle the ROOT output from a test
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //ROOT
 #include "TFile.h"
 class TDirectory;

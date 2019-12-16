@@ -18,8 +18,11 @@ class PictureTaker() :
 
     def get_serial_number(self) :
 
-        self.request(cmd = "TRG")
-        return self.serial_number
+        try :
+            self.request(cmd = "TRG")
+            return self.serial_number
+        except :
+            return ""
 
     def request(self, cmd = "TRG", attempts = 5) :
 

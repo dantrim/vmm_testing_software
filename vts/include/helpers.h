@@ -1,6 +1,18 @@
 #ifndef VTS_HELPERS_H
 #define VTS_HELPERS_H
 
+/////////////////////////////////////////////////////
+//
+// helpers.h
+//
+// misc functions for defining macro for printing, etc
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //std/stl
 #include <string>
 #include <cstdint>

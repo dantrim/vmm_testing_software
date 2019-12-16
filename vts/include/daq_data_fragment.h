@@ -1,6 +1,19 @@
 #ifndef VTS_DATA_FRAGMENT_H
 #define VTS_DATA_FRAGMENT_H
 
+/////////////////////////////////////////////////////
+//
+// daq_data_fragment.h
+//
+// structure to hold incoming data packets from
+// the frontend
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //std/stl
 #include <vector>
 #include <cstdint>

@@ -1,6 +1,19 @@
 #ifndef VTS_TEST_STATES_H
 #define VTS_TEST_STATES_H
 
+/////////////////////////////////////////////////////
+//
+// vts_test_states.h
+//
+// states that any given test can be in, should follow
+// a finite state machine
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //std/stl
 #include <string>
 

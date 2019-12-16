@@ -1,6 +1,18 @@
 #ifndef VTS_TEST_H
 #define VTS_TEST_H
 
+/////////////////////////////////////////////////////
+//
+// vts_test.h
+//
+// api for a VMM test
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 // std/stl
 #include <memory>
 #include <map>

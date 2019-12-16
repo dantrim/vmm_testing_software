@@ -1,6 +1,20 @@
 #ifndef VTS_DAQ_HANDLER_H
 #define VTS_DAQ_HANDLER_H
 
+/////////////////////////////////////////////////////
+//
+// daq_handler.h
+//
+// object to handle the data listeners and fragment
+// builders in the single-producer/single-consumer
+// buffer architecture
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //vts
 #include "daq_defs.h"
 //#include "daq_listener.h"

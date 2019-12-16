@@ -1,6 +1,18 @@
 #ifndef VTS_TEST_TYPES_H
 #define VTS_TEST_TYPES_H
 
+/////////////////////////////////////////////////////
+//
+// vts_test_types.h
+//
+// the types of tests recognized by VTS
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //stdstl
 #include <string>
 

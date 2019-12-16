@@ -1,6 +1,19 @@
 #ifndef VTS_COMMANDS_H
 #define VTS_COMMANDS_H
 
+/////////////////////////////////////////////////////
+//
+// vts_commands.h
+//
+// recognized commands that the VTS server should
+// respond to
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //std/stl
 #include <string>
 

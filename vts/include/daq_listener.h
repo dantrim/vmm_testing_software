@@ -1,6 +1,19 @@
 #ifndef VTS_DAQ_LISTENER_H
 #define VTS_DAQ_LISTENER_H
 
+/////////////////////////////////////////////////////
+//
+// daq_listener.h
+//
+// structure that instantiates a UDP socket listening
+// for data from the frontend and queueing it
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //vts
 #include "daq_defs.h"
 #include "daq_data_fragment.h"

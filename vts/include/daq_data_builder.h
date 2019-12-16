@@ -1,6 +1,19 @@
 #ifndef VTS_DAQ_BUILDER_H
 #define VTS_DAQ_BUILDER_H
 
+/////////////////////////////////////////////////////
+//
+// daq_data_builder.h
+//
+// class to dequeue data fragments from the input
+// buffer
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //vts
 #include "daq_defs.h"
 #include "vts_test.h"

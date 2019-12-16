@@ -1,6 +1,18 @@
 #ifndef VTS_FRONTEND_STRUCT_H
 #define VTS_FRONTEND_STRUCT_H
 
+/////////////////////////////////////////////////////
+//
+// frontend_struct.h
+//
+// containers for representing frontend elements
+//
+// daniel joseph antrim
+// octboer 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //std/stl
 #include <stdint.h>
 #include <vector>

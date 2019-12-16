@@ -1,6 +1,18 @@
 #ifndef VTS_SPI_BUILDER_H
 #define VTS_SPI_BUILDER_H
 
+/////////////////////////////////////////////////////
+//
+// spi_builder.h
+//
+// functions to build the VMM SPI string
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //json
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;

@@ -1,6 +1,19 @@
 #ifndef VTS_FRONTEND_ADDRESSES_H
 #define VTS_FRONTEND_ADDRESSES_H
 
+/////////////////////////////////////////////////////
+//
+// frontend_address.h
+//
+// addresses of anything to which we send commands to
+// on the frontend
+//
+// daniel joseph antrim
+// october 2019
+// daniel.joseph.antrim@cern.ch
+//
+/////////////////////////////////////////////////////
+
 //std/stl
 #include <string>
 
