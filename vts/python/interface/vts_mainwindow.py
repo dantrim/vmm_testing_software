@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mainwindow.ui',
 # licensing of 'mainwindow.ui' applies.
 #
-# Created: Mon Dec 16 10:24:36 2019
+# Created: Mon Dec 16 11:53:02 2019
 #      by: pyside2-uic  running on PySide2 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,7 +13,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(871, 429)
+        MainWindow.resize(871, 507)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -326,7 +326,7 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         self.lineEdit_manual_vmm_sn.setFont(font)
-        self.lineEdit_manual_vmm_sn.setMaxLength(5)
+        self.lineEdit_manual_vmm_sn.setMaxLength(10)
         self.lineEdit_manual_vmm_sn.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lineEdit_manual_vmm_sn.setObjectName("lineEdit_manual_vmm_sn")
         self.horizontalLayout_9.addWidget(self.lineEdit_manual_vmm_sn)

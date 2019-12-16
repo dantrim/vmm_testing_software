@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>871</width>
-    <height>429</height>
+    <height>507</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -612,7 +612,7 @@
             </font>
            </property>
            <property name="maxLength">
-            <number>5</number>
+            <number>10</number>
            </property>
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

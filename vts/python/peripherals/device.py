@@ -4,7 +4,8 @@ import sys, os
 import socket
 import time
 
-CAM_IP = "127.0.0.1"
+#CAM_IP = "127.0.0.1"
+CAM_IP = "128.141.214.238"
 CMD_PORT = 2005
 SER_PORT = 2006
 SERIAL_NUMBER = 51367
@@ -37,7 +38,7 @@ class Camera() :
 
         # bind the sockets to their respective ports
         listen_address = (CAM_IP, CMD_PORT)
-        self.listen_socket.bind(listen_address)
+        #self.listen_socket.bind(listen_address)
 
         serial_address = (CAM_IP, SER_PORT)
 
