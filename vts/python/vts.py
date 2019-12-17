@@ -326,17 +326,12 @@ class VTSWindow(QtWidgets.QMainWindow) :
 
     @Slot()
     def capture_vmm_serial(self) :
-        do_manual =  self.ui.button_do_manual_vmm_sn.isChecked()
-
-        # get and check the camera IP address
-        camera_ip = self.ui.lineEdit_camera_ip.text()
-        try :
-            socket.inet_aton(camera_ip)
-        except socket.error :
-            print("ERROR VISOR IPv4 (={}) is invalid".format(camera_ip))
-            return
 
         vmm_sn = ""
+        # get and check the camera IP address
+        camera_ip = self.ui.lineEdit_camera_ip.text()
+
+        do_manual =  self.ui.button_do_manual_vmm_sn.isChecked()
         if do_manual :
             vmm_sn_text = self.ui.lineEdit_manual_vmm_sn.text()
             if vmm_sn_text.isdigit() :
@@ -346,7 +341,14 @@ class VTSWindow(QtWidgets.QMainWindow) :
                 self.vmm_sn_updated("")
                 vmm_sn = ""
         else :
-            vmm_sn = self.vts.capture_vmm_serial(camera_ip = camera_ip)
+
+            try :
+                socket.inet_aton(camera_ip)
+                vmm_sn = self.vts.capture_vmm_serial(manual = "", camera_ip = camera_ip)
+            except socket.error :
+                print("ERROR VISOR IPv4 (={}) is invalid".format(camera_ip))
+                vmm_sn = ""
+
         if vmm_sn == "" :
             self.ui.button_tests_start.setEnabled(False)
             self.ui.button_tests_stop.setEnabled(False)
